@@ -1,0 +1,58 @@
+---
+title: "Rt estimation supplement"
+author: ""
+date: ""
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Supplementary details of experiments
+
+Covid-19 cases.
+
+```{r download-data, include=FALSE}
+library(CanCovidData)
+library(magrittr)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(tidyr)
+library(scales)
+library(data.table)
+library(rtestim)
+library(pracma)
+library(ggpubr)
+library(cowplot)
+
+dat <- get_british_columbia_case_data() %>%
+  rename(HA = `Health Authority`, Date = `Reported Date`,
+         Age = `Age group`) %>%
+  filter(Date >= ymd("2020-03-01"))
+
+cases <- dat %>%
+  count(Date, name = "Cases")
+
+time_diff <- difftime(cases$Date, min(cases$Date), units = "days")
+natural_numbers <- as.numeric(time_diff) + 1
+
+cases <- data.table(cases, x = natural_numbers)
+```
+
+```{r plot-cases, echo=FALSE}
+fig1 <- cases %>%
+  ggplot(aes(x=Date)) + 
+  geom_line(aes(y=Cases), col="black") + 
+  labs(x="Date", y='Observed counts') +
+  scale_x_date(date_breaks = "6 month") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.title = element_text(hjust = 0.5),
+        panel.spacing = unit(0.8, "lines"),
+        text = element_text(size = 12))
+k <- 10
+n <- length(cases$Cases)
+fig1
+```
