@@ -1,0 +1,34 @@
+\section{Discussion}
+
+% advantages
+The proposed methodology provides a locally adaptive estimator using Poisson trend filtering on univariate data for capturing the heterogeneous smoothness of effective reproduction numbers given time series of infective observations in a given region. This is a nonparametric regression model which can be written as convex optimization(minimization) problem. Minimizing the distance (averaged KL divergence per coordinate) between the estimators and observations guarantees the data fidelity; minimizing a certain order of divided differences between each pair of neighboring parameters regularizes the smoothness. The $\ell_1$ regularization introduces sparsity to the divided differences, which leads to heterogeneous smoothness within certain periods of time. The homogeneous smoothness within a time period can be either performed by a constant reproduction number, or a constant rate of changes, or a constant graphical curvature depending on the prescribed degree ($k=0,1,2$ respectively). %The estimator is uniquely defined due to its strict convexity. 
+
+The property of local adaptivity is useful for interpreting seasonal outbreaks. Given a properly chosen degree of polynomials, for example, the growth rate in a seasonal outbreak can be distinguished from the counterparts in un-seasonal outbreak periods at the beginning of the outbreak, which will alert epidemiologists to propose sanitary policies to prevent the progressing outbreak. The effective reproduction numbers can be estimated afterwards to check the efficiency of the sanitary policies referring to whether they are below the threshold, their tendencies of reduction, or their graphical curvatures.
+
+% how about regional evolution?
+%A limitation is that it only takes the temporal evolution within a single region into account, and fails to consider the spatial connection or spatial-temporal evolution among regions. 
+A potential future work is to extend the proposed model to analyze spatio-temporal infectious data. Such data have the inherit graphical structure such that temporal evolution within a region can be connected by lines (as time series) and spatial connection (of cross-sectional data) can be constructed by graphs where each pair of neighboring regions is linked by an edge. Moreover, the spatio-temporal evolution, i.e., the effects of previous infectious data of one region on current infections of neighboring regions, can be measured, for example, by linking the node of region $a$ at time $t-1$ to another node of region $b$ at time $t$. 
+%Through this way, different orders of spatial and temporal evolutions can be manually manipulated. 
+In this case, we can directly apply Poisson trend filtering on graphs with minor adjustment. %A remarkable note is that the edge lengths need to be made comparable across temporal and regional connections.
+
+
+% assumptions and limitations
+Our proposed model provides a natural way to deal with missing data, e.g., on weekends and holidays. Since the edge lengths of the line graphs can be adjusted, we can manually increase the length between two observations if there are missing data in between so that the influence of a previous observation is reduced correspondingly. Moreover, the $\ell_1$ penalty introduces sparsity, and thus, makes the estimators less sensitive to outliers compared to $\ell_2$ regularization. 
+It is remarkable that our focus is to provide a mathematical model for epidemiologists to use, rather than to focus on a specific disease. In addition, more specialized methodologies are needed for the diseases with relatively long incubation periods (e.g., HIV and HBV). 
+% used for acute diseases with short serial intervals 
+
+% most generally about Rt
+% can vary significantly due to different assumptions; how to choose among all methods? how to choose the hyperparameters in an individual model? 
+% should it be more smooth or more wiggly? 
+% may depend on the purposes: interpret information (smoother?) or forecasting (more wiggly/joggled?) 
+%Hence, mathematical modelling requires the domain expertise for specific infectious diseases dynamics to set the assumptions. % varying along with local sociobehavioral and environmental circumstances.
+
+% about retrospective v.s. real-time?
+
+
+
+% an existing approach to model R_0
+A group of epidemiological models are compartmental models. They establish the epidemic transmission process by creating compartments with labels and connecting them by directed edges. A simple compartmental model -- for example, \textit{Susceptible-Infectious-Susceptible} (SIS) model -- divides the population ($N$) into two compartments for susceptible cases ($S$) and infectious cases ($I$) respectively and connects them in serial as $S\to I\to S$. It only focuses on susceptible individuals. Each directed edge corresponds to a ratio of transmission (say, $\alpha,\beta$ respectively). In such models, reproduction numbers are defined as functions of the estimated transmission parameters and the numbers of compartments or population, e.g., $\hat{\calR}_0=\hat{\beta} N/\hat{\alpha}$ in the SIS models \cite{brauer2019mathematical}, as by-products. Compartmental models usually solve ordinary differential equations (ODE) systems for transmission numbers (e.g., $\alpha,\beta$ in the SIS model). A disadvantage of such parametric models is that they are less flexible than nonparametric models and the number of parameters to be estimated grows along with the increase of compartments in practice, which results in a growing computational complexity. Since the epidemic mechanism depends highly on the contexts, e.g., if a latency period exists or not, such models are lack of generalizability. Moreover, data of high quality are not always available for all compartments especially when there is a pandemic outbreak that results in a sudden shortage of resources in collecting daily new infections. %the sensitivity to low-quality data and the complex computation
+%To overcome these limitations of compartmental models, there is an alternative branch of approaches estimating reproduction numbers directly without expressing them as functions of other transmission parameters. 
+
+% other obstacles of Rt estimation in \cite{gostic2020practical}

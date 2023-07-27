@@ -1,0 +1,36 @@
+\section{Introduction}
+\label{sec:intro}
+
+%% introduce Rt briefly: 
+% R0 describes the contagiousness or transmissibility of infectious agents
+The basic reproduction number ($\calR_0$), defined as the expected number of secondary infections caused by an infected individual in a completely susceptible population, is a fundamental indicator of epidemiological transmissibility. %\cite{diekmann1990definition,dietz1993estimation,fine1993herd}. 
+The reproduction number provides a threshold such that when $\calR_0<1$, the infection dies out gradually, which is known as the \textit{disease-free equilibrium}, and when $\calR_0>1$, the \textit{endemic equilibrium} is asymptotically achieved, i.e., the infection is always present (\cite{diekmann1990definition,delamater2019complexity,brauer2019mathematical}). Basic reproduction numbers reflect the potential sizes of a pandemic and suggest the scale of epidemic prevention measures such as the proportion of a population that should be vaccinated. %\citep{anderson1982directly,anderson1985vaccination,heffernan2005perspectives,delamater2019complexity}. 
+% effective Rt 
+\textbf{Effective reproduction numbers} ($\calR_t$ at time $t$, also called as, instantaneous reproduction numbers) differ from the basic reproduction numbers by relaxing the assumption of a completely susceptible population. Although it varies from $\calR_0$ by a time-varying scale ($x$ such that $\calR_t=\calR_0 x$) --- the proportion of susceptible individuals over the population, it is able to explain more time-varying factors that may influence the spread of infectious diseases such as the transmission rates due to interventions. Therefore, the time-varying effective reproduction numbers are more interpretable in reality. %We focus on effective reproduction numbers and call them as reproduction numbers for simplicity. 
+
+%% significance/necessity of modeling Rt: the key is understanding infectious disease dynamics 
+Effective reproduction number reflects an unobservable biological reality. Mathematical biologists and theoretic epidemiologists have proposed complicated mathematical models to uncover this reality by making various domain-specific assumptions using different observations such as incidence data. It, on one hand, implies that the estimated effective reproduction numbers of a pathogen can vary. Different estimation processes and results suggest different aspects and levels of policy making in epidemic control. For example, if effective reproduction numbers are assumed to be affected by human-human interaction over time in an epidemic model, controlling the parameters influencing human-human contact rate may eventually lead to a reduction of the effective reproduction numbers in the specific model. Since some assumptions cannot be verified in practice, it is critical for an estimator to be \textit{robust} to model misspecification. 
+On the other hand, the estimation relies heavily on the quality of the available data. Some data may contain poor information due to the limitations of data collection. Thus, it is important to make \textit{accurate} estimation that is \textit{robust} to poor condition of data such as the low incidence periods. 
+
+%% and difficulties/obstacles: 
+
+%% literature review: 
+% estimate using what? case notification data, aka incidence data. the advantage is it's relevant to the ongoing outbreak for assessing the effectiveness of interventions and does not require substantial modeling expertise [white2021statistical] 
+EpiEstim \citep{cori2013new} is an accurate method for near real-time effective reproduction number estimation. It assumes Poisson distributed incident confirmed cases and Gamma distributed serial interval functions, uses the renewal equation to measure the contagious dynamic, and the data it requires is only the observed daily infection counts. \cite{abry2020spatial} extended this approach by introducing a (second-order) temporal regularization and a spatial regularization of reproduction rates and proposed to solve it as an optimization problem. % such that minimizing the log-likelihood of the posteriori of the Poisson parameters given their priori and observed infections. 
+\cite{pascal2022nonsmooth} further introduced robustness against outliers.
+% 
+EpiFilter \citep{parag2021improved} is a recursive Bayesian smoother based on Kalman Filter that maximizes the posteriori of reproduction number given a gamma prior and Poisson infection counts and generates robust estimates in low incidence periods. EpiNow2 \citep{koyama2021estimating} is a Bayesian latent variable framework that provides precise estimation and forecasts. A similarity of these models is that they only require the knowledge of the limited information, such as infected counts and the distribution of serial interval, to make accurate estimation. EpiLPS \citep{gressani2022epilps} is an another Bayesian framework that generates Bayesian P-splines coupled with Laplace approximations of the conditional posterior of the splines. It provides both point and interval estimations. 
+There are other spline-based approaches such as \cite{azmon2014estimation,gressani2021approximate,pircalabelu2023spline}. %and compartmental models. 
+% EpiEstim 2013 \cite{cori2013new}, EpiFilter 2021 \cite{parag2021improved}, EpiNow2 2021 \cite{koyama2021estimating}, EpiLPS 2022 \cite{gressani2022epilps}, EpiNowCast 
+%% comparison of assumptions and a same limitation across all models: 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% overview %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% the approach we focus
+
+% apply PTF on Rt estimation
+%Temporal evolution of reproduction numbers considers the progression of reproduction numbers that occurs over time through different temporal intervals. 
+
+
+% add a paragraph of overview here: 
+

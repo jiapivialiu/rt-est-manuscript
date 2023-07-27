@@ -1,0 +1,84 @@
+\documentclass{article}
+\input{doc/header/header}
+\input{doc/header/defs}
+
+\usepackage{arxiv}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{lipsum}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+
+\title{Effective reproduction number estimation with trend filtering}
+
+\author{
+    Jiaping Liu \\
+    Department of Statistics\\
+    The University of British Columbia\\
+    Vancouver, BC V6T 1Z4 \\
+    \texttt{jiaping.liu@stat.ubc.ca}\\
+    \And
+    Zhenglun Cai \\
+    Centre for Health Evaluation and Outcome Sciences\\
+    The University of British Columbia\\
+    Vancouver, BC V6T 1Z4 \\
+    \texttt{ecai@cheos.ubc.ca} \\
+    \And
+    Paul Gustafson \\
+    Department of Statistics\\
+    The University of British Columbia\\
+    Vancouver, BC V6T 1Z4 \\
+    \texttt{gustaf@stat.ubc.ca} \\
+    \And
+    Daniel J. McDonald\thanks{Corresponding author.} \\
+    Department of Statistics\\
+    The University of British Columbia\\
+    Vancouver, BC V6T 1Z4 \\
+    \texttt{daniel@stat.ubc.ca} \\
+}
+
+
+\begin{document}
+
+\maketitle
+
+\section*{\centering Abstract}
+% Technical summary including research objective, method, results, and conclusions.
+
+
+\thispagestyle{empty}
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+%\printnotation
+%\input{doc/notations.tex}
+
+\hypersetup{linkcolor=black}
+\tableofcontents
+
+%\listoffigures
+
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% research proposal
+\input{doc/introduction}  
+\input{doc/methods}
+\input{doc/results}
+\input{doc/discussion}
+
+\addcontentsline{toc}{section}{References}
+\bibliography{doc/ptf}
+
+%\appendix
+%\titleformat{\chapter}{\normalfont\huge\bfseries}{Appendix \thechapter}{1em}{}
+
+\end{document}

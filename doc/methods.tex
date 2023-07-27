@@ -1,0 +1,55 @@
+\section{Methods}
+
+\subsection{Renewal model for incidence data} 
+
+%Cori et al. \cite{cori2013new} proposed EpiEstim, which suggested that incident confirmed cases on a daily basis followed Poisson distributions with the expectations being the product of the reproduction numbers and the weighted sum of confirmed cases prior to a certain day. 
+%The weighted previous confirmed cases here reflected the contagious mechanism that a current confirmed case was infected several days ago. The weight corresponding to a previous day represented the probability that the current cases were infected on the very day. The probabilities were approximated by \textit{serial interval functions}. 
+
+%% considerations on using serial interval to estimate generation times: 
+%A remarkable point is that serial interval is a widely used metric to approximate the generation time, defined as the duration between the infection of a transmission pair --- an infector and an infectee. Generation time is theoretically better to measure the transmission duration than serial interval; however, it is also generally unobservable and more tricky to estimate. 
+%Serial interval is also called as generation interval or generation time, when the infectiousness profile after symptoms is independent of the incubation period \cite{cori2013new}. 
+
+In this project, we focus on the temporal evolution of reproduction numbers and extend it from a second-order divided difference to all orders ($1,2,3,...$). We propose a locally adaptive estimator measuring the time series of reproduction numbers. Compared to existing mathematical models for reproduction number estimation, this estimator is more flexible in the order of temporal evolution of reproduction numbers and also locally adaptive so that it captures the local changes such as the initiation of effective control measures. More specifically, it regularizes the similarity among reproduction numbers across a chosen number of neighboring time points and segments the curvature of the reproduction numbers such that there are more jumpiness in some subregions and more smoothness in others. We find the proposed estimator is identical to the univariate Poisson trend filtering estimator with a slight modification. We assume the serial interval function is known and approximated it by Gamma distributions following previous studies \citep{cori2013new,thompson2019improved,abry2020spatial,pascal2022nonsmooth}.
+%The epidemiology evolution mechanism suggests a hierarchical framework that posteriori of reproduction number depends on its prior and the distribution of confirmed cases. 
+
+\subsection{Poisson trend filtering estimator} %Proximal optimization
+
+We assume that the count of observed daily new infections at time $i$ ($y_i$) follows a Poisson distribution with the natural parameter being the effective reproduction number ($\calR_i > 0$) scaled by the weighted sum of previous daily counts, denoted by $w_i \geq 0$ for $i=1,\cdots,n$. %(Denote $\calR:=\calR_t$ hereafter.) 
+Let $\theta:=\log(\calR) \in \mathbb{R}^n$, and then $w\circ \calR = w\circ e^{\theta}$, $\log(w\circ \calR) = \log(w) + \theta$, where $e^{a}, \log(a)$ apply to a vector $a$ elementwise. We further regularize the smoothness of the reproduction number using the $\ell_1$ norm of the divided difference of the natural logarithm of $\calR$, which is real-valued. 
+
+The extended Poisson trend filtering (PTF) on univariate cases is then defined as:
+\begin{equation} \label{eq:rt-ptf}
+    \begin{split}
+        \hat{\theta} &:= \Argmin{\theta\in\bbR^n} \fr{n}\sumN -y_i \theta_i + w_i e^{\theta_i} + \lambda \norm{D^{(k+1)} \theta}_1, \\
+        \hat{\calR} &:= e^{\hat{\theta}},
+    \end{split}
+\end{equation}
+where $D^{k+1} \in \bbZ^{(n-k-1)\times n}$ is the $k$-th order divided difference matrix with $k=0,1,2,3,\cdots$. Define $D^{(k+1)}$ recursively as $D^{(k+1)} := D^{(1)} D^{(k)}$, where $D^{(1)}\in\bbN^{(n-k-1)\times (n-k)}$ and $D^{(1)}$ is a banded matrix with $(-1,1)$ on the columns $(i,i+1)$ for each row $i=1,...,n-k-1$. Define $D^{(0)} := I_n$. An exponential transformation is applied to the PTF estimator to get the estimated reproduction number.
+%
+For unequally spaced signals, replace $D^{(k+1)}$ by $D^{(x,k+1)}$ with weights $x\in \mathbb{R}^n$ (which are signal locations). Define $D^{(x,k+1)}$ recursively as $D^{(x,k+1)} := D^{(1)}\cdot X^k \cdot D^{(x,k)}, $
+where $$X^k := \diag \lr{\frac{k}{x_{k+1} - x_1}, \frac{k}{x_{k+2} - x_2}, \cdots, \frac{k}{x_n - x_{n-k}} }$$ is a diagonal matrix depending on the order $k$.
+
+We use Gamma distribution to estimate the serial interval function, i.e., weights of the previous daily infections. On day $i$, the weights of previous counts $y_1,...,y_{i-1}$ have corresponding coefficients (weights) $\Phi_1,..,\Phi_{i-1}$, which are probabilities of gamma distribution with prespecified parameters $(\alpha,\beta)$ corresponding to specific quartiles. The weight corresponding to $\calR_i$ is $w_i = \sum_{j=1}^{\tau_{\Phi}} \Phi_j y_{i-j}$, where $\tau_{\Phi}$ is a chosen period of infection.
+
+
+\subsection{Proximal Newton solver} %Specialized ADMM for `generalized' Poisson trend filtering on lines
+
+We use proximal Newton method to solve the proximal optimization problem in \eqref{eq:rt-ptf}. During each outer Newton-based iteration, we use specialized ADMM \cite{ramdas2016fast} to solve the problem in the inner loop. %Both algorithms follow similar procedures as in \autoref{sec:generic-algo}, but with a specialized substitution. %Details are provided in Appendix \ref{sec:spec-algo}. 
+%in linearized ADMM and proximal Newton method proposed in Section \ref{sec:spec-algo} to solve the problem in \eqref{eq:rt-ptf}.
+% explain the precondition if necessary: .. refer to \cite{chambolle2011first} used in \cite{pascal2022nonsmooth}
+
+
+The outer Newton-based iteration solves the following problems at time $t+1$:
+\begin{align} \label{spec-prox}
+  \theta_+^t &= \mathrm{prox}_{W_w^t,\Dxkk} \lr{c_w^{t}}, \\
+  \theta^{t+1} &= \theta_+^t + \gamma^{t+1} \lr{\theta_+^t - \theta^t},
+\end{align}
+where $W_w^t := \diag \lr{w\circ e^{\theta^t}}\in \bbR^{n\times n}$ and $c_w^t := y^t\circ w^{-1}\circ e^{-\theta^t} + \theta^t - \boldsymbol{1}$.% where $a^{-1}$ is an elementwise operator for vector $a$.
+
+% defer to the section of Simulation: 
+%\subsection*{Range of $\lambda$} 
+%Find the maximum lambda such that the estimated $\theta$ does not fall into the null space of the divided difference matrix.
+
+%% other computational considerations
+% low quality data (missingness, outliers, seasonalities, ...)? 
+
