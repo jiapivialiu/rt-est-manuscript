@@ -5,6 +5,7 @@
 % fonts
 \renewcommand{\rmdefault}{ptm}
 \renewcommand{\sfdefault}{phv}
+\renewcommand{\normalsize}{\fontsize{14.4}\selectfont} % Change 12 and 14.4 as needed
 
 % set page geometry
 \usepackage[verbose=true,letterpaper]{geometry}
@@ -41,7 +42,7 @@
 
 % font sizes with reduced leading
 \renewcommand{\normalsize}{%
-  \@setfontsize\normalsize\@xpt\@xipt
+  \@setfontsize\normalsize{12}{14.4} %\@xpt\@xipt
   \abovedisplayskip      7\p@ \@plus 2\p@ \@minus 5\p@
   \abovedisplayshortskip \z@ \@plus 3\p@
   \belowdisplayskip      \abovedisplayskip
@@ -212,12 +213,12 @@
     \hsize\textwidth
     \linewidth\hsize
     \vskip 0.1in
-    \@toptitlebar
-    \centering
+    %\@toptitlebar
+    %\centering
     {\LARGE\sc \@title\par}
-    \@bottomtitlebar
+    %\@bottomtitlebar
     \textsc{}\\
-    \vskip 0.1in
+    %\vskip 0.1in
     \def\And{%
       \end{tabular}\hfil\linebreak[0]\hfil%
       \begin{tabular}[t]{c}\bf\rule{\z@}{24\p@}\ignorespaces%
@@ -226,8 +227,13 @@
       \end{tabular}\hfil\linebreak[4]\hfil%
       \begin{tabular}[t]{c}\bf\rule{\z@}{24\p@}\ignorespaces%
     }
+    \def\AnD{%
+      \end{tabular}\hfil\linebreak[0]\hskip 1cm\hfil%
+      \begin{tabular}[t]{c}\bf\rule{\z@}{24\p@}
+    }
     \begin{tabular}[t]{c}\bf\rule{\z@}{24\p@}\@author\end{tabular}%
-  \vskip 0.4in \@minus 0.1in \center{\today}   \vskip 0.2in
+    % date of today:   
+    \vskip 0.4in \@minus 0.1in \center{\today}   \vskip 0.2in
   }
 }
 

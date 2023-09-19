@@ -1,21 +1,17 @@
 \section{Discussion}
 
 % advantages
-The proposed methodology provides a locally adaptive estimator using Poisson trend filtering on univariate data for capturing the heterogeneous smoothness of effective reproduction numbers given time series of infective observations in a given region. This is a nonparametric regression model which can be written as convex optimization(minimization) problem. Minimizing the distance (averaged KL divergence per coordinate) between the estimators and observations guarantees the data fidelity; minimizing a certain order of divided differences between each pair of neighboring parameters regularizes the smoothness. The $\ell_1$ regularization introduces sparsity to the divided differences, which leads to heterogeneous smoothness within certain periods of time. The homogeneous smoothness within a time period can be either performed by a constant reproduction number, or a constant rate of changes, or a constant graphical curvature depending on the prescribed degree ($k=0,1,2$ respectively). %The estimator is uniquely defined due to its strict convexity. 
+Our approach provides a locally adaptive estimator using Poisson trend filtering on univariate data. It captures the heterogeneous smoothness of effective reproduction numbers given the observed incidence time series in a certain region. This is a nonparametric regression model which can be written as convex optimization(minimization) problem. Minimizing the distance (averaged KL divergence per coordinate) between the estimators and (functions of) observations guarantees the data fidelity; minimizing a certain order of divided differences between each pair of neighboring parameters regularizes the smoothness. The $\ell_1$ regularization introduces sparsity to the divided differences, which leads to heterogeneous smoothness within certain periods of time. The homogeneous smoothness within a time period can be either performed by a constant reproduction number, or a constant rate of changes, or a constant graphical curvature depending on the prescribed degree ($k=0,1,2$ respectively). %The estimator is uniquely defined due to its strict convexity. 
 
-The property of local adaptivity is useful for interpreting seasonal outbreaks. Given a properly chosen degree of polynomials, for example, the growth rate in a seasonal outbreak can be distinguished from the counterparts in un-seasonal outbreak periods at the beginning of the outbreak, which will alert epidemiologists to propose sanitary policies to prevent the progressing outbreak. The effective reproduction numbers can be estimated afterwards to check the efficiency of the sanitary policies referring to whether they are below the threshold, their tendencies of reduction, or their graphical curvatures.
-
-% how about regional evolution?
-%A limitation is that it only takes the temporal evolution within a single region into account, and fails to consider the spatial connection or spatial-temporal evolution among regions. 
-A potential future work is to extend the proposed model to analyze spatio-temporal infectious data. Such data have the inherit graphical structure such that temporal evolution within a region can be connected by lines (as time series) and spatial connection (of cross-sectional data) can be constructed by graphs where each pair of neighboring regions is linked by an edge. Moreover, the spatio-temporal evolution, i.e., the effects of previous infectious data of one region on current infections of neighboring regions, can be measured, for example, by linking the node of region $a$ at time $t-1$ to another node of region $b$ at time $t$. 
-%Through this way, different orders of spatial and temporal evolutions can be manually manipulated. 
-In this case, we can directly apply Poisson trend filtering on graphs with minor adjustment. %A remarkable note is that the edge lengths need to be made comparable across temporal and regional connections.
-
+The property of local adaptivity is useful to distinguish, for example, the seasonal outbreaks from the un-seasonal outbreak periods. Given a properly chosen degree of polynomials, for example, the growth rate of un-seasonal outbreak periods can suggest a potential upcoming outbreak, which alerts epidemiologists to propose sanitary policies to prevent the progressing outbreak ahead of the infection surge. The effective reproduction numbers can be estimated afterwards to check the efficiency of the sanitary policies referring to whether they are below the threshold, their tendencies of reduction, or their graphical curvatures.
 
 % assumptions and limitations
-Our proposed model provides a natural way to deal with missing data, e.g., on weekends and holidays. Since the edge lengths of the line graphs can be adjusted, we can manually increase the length between two observations if there are missing data in between so that the influence of a previous observation is reduced correspondingly. Moreover, the $\ell_1$ penalty introduces sparsity, and thus, makes the estimators less sensitive to outliers compared to $\ell_2$ regularization. 
+Our proposed model provides a natural way to deal with missing data, e.g., on weekends and holidays. We linearly impute the missing data in the computation of total primary infectiousness by assuming these values are missing at random. 
+While solving the convex optimization problem, the edge lengths of the line graphs can be adjusted, so we can manually increase the length between two observations while penalizing the distance between them. 
+% Moreover, the $\ell_1$ penalty introduces sparsity into curvature, and thus, makes the estimators less sensitive to outliers compared to $\ell_2$ regularization. 
 It is remarkable that our focus is to provide a mathematical model for epidemiologists to use, rather than to focus on a specific disease. In addition, more specialized methodologies are needed for the diseases with relatively long incubation periods (e.g., HIV and HBV). 
 % used for acute diseases with short serial intervals 
+
 
 % most generally about Rt
 % can vary significantly due to different assumptions; how to choose among all methods? how to choose the hyperparameters in an individual model? 
@@ -32,3 +28,22 @@ A group of epidemiological models are compartmental models. They establish the e
 %To overcome these limitations of compartmental models, there is an alternative branch of approaches estimating reproduction numbers directly without expressing them as functions of other transmission parameters. 
 
 % other obstacles of Rt estimation in \cite{gostic2020practical}
+%such as the difference between generation time and serial interval (given constant incubation time), right consored estimates? ... 
+% cite other papers exploring approaches to solve these problems.
+
+
+
+% limitation
+There are more practical considerations that may influence the quality of $\calR_t$ estimation to be considered late. 
+In our approach, we consider a homogeneous population without distinguishing the imported cases from the local cases. 
+% NB alternatives 
+Poisson distribution is frequently used to model non-negative count data with heteroskedasticity. Another common alternative is negative binomial distribution with a specified level of overdispersion. 
+% 
+We consider a fixed serial interval throughout the transmission dynamics, but as the factors such as population immunity vary, the serial interval may vary as well. % (\citep{nash2023estimating} pp.12). 
+A common argument is that the distribution density of serial intervals is generally wider than the correspondence of generation intervals as serial interval includes both generation time and incubation time. If we assume generation time and incubation time both follow gamma distributions, the serial interval is likely to perform as a bimodal density. 
+
+% how about regional evolution?
+%A limitation is that it only takes the temporal evolution within a single region into account, and fails to consider the spatial connection or spatial-temporal evolution among regions. 
+ %A potential future work is to extend the proposed model to analyze spatio-temporal transmission data. Such data has the inherit graphical structure such that temporal evolution within a region can be connected by lines (as time series) and spatial connection (of cross-sectional data) can be constructed by graphs where each pair of neighboring regions is linked by an edge. Moreover, the spatio-temporal evolution, i.e., the effects of previous infectious data of one region on current infections of neighboring regions, can be measured, for example, by linking the node of region $a$ at time $t-1$ to another node of region $b$ at time $t$. 
+%Through this way, different orders of spatial and temporal evolutions can be manually manipulated. 
+ %In this case, we can directly apply Poisson trend filtering on graphs with minor adjustment. %A remarkable note is that the edge lengths need to be made comparable across temporal and regional connections.

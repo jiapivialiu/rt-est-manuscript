@@ -7,11 +7,11 @@ Implementation of the proximal Newton method is provided in the \texttt{R} packa
 % introduce data & hyperparameter setup
 We implement the proposed model on the Covid-19 confirmed cases in British Columbia (B.C.) as of May 18, 2023 reported by B.C. Conservation Data Centre. We choose the gamma distribution with shape $2.5$ and scale $2.5$ to approximate the serial interval function.
 
-\begin{figure}[tb]
-    \centering
+%\begin{figure}[tb]
+%    \centering
     %\includegraphics[width=0.99\linewidth]{fig/covid19fig.pdf}
-    \caption{Covid19 daily confirmed counts between March 1st, 2020 and April 15th, 2023 in British Columbia, Canada. The top left panel displays the time trend of the observed infectious cases. The top right, bottom left and bottom right panels illustrated the estimated reproduction numbers ($\calR_t$) using the Poisson trend filtering (in \eqref{eq:rt-ptf}) with degrees $k=1,2,3$ respectively.} 
-\end{figure}
+%    \caption{Covid19 daily confirmed counts between March 1st, 2020 and April 15th, 2023 in British Columbia, Canada. The top left panel displays the time trend of the observed infectious cases. The top right, bottom left and bottom right panels illustrated the estimated reproduction numbers ($\calR_t$) using the Poisson trend filtering (in \eqref{eq:rt-ptf}) with degrees $k=1,2,3$ respectively.} 
+%\end{figure} 
 
 % interpret figures -- across all lambdas
 Considering the temporal evolutions of neighboring $3, 4, 5$ reproduction numbers, the estimated reproduction numbers of Covid-19 in British Columbia (displayed in the top right, bottom left, and bottom right panels in Fig 1 respectively) are always lower than $2.5$, which means that two distinct infected individuals can on average infect less than five other individuals in the population. The three degrees of the temporal evolution (across all regularization levels $\lambda$) all yield similar results that $\hat{\calR}_t$ achieves the highest peak around the end of 2021 and reaches the lowest trough shortly thereafter. Throughout the estimated curves, the peaks and troughs of the reproduction numbers roughly come prior to the following growths and decays of confirmed cases respectively.

@@ -181,10 +181,13 @@
 \def\calR{\mathcal{R}}
 \def\bbN{\mathbb{N}}
 \def\bbR{\mathbb{R}}
+\def\bbP{\mathbb{P}}
 \def\bbZ{\mathbb{Z}}
 \DeclareMathOperator*{\diag}{diag}
 \DeclareMathOperator*{\argmin}{argmin}
 \newcommand{\Argmin}[1]{\underset{#1}{\argmin\ }}
+\DeclareMathOperator*{\argmax}{argmax}
+\newcommand{\Argmax}[1]{\underset{#1}{\argmax\ }}
 \def\sumN{\sum_{i=1}^n}
 \newcommand{\fr}[1]{\frac{1}{#1}}
 \newcommand{\lr}[1]{\left(#1\right)}
@@ -193,6 +196,7 @@
 %% END math definitions
 
 %% user-defined reference structures
+\newcommand{\citep}[1]{\cite{#1}}
 \renewcommand{\eqref}[1]{Eq~(\ref{#1})}
 \renewcommand{\chapterautorefname}{Chapter}
 \renewcommand{\sectionautorefname}{Section}
@@ -313,83 +317,82 @@ Cras egestas velit mauris, eu mollis turpis pellentesque sit amet. Interdum et m
 % here. See http://journals.plos.org/plosone/s/latex for 
 % step-by-step instructions.
 % 
-\begin{thebibliography}{10}
-
-  \bibitem{diekmann1990definition}
-  Diekmann O, Heesterbeek JAP, Metz JA.
-  \newblock On the definition and the computation of the basic reproduction ratio
-    R 0 in models for infectious diseases in heterogeneous populations.
-  \newblock Journal of mathematical biology. 1990;28:365--382.
+%\begin{thebibliography}{10}
+%
+%  \bibitem{diekmann1990definition}
+%  Diekmann O, Heesterbeek JAP, Metz JA.
+%  \newblock On the definition and the computation of the basic reproduction ratio
+%    R 0 in models for infectious diseases in heterogeneous populations.
+%  \newblock Journal of mathematical biology. 1990;28:365--382.
+%  
+%  \bibitem{dietz1993estimation}
+%  Dietz K.
+%  \newblock The estimation of the basic reproduction number for infectious
+%    diseases.
+%  \newblock Statistical methods in medical research. 1993;2(1):23--41.
+%  
+%  \bibitem{fine1993herd}
+%  Fine PE.
+%  \newblock Herd immunity: history, theory, practice.
+%  \newblock Epidemiologic reviews. 1993;15(2):265--302.
+%  
+%  \bibitem{delamater2019complexity}
+%  Delamater PL, Street EJ, Leslie TF, Yang YT, Jacobsen KH.
+%  \newblock Complexity of the basic reproduction number (R0).
+%  \newblock Emerging infectious diseases. 2019;25(1):1.
+%  
+%  \bibitem{brauer2019mathematical}
+%  Brauer F, Castillo-Chavez C, Feng Z.
+%  \newblock Mathematical models in epidemiology. vol.~32.
+%  \newblock Springer; 2019.
+%  
+%  \bibitem{anderson1982directly}
+%  Anderson RM, May RM.
+%  \newblock Directly transmitted infections diseases: control by vaccination.
+%  \newblock Science. 1982;215(4536):1053--1060.
+%  
+%  \bibitem{anderson1985vaccination}
+%  Anderson RM, May RM.
+%  \newblock Vaccination and herd immunity to infectious diseases.
+%  \newblock Nature. 1985;318(6044):323--329.
+%  
+%  \bibitem{heffernan2005perspectives}
+%  Heffernan JM, Smith RJ, Wahl LM.
+%  \newblock Perspectives on the basic reproductive ratio.
+%  \newblock Journal of the Royal Society Interface. 2005;2(4):281--293.
+%  
+%  \bibitem{cori2013new}
+%  Cori A, Ferguson NM, Fraser C, Cauchemez S.
+%  \newblock A new framework and software to estimate time-varying reproduction
+%    numbers during epidemics.
+%  \newblock American journal of epidemiology. 2013;178(9):1505--1512.
+%  
+%  \bibitem{abry2020spatial}
+%  Abry P, Pustelnik N, Roux S, Jensen P, Flandrin P, Gribonval R, et~al.
+%  \newblock Spatial and temporal regularization to estimate COVID-19 reproduction
+%    number R (t): Promoting piecewise smoothness via convex optimization.
+%  \newblock Plos one. 2020;15(8):e0237901.
+%  
+%  \bibitem{pascal2022nonsmooth}
+%  Pascal B, Abry P, Pustelnik N, Roux S, Gribonval R, Flandrin P.
+%  \newblock Nonsmooth convex optimization to estimate the Covid-19 reproduction
+%    number space-time evolution with robustness against low quality data.
+%  \newblock IEEE Transactions on Signal Processing. 2022;70:2859--2868.
+%  
+%  \bibitem{thompson2019improved}
+%  Thompson RN, Stockwin JE, van Gaalen RD, Polonsky JA, Kamvar ZN, Demarsh PA,
+%    et~al.
+%  \newblock Improved inference of time-varying reproduction numbers during
+%    infectious disease outbreaks.
+%  \newblock Epidemics. 2019;29:100356.
+%  
+%  \bibitem{ramdas2016fast}
+%  Ramdas A, Tibshirani RJ.
+%  \newblock Fast and flexible admm algorithms for trend filtering.
+%  \newblock Journal of Computational and Graphical Statistics.
+%    2016;25(3):839--858.
+%  
+%\end{thebibliography}
   
-  \bibitem{dietz1993estimation}
-  Dietz K.
-  \newblock The estimation of the basic reproduction number for infectious
-    diseases.
-  \newblock Statistical methods in medical research. 1993;2(1):23--41.
-  
-  \bibitem{fine1993herd}
-  Fine PE.
-  \newblock Herd immunity: history, theory, practice.
-  \newblock Epidemiologic reviews. 1993;15(2):265--302.
-  
-  \bibitem{delamater2019complexity}
-  Delamater PL, Street EJ, Leslie TF, Yang YT, Jacobsen KH.
-  \newblock Complexity of the basic reproduction number (R0).
-  \newblock Emerging infectious diseases. 2019;25(1):1.
-  
-  \bibitem{brauer2019mathematical}
-  Brauer F, Castillo-Chavez C, Feng Z.
-  \newblock Mathematical models in epidemiology. vol.~32.
-  \newblock Springer; 2019.
-  
-  \bibitem{anderson1982directly}
-  Anderson RM, May RM.
-  \newblock Directly transmitted infections diseases: control by vaccination.
-  \newblock Science. 1982;215(4536):1053--1060.
-  
-  \bibitem{anderson1985vaccination}
-  Anderson RM, May RM.
-  \newblock Vaccination and herd immunity to infectious diseases.
-  \newblock Nature. 1985;318(6044):323--329.
-  
-  \bibitem{heffernan2005perspectives}
-  Heffernan JM, Smith RJ, Wahl LM.
-  \newblock Perspectives on the basic reproductive ratio.
-  \newblock Journal of the Royal Society Interface. 2005;2(4):281--293.
-  
-  \bibitem{cori2013new}
-  Cori A, Ferguson NM, Fraser C, Cauchemez S.
-  \newblock A new framework and software to estimate time-varying reproduction
-    numbers during epidemics.
-  \newblock American journal of epidemiology. 2013;178(9):1505--1512.
-  
-  \bibitem{abry2020spatial}
-  Abry P, Pustelnik N, Roux S, Jensen P, Flandrin P, Gribonval R, et~al.
-  \newblock Spatial and temporal regularization to estimate COVID-19 reproduction
-    number R (t): Promoting piecewise smoothness via convex optimization.
-  \newblock Plos one. 2020;15(8):e0237901.
-  
-  \bibitem{pascal2022nonsmooth}
-  Pascal B, Abry P, Pustelnik N, Roux S, Gribonval R, Flandrin P.
-  \newblock Nonsmooth convex optimization to estimate the Covid-19 reproduction
-    number space-time evolution with robustness against low quality data.
-  \newblock IEEE Transactions on Signal Processing. 2022;70:2859--2868.
-  
-  \bibitem{thompson2019improved}
-  Thompson RN, Stockwin JE, van Gaalen RD, Polonsky JA, Kamvar ZN, Demarsh PA,
-    et~al.
-  \newblock Improved inference of time-varying reproduction numbers during
-    infectious disease outbreaks.
-  \newblock Epidemics. 2019;29:100356.
-  
-  \bibitem{ramdas2016fast}
-  Ramdas A, Tibshirani RJ.
-  \newblock Fast and flexible admm algorithms for trend filtering.
-  \newblock Journal of Computational and Graphical Statistics.
-    2016;25(3):839--858.
-  
-\end{thebibliography}
-  
-
-%\bibliography{ptf}
+\bibliography{ptf}
 \end{document}
