@@ -3,7 +3,7 @@ source("src/experiments/load_functions.R")
 # choose problem solvers -------------
 algo_designs <- list(
   rt_solver = data.table::CJ(
-    method = c('EpiEstim', 'rtestim', 'EpiLPS')
+    method = c('EpiEstim', 'RtEstim', 'EpiLPS')
   )
 )
 
@@ -13,28 +13,30 @@ problem_solver <- function(data, method, instance, ...){
   incidence <- instance$incidence
   Rt_case <- instance$Rt_case
   
-  # use gamma(3, scale=3) for case 1 and gamma(3.5, scale=3.5) for cases 2-4
+  # Configuration: use "true" serial interval distribution 
   if(method == "EpiEstim"){
-    prob_gamma <- switch(Rt_case,
-                         "1" = c(0, diff(c(0, pgamma(1:11, 3, scale=3)))),
-                         "2" = c(0, diff(c(0, pgamma(1:11, 3.5, scale=3.5)))),
-                         "3" = c(0, diff(c(0, pgamma(1:11, 3.5, scale=3.5)))),
-                         "4" = c(0, diff(c(0, pgamma(1:11, 3.5, scale=3.5))))
-                        )
-    prob_gamma <- prob_gamma / sum(prob_gamma)
+    if (Rt_case == "1"){
+      prob_gamma <- c(0, diff(c(0, pgamma(1:11, 3, scale=3))))
+      prob_gamma <- prob_gamma / sum(prob_gamma)
+    } else {
+      prob_gamma <- c(0, diff(c(0, pgamma(1:11, 3.5, scale=3.5))))
+      prob_gamma <- prob_gamma / sum(prob_gamma)
+    }
     config <- make_config(list(si_distr = prob_gamma)) 
-  } else if (method == "rtestim") {
+  } else if (method == "RtEstim") {
     korder <- switch(Rt_case, "1" = 0, "2" = 3, "3" = 1, "4" = 3)
   } else if (method == "EpiLPS") {
-    si <- switch(Rt_case,
-                 "1" = Idist(mean = 9, sd = 27, dist="gamma")$pvec[1:30], 
-                 "2" = Idist(mean = 3.5^2, sd = 3.5^3, dist="gamma")$pvec[1:30],
-                 "3" = Idist(mean = 3.5^2, sd = 3.5^3, dist="gamma")$pvec[1:30],
-                 "4" = Idist(mean = 3.5^2, sd = 3.5^3, dist="gamma")$pvec[1:30]
-                 )
-    si <- si / sum(si)
+    if(Rt_case == "1") {
+      si <- EpiLPS::Idist(mean = 9, sd = 27, dist="gamma")$pvec[1:30]
+      si <- si / sum(si)
+    } else {
+      si <- EpiLPS::Idist(mean = 3.5^2, sd = 3.5^3, dist="gamma")$pvec[1:30]
+      si <- si / sum(si)
+    }
+    
   }
   
+  # Estimate Rt and save running times
   runtime <- switch(
     method,
     "EpiEstim" = microbenchmark(
@@ -48,10 +50,11 @@ problem_solver <- function(data, method, instance, ...){
       },
       times = 10, unit = "us"
     ),
-    "rtestim" = microbenchmark(
+    "RtEstim" = microbenchmark(
       {
-        cv_mod <- rtestim::cv_estimate_rt(incidence, korder=korder, nfold=3, nsol=10,
-                                 maxiter = 1e7L, dist_gamma = c(3, 3))
+        cv_mod <- rtestim::cv_estimate_rt(incidence, korder=korder, nfold=3, 
+                                          nsol=50, maxiter = 1e7L, 
+                                          dist_gamma = c(3, 3))
         Rt_fitted <- cv_mod$full_fit$Rt[ ,which.min(cv_mod$cv_scores)]
       },
       times = 10, unit = "us"
@@ -64,6 +67,8 @@ problem_solver <- function(data, method, instance, ...){
       times = 10, unit = "us"
     )
   )
+  
+  # Save running times and Rt accuracy
   mean_runtime <- as.list(summary(runtime))$mean[1]
   # compute mean KL / Rt ratio
   Rt_kl_long <- mean(Rt_fitted * log(Rt_fitted / Rt) + Rt - Rt_fitted)

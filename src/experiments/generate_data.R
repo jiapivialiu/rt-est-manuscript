@@ -55,13 +55,13 @@ data_generator <- function(data=NULL, job, Rt_case, dist = c("poisson", "NB"), .
 
 get_rt <- function(Rt_case, length){
   Rt <- switch(Rt_case,
-               "1" = c(rep(2, 50), rep(0.8, length - 50)),
-               "2" = c(exp(0.02 * (1:30)) * 2, 
-                     exp(-0.01 * (31:length)) * (exp(0.02 * 30) * 2)),
-               "3" = c(seq(3, 2, length.out = 60), 
-                     seq(0.6, 0.4, length.out = 50), 
-                     seq(2, 2.5, length.out = 40), 
-                     seq(0.5, 0.4, length.out = 150)),
+               "1" = c(rep(2, 70), rep(0.8, length - 70)),
+               "2" = c(exp(.015 * (1:50)), 
+                     exp(-.005 * (51:length)) * exp(.015 * 50)),
+               "3" = c(seq(2.5, 2, length.out = 60), 
+                     seq(0.8, 0.6, length.out = 50), 
+                     seq(1.7, 2, length.out = 40), 
+                     seq(0.9, 0.5, length.out = 150)),
                "4" = get_rt_case4(length)
   )
   return(Rt)
@@ -88,13 +88,11 @@ get_incidence <- function(N1, Rt, Rt_case, dist){
   incidence <- numeric(len) # N_1:n
   count <- numeric(len) # y_1:n
   incidence[1] <- N1
-  gamma_pars <- switch(
-    Rt_case,
-    "1" = c(3, 3),
-    "2" = c(3.5, 3.5),
-    "3" = c(3.5, 3.5),
-    "4" = c(3.5, 3.5)
-  )
+  gamma_pars <- switch(Rt_case,
+                       "1" = c(3, 3),
+                       "2" = c(2.5, 2.5),
+                       "3" = c(3.5, 3.5),
+                       "4" = c(3.5, 3.5))
   if(dist == "poisson"){
     count[1] <- rpois(1, N1)
     if(count[1] == 0){ 

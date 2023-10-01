@@ -178,6 +178,9 @@
 %% end user-defined colors
 
 %% user-defined math definitions
+\def\RtEstim{\texttt{RtEstim}}
+\def\EpiEstim{\texttt{EpiEstim}}
+\def\EpiLPS{\texttt{EpiLPS}}
 \def\calR{\mathcal{R}}
 \def\bbN{\mathbb{N}}
 \def\bbR{\mathbb{R}}
@@ -265,10 +268,10 @@ xxx
 \linenumbers
 
 % Use "Eq" instead of "Equation" for equation citations.
-\input{introduction}
-\input{Methods}
-\input{Results}
-\input{Discussion}
+\input{doc/introduction}
+\input{doc/Methods}
+\input{doc/Results}
+\input{doc/Discussion}
 % Results and Discussion can be combined.
 
 
@@ -317,82 +320,184 @@ Cras egestas velit mauris, eu mollis turpis pellentesque sit amet. Interdum et m
 % here. See http://journals.plos.org/plosone/s/latex for 
 % step-by-step instructions.
 % 
-%\begin{thebibliography}{10}
-%
-%  \bibitem{diekmann1990definition}
-%  Diekmann O, Heesterbeek JAP, Metz JA.
-%  \newblock On the definition and the computation of the basic reproduction ratio
-%    R 0 in models for infectious diseases in heterogeneous populations.
-%  \newblock Journal of mathematical biology. 1990;28:365--382.
-%  
-%  \bibitem{dietz1993estimation}
-%  Dietz K.
-%  \newblock The estimation of the basic reproduction number for infectious
-%    diseases.
-%  \newblock Statistical methods in medical research. 1993;2(1):23--41.
-%  
-%  \bibitem{fine1993herd}
-%  Fine PE.
-%  \newblock Herd immunity: history, theory, practice.
-%  \newblock Epidemiologic reviews. 1993;15(2):265--302.
-%  
-%  \bibitem{delamater2019complexity}
-%  Delamater PL, Street EJ, Leslie TF, Yang YT, Jacobsen KH.
-%  \newblock Complexity of the basic reproduction number (R0).
-%  \newblock Emerging infectious diseases. 2019;25(1):1.
-%  
-%  \bibitem{brauer2019mathematical}
-%  Brauer F, Castillo-Chavez C, Feng Z.
-%  \newblock Mathematical models in epidemiology. vol.~32.
-%  \newblock Springer; 2019.
-%  
-%  \bibitem{anderson1982directly}
-%  Anderson RM, May RM.
-%  \newblock Directly transmitted infections diseases: control by vaccination.
-%  \newblock Science. 1982;215(4536):1053--1060.
-%  
-%  \bibitem{anderson1985vaccination}
-%  Anderson RM, May RM.
-%  \newblock Vaccination and herd immunity to infectious diseases.
-%  \newblock Nature. 1985;318(6044):323--329.
-%  
-%  \bibitem{heffernan2005perspectives}
-%  Heffernan JM, Smith RJ, Wahl LM.
-%  \newblock Perspectives on the basic reproductive ratio.
-%  \newblock Journal of the Royal Society Interface. 2005;2(4):281--293.
-%  
-%  \bibitem{cori2013new}
-%  Cori A, Ferguson NM, Fraser C, Cauchemez S.
-%  \newblock A new framework and software to estimate time-varying reproduction
-%    numbers during epidemics.
-%  \newblock American journal of epidemiology. 2013;178(9):1505--1512.
-%  
-%  \bibitem{abry2020spatial}
-%  Abry P, Pustelnik N, Roux S, Jensen P, Flandrin P, Gribonval R, et~al.
-%  \newblock Spatial and temporal regularization to estimate COVID-19 reproduction
-%    number R (t): Promoting piecewise smoothness via convex optimization.
-%  \newblock Plos one. 2020;15(8):e0237901.
-%  
-%  \bibitem{pascal2022nonsmooth}
-%  Pascal B, Abry P, Pustelnik N, Roux S, Gribonval R, Flandrin P.
-%  \newblock Nonsmooth convex optimization to estimate the Covid-19 reproduction
-%    number space-time evolution with robustness against low quality data.
-%  \newblock IEEE Transactions on Signal Processing. 2022;70:2859--2868.
-%  
-%  \bibitem{thompson2019improved}
-%  Thompson RN, Stockwin JE, van Gaalen RD, Polonsky JA, Kamvar ZN, Demarsh PA,
-%    et~al.
-%  \newblock Improved inference of time-varying reproduction numbers during
-%    infectious disease outbreaks.
-%  \newblock Epidemics. 2019;29:100356.
-%  
-%  \bibitem{ramdas2016fast}
-%  Ramdas A, Tibshirani RJ.
-%  \newblock Fast and flexible admm algorithms for trend filtering.
-%  \newblock Journal of Computational and Graphical Statistics.
-%    2016;25(3):839--858.
-%  
-%\end{thebibliography}
+\begin{thebibliography}{23}
+  \providecommand{\natexlab}[1]{#1}
+  \providecommand{\url}[1]{\texttt{#1}}
+  \expandafter\ifx\csname urlstyle\endcsname\relax
+    \providecommand{\doi}[1]{doi: #1}\else
+    \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
   
-\bibliography{ptf}
+  \bibitem[Abbott et~al.(2020)Abbott, Hellewell, Thompson, Sherratt, Gibbs,
+    Bosse, Munday, Meakin, Doughty, Chun, et~al.]{abbott2020estimating}
+  Sam Abbott, Joel Hellewell, Robin~N Thompson, Katharine Sherratt, Hamish~P
+    Gibbs, Nikos~I Bosse, James~D Munday, Sophie Meakin, Emma~L Doughty,
+    June~Young Chun, et~al.
+  \newblock Estimating the time-varying reproduction number of sars-cov-2 using
+    national and subnational case counts.
+  \newblock \emph{Wellcome Open Research}, 5\penalty0 (112):\penalty0 112, 2020.
+  
+  \bibitem[Abry et~al.(2020)Abry, Pustelnik, Roux, Jensen, Flandrin, Gribonval,
+    Lucas, Guichard, Borgnat, and Garnier]{abry2020spatial}
+  Patrice Abry, Nelly Pustelnik, St{\'e}phane Roux, Pablo Jensen, Patrick
+    Flandrin, R{\'e}mi Gribonval, Charles-G{\'e}rard Lucas, {\'E}ric Guichard,
+    Pierre Borgnat, and Nicolas Garnier.
+  \newblock Spatial and temporal regularization to estimate covid-19 reproduction
+    number r (t): Promoting piecewise smoothness via convex optimization.
+  \newblock \emph{Plos one}, 15\penalty0 (8):\penalty0 e0237901, 2020.
+  
+  \bibitem[Azmon et~al.(2014)Azmon, Faes, and Hens]{azmon2014estimation}
+  Amin Azmon, Christel Faes, and Niel Hens.
+  \newblock On the estimation of the reproduction number based on misreported
+    epidemic data.
+  \newblock \emph{Statistics in medicine}, 33\penalty0 (7):\penalty0 1176--1192,
+    2014.
+  
+  \bibitem[Brauer et~al.(2019)Brauer, Castillo-Chavez, and
+    Feng]{brauer2019mathematical}
+  Fred Brauer, Carlos Castillo-Chavez, and Zhilan Feng.
+  \newblock \emph{Mathematical models in epidemiology}, volume~32.
+  \newblock Springer, 2019.
+  
+  \bibitem[Cori et~al.(2013)Cori, Ferguson, Fraser, and Cauchemez]{cori2013new}
+  Anne Cori, Neil~M Ferguson, Christophe Fraser, and Simon Cauchemez.
+  \newblock A new framework and software to estimate time-varying reproduction
+    numbers during epidemics.
+  \newblock \emph{American journal of epidemiology}, 178\penalty0 (9):\penalty0
+    1505--1512, 2013.
+  
+  \bibitem[Gressani et~al.(2021)Gressani, Faes, and
+    Hens]{gressani2021approximate}
+  Oswaldo Gressani, Christel Faes, and Niel Hens.
+  \newblock An approximate bayesian approach for estimation of the reproduction
+    number under misreported epidemic data.
+  \newblock \emph{MedRxiv}, pages 2021--05, 2021.
+  
+  \bibitem[Gressani et~al.(2022)Gressani, Wallinga, Althaus, Hens, and
+    Faes]{gressani2022epilps}
+  Oswaldo Gressani, Jacco Wallinga, Christian~L Althaus, Niel Hens, and Christel
+    Faes.
+  \newblock Epilps: A fast and flexible bayesian tool for estimation of the
+    time-varying reproduction number.
+  \newblock \emph{PLoS computational biology}, 18\penalty0 (10):\penalty0
+    e1010618, 2022.
+  
+  \bibitem[Hettinger et~al.(2023)Hettinger, Rubin, and
+    Huang]{hettinger2023estimating}
+  Gary Hettinger, David Rubin, and Jing Huang.
+  \newblock Estimating the instantaneous reproduction number with imperfect data:
+    A method to account for case-reporting variation and serial interval
+    uncertainty.
+  \newblock \emph{arXiv preprint arXiv:2302.12078}, 2023.
+  
+  \bibitem[Ho et~al.(2023)Ho, Parag, Adam, Lau, Cowling, and
+    Tsang]{ho2023accounting}
+  Faith Ho, Kris~V Parag, Dillon~C Adam, Eric~HY Lau, Benjamin~J Cowling, and
+    Tim~K Tsang.
+  \newblock Accounting for the potential of overdispersion in estimation of the
+    time-varying reproduction number.
+  \newblock \emph{Epidemiology}, 34\penalty0 (2):\penalty0 201--205, 2023.
+  
+  \bibitem[Jin et~al.(2023)Jin, Dickens, Lim, and Cook]{jin2023epimix}
+  Shihui Jin, Borame~Lee Dickens, Jue~Tao Lim, and Alex~R Cook.
+  \newblock Epimix: A novel method to estimate effective reproduction number.
+  \newblock \emph{Infectious Disease Modelling}, 2023.
+  
+  \bibitem[Johnson(2013)]{johnson2013dynamic}
+  Nicholas~A Johnson.
+  \newblock A dynamic programming algorithm for the fused lasso and
+    $\ell_0$-segmentation.
+  \newblock \emph{Journal of Computational and Graphical Statistics}, 22\penalty0
+    (2):\penalty0 246--260, 2013.
+  
+  \bibitem[Kim et~al.(2009)Kim, Koh, Boyd, and Gorinevsky]{kim2009ell_1}
+  Seung-Jean Kim, Kwangmoo Koh, Stephen Boyd, and Dimitry Gorinevsky.
+  \newblock $\ell_1$ trend filtering.
+  \newblock \emph{SIAM review}, 51\penalty0 (2):\penalty0 339--360, 2009.
+  
+  \bibitem[Lison et~al.(2023)Lison, Abbott, Huisman, and
+    Stadler]{lison2023generative}
+  Adrian Lison, Sam Abbott, Jana Huisman, and Tanja Stadler.
+  \newblock Generative bayesian modeling to nowcast the effective reproduction
+    number from line list data with missing symptom onset dates.
+  \newblock \emph{arXiv preprint arXiv:2308.13262}, 2023.
+  
+  \bibitem[Nash et~al.(2023)Nash, Bhatt, Cori, and Nouvellet]{nash2023estimating}
+  Rebecca~K Nash, Samir Bhatt, Anne Cori, and Pierre Nouvellet.
+  \newblock Estimating the epidemic reproduction number from temporally
+    aggregated incidence data: A statistical modelling approach and software
+    tool.
+  \newblock \emph{PLOS Computational Biology}, 19\penalty0 (8):\penalty0
+    e1011439, 2023.
+  
+  \bibitem[Parag(2021)]{parag2021improved}
+  Kris~V Parag.
+  \newblock Improved estimation of time-varying reproduction numbers at low case
+    incidence and between epidemic waves.
+  \newblock \emph{PLoS Computational Biology}, 17\penalty0 (9):\penalty0
+    e1009347, 2021.
+  
+  \bibitem[Pascal et~al.(2022)Pascal, Abry, Pustelnik, Roux, Gribonval, and
+    Flandrin]{pascal2022nonsmooth}
+  Barbara Pascal, Patrice Abry, Nelly Pustelnik, St{\'e}phane Roux, R{\'e}mi
+    Gribonval, and Patrick Flandrin.
+  \newblock Nonsmooth convex optimization to estimate the covid-19 reproduction
+    number space-time evolution with robustness against low quality data.
+  \newblock \emph{IEEE Transactions on Signal Processing}, 70:\penalty0
+    2859--2868, 2022.
+  
+  \bibitem[Pircalabelu(2023{\natexlab{a}})]{pircal2023spline}
+  Eugen Pircalabelu.
+  \newblock A spline-based time-varying reproduction number for modelling
+    epidemiological outbreaks.
+  \newblock \emph{Journal of the Royal Statistical Society Series C: Applied
+    Statistics}, page qlad027, 2023{\natexlab{a}}.
+  
+  \bibitem[Pircalabelu(2023{\natexlab{b}})]{pircalabelu2023spline}
+  Eugen Pircalabelu.
+  \newblock A spline-based time-varying reproduction number for modelling
+    epidemiological outbreaks.
+  \newblock \emph{Journal of the Royal Statistical Society Series C: Applied
+    Statistics}, page qlad027, 2023{\natexlab{b}}.
+  
+  \bibitem[Ramdas and Tibshirani(2016)]{ramdas2016fast}
+  Aaditya Ramdas and Ryan~J Tibshirani.
+  \newblock Fast and flexible admm algorithms for trend filtering.
+  \newblock \emph{Journal of Computational and Graphical Statistics}, 25\penalty0
+    (3):\penalty0 839--858, 2016.
+  
+  \bibitem[Sadhanala et~al.(2022)Sadhanala, Bassett, Sharpnack, and
+    McDonald]{sadhanala2022exponential}
+  Veeranjaneyulu Sadhanala, Robert Bassett, James Sharpnack, and Daniel~J
+    McDonald.
+  \newblock Exponential family trend filtering on lattices.
+  \newblock \emph{arXiv preprint arXiv:2209.09175}, 2022.
+  
+  \bibitem[Thompson et~al.(2019)Thompson, Stockwin, van Gaalen, Polonsky, Kamvar,
+    Demarsh, Dahlqwist, Li, Miguel, Jombart, et~al.]{thompson2019improved}
+  Robin~N Thompson, Jake~E Stockwin, Rolina~D van Gaalen, Jonny~A Polonsky,
+    Zhian~N Kamvar, P~Alex Demarsh, Elisabeth Dahlqwist, Siyang Li, Eve Miguel,
+    Thibaut Jombart, et~al.
+  \newblock Improved inference of time-varying reproduction numbers during
+    infectious disease outbreaks.
+  \newblock \emph{Epidemics}, 29:\penalty0 100356, 2019.
+  
+  \bibitem[Tibshirani(2014)]{tibshirani2014adaptive}
+  Ryan~J Tibshirani.
+  \newblock Adaptive piecewise polynomial estimation via trend filtering.
+  \newblock \emph{The Annals of Statistics}, 42\penalty0 (1):\penalty0 285--323,
+    2014.
+  
+  \bibitem[Trevisin et~al.(2023)Trevisin, Bertuzzo, Pasetto, Mari, Miccoli,
+    Casagrandi, Gatto, and Rinaldo]{trevisin2023spatially}
+  Cristiano Trevisin, Enrico Bertuzzo, Damiano Pasetto, Lorenzo Mari, Stefano
+    Miccoli, Renato Casagrandi, Marino Gatto, and Andrea Rinaldo.
+  \newblock Spatially explicit effective reproduction numbers from incidence and
+    mobility data.
+  \newblock \emph{Proceedings of the National Academy of Sciences}, 120\penalty0
+    (20):\penalty0 e2219816120, 2023.
+  
+\end{thebibliography}
+  
+%\bibliography{ptf}
+
 \end{document}

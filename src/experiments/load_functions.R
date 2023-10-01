@@ -1,6 +1,8 @@
 library(EpiEstim)
 library(rtestim)
+library(EpiLPS)
 library(data.table)
+library(tidyverse)
 library(testthat)
 library(batchtools)
 
