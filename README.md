@@ -1,7 +1,7 @@
 # Rt estimation manuscript
 
-Outline is listed in this google [doc](https://docs.google.com/document/d/1xVQTxRtHYJnZgQf2WvNqBjgfDUUcroo0ZwEyAwwVtKs/edit#heading=h.g4v79qllfum3).
+Outline is listed in this Google [doc](https://docs.google.com/document/d/1xVQTxRtHYJnZgQf2WvNqBjgfDUUcroo0ZwEyAwwVtKs/edit#heading=h.g4v79qllfum3).
 
-Manuscript is [here](doc/rt-first-draft.pdf).
+Manuscript is [here](main.pdf) or the PLOS-CB version [here](rt-first-draft.pdf).
 
-Supplementary document is [here](doc/supp.pdf).
+Supplementary document on experiments is [here](src/def.pdf).
