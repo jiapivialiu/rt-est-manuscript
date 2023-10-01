@@ -1,0 +1,85 @@
+% header.tex
+
+% page layout
+%\usepackage[left=1in,right=1in,top=1in,footskip=25pt]{geometry} 
+\usepackage{setspace}
+%\doublespacing
+\onehalfspacing
+% \usepackage{changepage}
+
+% define math norms
+\usepackage{amsmath,amsthm,amssymb,amsfonts}
+\usepackage{mathtools}
+%\DeclarePairedDelimiter\norm\lVert\rVert
+
+%% define a rotated tilted `less & greater than' with certain rotated angles
+\usepackage{amssymb,stackengine,graphicx,scalerel}
+\newcommand\rotlesssim{\mathrel{\ensurestackMath{\ThisStyle{%
+  \stackengine{-.4\LMex}{\SavedStyle<}{%
+    \rotatebox{-15}{$\SavedStyle\sim$}}{U}{r}{F}{T}{S}}}}}
+\newcommand\rotgtrsim{\mathrel{\ensurestackMath{\ThisStyle{%
+  \stackengine{-.4\LMex}{\SavedStyle>}{%
+    \rotatebox{15}{$\SavedStyle\sim$}}{U}{l}{F}{T}{S}}}}}
+
+% notations
+\usepackage{etoolbox}
+\usepackage{datagidx}
+
+% lists
+\usepackage{enumitem}
+% Load dsfont this to get proper indicator function (bold 1) with \mathds{1}:
+\usepackage{dsfont}
+\usepackage{centernot}
+
+% graphics
+\usepackage{graphicx}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\graphicspath{ {fig/} }
+\usepackage{wrapfig}
+\usepackage{graphics}
+
+% tables
+\usepackage{multirow}
+\usepackage{float}
+\setlength{\footskip}{40pt}
+\font\myfont=cmr12 at 20pt
+
+% theory
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+
+% algorithms
+\usepackage{algorithm2e}%[linesnumbered,ruled,vlined]
+
+% table of contents
+\usepackage[utf8]{inputenc}
+%\usepackage{blindtext}
+
+% others: appendix, color and more
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{appendix}
+\usepackage{titlesec}
+%\usepackage{fancyhdr}
+%\pagestyle{fancy}
+%\setlength{\headheight}{14.5pt}
+\usepackage{caption}
+
+% references
+\usepackage[authoryear,round,sort&compress]{natbib}%,round,compress,elide,comma
+\bibliographystyle{plainnat}
+%\usepackage[american]{babel}
+
+
+% hyperref should come at the bottom
+% Set up hyperlinks:
+\definecolor{RefColor}{rgb}{0,0,.65}
+\usepackage[colorlinks,linkcolor=RefColor,citecolor=RefColor,urlcolor=RefColor]{hyperref} %hidelinks
+\renewcommand{\eqref}[1]{Equation~(\ref{#1})}
+\renewcommand{\chapterautorefname}{Chapter}
+\renewcommand{\sectionautorefname}{Section}
+
+%\usepackage[capitalize]{cleveref}
+%\crefname{appsec}{appendix}{appendices}
+%\Crefname{appsec}{Appendix}{Appendices}
+
+

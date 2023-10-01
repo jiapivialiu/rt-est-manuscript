@@ -1,0 +1,217 @@
+% defs.tex
+% define custom notation, commands, etc.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% full alphabets of different styles 
+% bf series
+\def\bfA{\mathbf{A}}
+\def\bfB{\mathbf{B}}
+\def\bfC{\mathbf{C}}
+\def\bfD{\mathbf{D}}
+\def\bfE{\mathbf{E}}
+\def\bfF{\mathbf{F}}
+\def\bfG{\mathbf{G}}
+\def\bfH{\mathbf{H}}
+\def\bfI{\mathbf{I}}
+\def\bfJ{\mathbf{J}}
+\def\bfK{\mathbf{K}}
+\def\bfL{\mathbf{L}}
+\def\bfM{\mathbf{M}}
+\def\bfN{\mathbf{N}}
+\def\bfO{\mathbf{O}}
+\def\bfP{\mathbf{P}}
+\def\bfQ{\mathbf{Q}}
+\def\bfR{\mathbf{R}}
+\def\bfS{\mathbf{S}}
+\def\bfT{\mathbf{T}}
+\def\bfU{\mathbf{U}}
+\def\bfV{\mathbf{V}}
+\def\bfW{\mathbf{W}}
+\def\bfX{\mathbf{X}}
+\def\bfY{\mathbf{Y}}
+\def\bfZ{\mathbf{Z}}
+
+% bb series
+\def\bbA{\mathbb{A}}
+\def\bbB{\mathbb{B}}
+\def\bbC{\mathbb{C}}
+\def\bbD{\mathbb{D}}
+\def\bbE{\mathbb{E}}
+\def\bbF{\mathbb{F}}
+\def\bbG{\mathbb{G}}
+\def\bbH{\mathbb{H}}
+\def\bbI{\mathbb{I}}
+\def\bbJ{\mathbb{J}}
+\def\bbK{\mathbb{K}}
+\def\bbL{\mathbb{L}}
+\def\bbM{\mathbb{M}}
+\def\bbN{\mathbb{N}}
+\def\bbO{\mathbb{O}}
+\def\bbP{\mathbb{P}}
+\def\bbQ{\mathbb{Q}}
+\def\bbR{\mathbb{R}}
+\def\bbS{\mathbb{S}}
+\def\bbT{\mathbb{T}}
+\def\bbU{\mathbb{U}}
+\def\bbV{\mathbb{V}}
+\def\bbW{\mathbb{W}}
+\def\bbX{\mathbb{X}}
+\def\bbY{\mathbb{Y}}
+\def\bbZ{\mathbb{Z}}
+
+% cal series
+\def\calA{\mathcal{A}}
+\def\calB{\mathcal{B}}
+\def\calC{\mathcal{C}}
+\def\calD{\mathcal{D}}
+\def\calE{\mathcal{E}}
+\def\calF{\mathcal{F}}
+\def\calG{\mathcal{G}}
+\def\calH{\mathcal{H}}
+\def\calI{\mathcal{I}}
+\def\calJ{\mathcal{J}}
+\def\calK{\mathcal{K}}
+\def\calL{\mathcal{L}}
+\def\calM{\mathcal{M}}
+\def\calN{\mathcal{N}}
+\def\calO{\mathcal{O}}
+\def\calP{\mathcal{P}}
+\def\calQ{\mathcal{Q}}
+\def\calR{\mathcal{R}}
+\def\calS{\mathcal{S}}
+\def\calT{\mathcal{T}}
+\def\calU{\mathcal{U}}
+\def\calV{\mathcal{V}}
+\def\calW{\mathcal{W}}
+\def\calX{\mathcal{X}}
+\def\calY{\mathcal{Y}}
+\def\calZ{\mathcal{Z}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% quasi-universal probabilistic and mathematical notation
+% my preferences (modulo publication conventions, and clashes like random vectors):
+%   vectors: bold, lowercase
+%   matrices: bold, uppercase
+%   operators: blackboard (e.g., \mathbb{E}), uppercase
+%   sets, spaces: calligraphic, uppercase
+%   random variables: normal font, uppercase
+%   deterministic quantities: normal font, lowercase
+
+\newcommand{\R}{\texttt{R}\ }
+\newcommand{\cpp}{\texttt{C++}\ }
+
+% lists
+\makeatletter
+\newcommand{\blist}[1]{\begin{enumerate}[label=\roman*.]\label{list:#1}}
+\newcommand{\elist}{\end{enumerate}}
+\makeatother
+
+% equations
+\makeatletter
+\newcommand{\beq}[1]{\begin{equation}\label{eq:#1}}
+\newcommand{\eeq}{\end{equation}}
+\makeatother
+
+\newcommand{\fr}[1]{\frac{1}{#1}}
+\newcommand{\lr}[1]{\left(#1\right)}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+
+\DeclareMathOperator*{\Lambert}{\mathrm{Lambert}_0}
+\DeclareMathOperator*{\diag}{diag}
+\DeclareMathOperator*{\argmin}{argmin}
+\newcommand{\Argmin}[1]{\underset{#1}{\argmin\ }}
+\DeclareMathOperator*{\argmax}{argmax}
+\newcommand{\Argmax}[1]{\underset{#1}{\argmax\ }}
+\def\sumN{\sum_{i=1}^n}
+\def\RtEstim{\texttt{RtEstim}}
+\def\EpiEstim{\texttt{EpiEstim}}
+\def\EpiLPS{\texttt{EpiLPS}}
+
+% binary relations
+\def\condind{{\perp\!\!\!\perp}} %independence/conditional independence
+\def\equdist{\stackrel{\text{\rm\tiny d}}{=}} %equal in distribution
+\def\equas{\stackrel{\text{\rm\tiny a.s.}}{=}} %equal almost surely
+\def\simiid{\sim_{\mbox{\tiny iid}}} %sampled i.i.d
+
+% common vectors and matrices
+\def\onevec{\mathbf{1}}
+\def\iden{\mathbf{I}} % identity matrix
+\def\supp{\text{\rm supp}}
+
+\def\gDeltakk{\Delta^{(k+1)}}
+\def\gDeltakkX{\Delta^{(x,k+1)}}
+\def\gDeltak{\Delta^{(k)}}
+\def\gDeltakX{\Delta^{(x,k)}}
+\def\gDelta{\Delta^{(1)}}
+\def\gDeltaX{\Delta^{(x,1)}}
+\def\gDkk{D^{(k+1)}}
+\def\gDk{D^{(k)}}
+\def\gD1{D^{(1)}}
+\def\Dxk{D^{(x,k)}}
+\def\Dxkk{D^{(x,k+1)}}
+\def\tDxk{\tilde{D}^{(x,k+1)}}
+
+% misc
+% floor and ceiling
+\DeclarePairedDelimiter{\ceilpair}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\newcommand{\argdot}{{\,\vcenter{\hbox{\tiny$\bullet$}}\,}} %generic argument dot
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Notations 
+
+% Define a database of notations
+\newgidx{notation}{Notation}
+% Set this as the default database so we don't have to keep
+% explicitly mentioning it
+\DTLgidxSetDefaultDB{notation}
+
+% Define some terms
+\newterm[description={description for A}]{\gDeltakk}
+
+% Fake a counter called "notation" to be used in the location list
+% Two digits are used to make the substring comparison easier
+% (used in the condition of \printterms)
+%\makeatletter
+%\newcommand*{\twodigits}[1]{\two@digits{\value{#1}}}
+%\newcommand*{\thenotation}{C\twodigits{chapter}.\thepage}
+%\makeatother
+
+
+% Define a command to print the notation list
+\newcommand{\printnotation}{
+    \bgroup
+    \edef\locationprefix{}
+    \printterms
+     [heading={\section*}, % put the heading in an unnumbered section    
+     condition={\DTLisSubString{\Location}{\locationprefix}},
+     sort={}, % suppress sorting - do it manually    
+     location=first, % only show first location    
+     columns=1 % one column list - change as required   
+     ]%
+    \egroup
+    % Add a vertical gap so it's not right on top of the next paragraph
+    \vskip\baselineskip
+    % Set the after heading flag (remove if not required):
+    \csuse{@afterheading}
+    % Something is confusing the rerun warnings, so disable it and 
+    % just remember to use multiple LaTeX runs: 
+    \csdef{@datagidx@dorerun@warn}{}%
+}
+
+% Patch \datagidx@formatlocation so that it strips the location prefix
+% and inserts "p." before the location
+\makeatletter
+\let\orgformatlocation\datagidx@formatlocation
+\renewcommand*{\datagidx@formatlocation}[2]{%
+  \expandafter\DTLsplitstring\expandafter{#2}{.}{\locprefix}{\locsuffix}%
+  \orgformatlocation{#1}{p.\locsuffix}%
+}
+\makeatother
+
+% after all terms have been defined, so manually to avoid the
+% redundancy of sorting each time the notation list is display.
+\dtlsort{Sort}{notation}{\dtlwordindexcompare}
