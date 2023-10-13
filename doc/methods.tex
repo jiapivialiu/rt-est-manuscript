@@ -14,68 +14,70 @@ for the analysis of transmission dynamics of infectious diseases. Other approach
 The sequence of probabilities $p_{1:\tau_t}$ gives the probabilities that a secondary infection at $t$ is infected by a primary infection that is infected $1$ to $\tau_t$ timepoints ago. The period between primary and secondary infections is exactly the generation time. Theoretically, $p_{1:\tau_t}$ are probabilities of the generation time in discretized, contiguous time intervals, i.e., $(0,1], (1,2], \dots, (\tau_{t-1}, \tau_t]$. We assume that the infectiousness disappears beyond $\tau_t$ timepoints, so that the sequence $p_{1:\tau_t}$ has a sum of $1$. 
 
 Generation time, however, is usually unobservable and tricky to estimate. We take a common strategy that approximating it by serial interval which is the period between the symptom onsets of primary and secondary infections. When the infectiousness profile after symptoms is independent of the incubation period (i.e., the period from the time of infections to the time of symptom onsets when the cases are confirmed), the serial interval is regarded identical as the generation time \citep{cori2013new}. 
-We assume the distribution of generation time, and correspondingly serial interval, to be independent to time $t$, i.e., the probability $p_i$ only corresponds to the relative time range $i$ between primary and secondary infections. The sequence $p_{1:\tau_t}$ only depends on $t$ by a chosen length $\tau_t$; if $\tau_t$ is given, the probability sequence will be right-truncated at $\tau_t$ and rescaled to have a sum of $1$. 
+We assume the distribution of generation time, and correspondingly serial interval, to be independent to time $t$, i.e., the probability $p_i$ is only relevant to the relative time range $i$ between primary and secondary infections. The sequence $p_{1:\tau_t}$ only depends on $t$ by a chosen length $\tau_t$; if $\tau_t$ is given, the probability sequence will be right-truncated at $\tau_t$ and rescaled to have a sum of $1$. 
 We assume that the serial interval follows Gamma distribution, which is demonstrated to be a reasonable choice in many existing studies, e.g., \cite{cori2013new,abry2020spatial,pascal2022nonsmooth}.
 
 
 % advantage of using the renewal equation
-The renewal equation in \eqref{eq:renew-equation} quantifies the transmission dynamic that primary incidences result in new incidences by effective reproduction numbers given serial interval. This dynamic is straightforward and efficient in data usage, since it only depends on the observed incidence counts (which can be easily obtainable, usually sufficient and of good quality) and the specification of serial interval distribution. 
+The renewal equation in \eqref{eq:renew-equation} quantifies the transmission dynamic that primary incidences result in new incidences by effective reproduction numbers given serial interval. This dynamic is straightforward and efficient in data usage, since it only depends on the observed incidence counts (which can be easily obtainable, usually sufficient and of good quality such as completeness, accuracy, and timeliness) and the specification of serial interval distribution. 
 
 \subsection{Poisson trend filtering estimator} %Proximal optimization
 
 We use the daily confirmed cases $y_t$ on day $t$ to estimate the observed infectious cases by assuming a consistent incubation period and further assume $y_t$ to be Poisson distributed with mean $N_t$, i.e., 
 \begin{equation*} 
-  y_t \sim \mathrm{Poisson}(N_t) = \mathrm{Poisson}(\Lambda_t \calR_t).
+  y_t \sim \mathrm{Poisson}(N_t),
 \end{equation*}
-Considering a fixed period of days $n$, our interest is to estimate the Poisson parameter $\calR_t$ given observations ${y}_{1:n} := \{y_1,\dots,y_n\}$ and the total infectiousness based on the confirmed cases $\Lambda^{\ast}_t := \sum_{i=1}^{\tau_t} p_i y_{t-i}$. A natural approach is to solve the maximum likelihood estimates (MLEs), i.e., 
+where $N_t = \Lambda_t \calR_t$. Considering retrospectively a past period of $n$ days, our interest is to estimate the Poisson parameter $\calR_t$ given confirmed incidence counts ${y}_{1:n} := \{y_1,\dots,y_n\}$ and the total infectiousness based on the confirmed cases $\Lambda^{\ast}_t := \sum_{i=1}^{\tau_t} p_i y_{t-i}$. A natural approach is to solve the maximum likelihood estimates (MLEs), i.e., 
 \begin{equation} \label{eq:mle}
-  \hat{\calR}_t := \Argmax{\calR_t} \bbP(\calR_t \mid y_{1:n}, p_{1:\tau_t}) = \prod_{t = 1,\dots,n} \frac{e^{- \calR_t \Lambda^{\ast}_t} \lr{\calR_t \Lambda^{\ast}_t}^{y_t} }{y_t!}.
+  \begin{split}
+    \hat{\calR}_t :&= \Argmax{\calR_t \in \bbR_+} \bbP(\calR_{1:n} \mid y_{1:n}, p_{1:\tau_t}) \\
+    &= \Argmax{\calR_t \in \bbR_+} \prod_{t = 1,\dots,n} \frac{e^{- \calR_t \Lambda^{\ast}_t} \lr{\calR_t \Lambda^{\ast}_t}^{y_t} }{y_t!}.
+  \end{split}
 \end{equation}
-This maximization problem, however, yields a one-to-one correspondence between the confirmed case (or the total infectiousness) and the effective reproduction number at each day, so that the estimated curves have no significant graphical smoothness. 
+This maximization problem, however, yields a one-to-one correspondence between the confirmed case (or the total infectiousness) and the effective reproduction number per day, i.e. $\hat{\calR}_t = y_t / \Lambda^{\ast}_t$, so that the estimated curves have no significant graphical smoothness. 
 
 Smoothness of the effective reproduction numbers is a key to understand the trend of transmissibility of infectious diseases in retrospective studies. Smoother estimated curves give more high-level ideas with less changing points and hide minor details, and vice versa. 
-We assume the effective reproduction numbers to appear as piecewise polynomials with multiple knots (i.e., changing points) with varying degrees. We specifically consider discrete splines with various degrees of continuity. For instance, the $0$th degree discrete splines are piecewise constant, the $1$st degree curves are piecewise linear, and the $2$nd degree curves are piecewise quadratic. For $k\geq 2$, the $k$th degree discrete splines are continuous and have continuous discrete differences up to degree $k-1$ at the knots. 
+We assume the effective reproduction numbers to appear as piecewise polynomials with multiple knots (i.e., changing points of graphical curvature) with varying degrees. We specifically consider discrete splines with various degrees of continuity. For instance, the $0$th degree discrete splines are piecewise constant, the $1$st degree curves are piecewise linear, and the $2$nd degree curves are piecewise quadratic. For $k\geq 1$, the $k$th degree discrete splines are continuous and have continuous discrete differences up to degree $k-1$ at the knots. 
 
 To achieve such smoothness, we regularize the distance between adjacent effective reproduction numbers. Since $\calR_t > 0$, penalizing the distance between $\calR_t$s directly may cause numerical issues such that there may be negative estimates generated in computation. Therefore, we equivalently penalize the distance between natural logarithms of neighboring $\calR_t$s through divided differences (i.e., discrete derivatives) with various orders.  
-Compared to splines, discrete splines introduce computational efficiency. 
-We penalize $\ell_1$ norm of the distance, which introduces sparsity into the curvature, so that the estimates have heterogeneous smoothness in different subregions of the entire domain. It is a more realistic setting compared to homogeneous smoothness in squared $\ell_2$ norm. 
-The divided differences (i.e., discrete derivatives) with various orders represent the temporal evolution of reproduction numbers with different degrees. 
+Compared to splines, discrete splines introduce computational efficiency without loss of numerical accuracy. 
+We penalize $\ell_1$ norm of the distance, which introduces sparsity into the curvature, so that the estimates have heterogeneous smoothness in different subregions of the entire domain. It is a more realistic setting compared to homogeneous smoothness in the squared $\ell_2$ norm. 
+The divided differences with various orders realize the temporal evolution of effective reproduction numbers with various degrees. 
 
-We define a penalized regression problem to solve the MLE problem in \eqref{eq:mle} and the smoothness regularization simultaneously in \ref{eq:rt-ptf}. It is a minimization problem with Poisson loss and the trend filtering penalty \citep{kim2009ell_1,tibshirani2014adaptive,sadhanala2022exponential}. 
-Let $\theta := \log(\calR) \in \bbR^n$, and then $\Lambda\circ \calR = \Lambda\circ e^{\theta}$, $\log(\Lambda\circ \calR) = \log(\Lambda) + \theta$, where $\circ$ is elementwise product, $e^{a}, \log(a)$ apply to a vector $a$ elementwise. 
-The problem solves a Poisson trend filtering (PTF) estimator on univariate cases. For evenly spaced observed incidences, it is defined as: 
+We define a penalized regression to solve the MLE problem with the smoothness regularization in \eqref{eq:rt-ptf}. It is a minimization problem with Poisson loss (which is the negative log-likelihood of Poisson distributions) to control the data fidelity and the trend filtering penalty to control the graphical smoothness \citep{kim2009ell_1,tibshirani2014adaptive,tibshirani2022divided}. The problem solves a Poisson trend filtering (PTF) estimator on univariate cases. 
+Let $\theta := \log(\calR) \in \bbR^n$, and then $\Lambda\circ \calR = \Lambda\circ e^{\theta}$, $\log(\Lambda\circ \calR) = \log(\Lambda) + \theta$, where $\circ$ is elementwise product, $e^{a}, \log(a)$ apply to vector $a$ elementwise. Let $w:=\Lambda$ to represent weights in the objective. Define the problem with evenly spaced incidences as: 
 %We further regularize the smoothness of the reproduction number using the $\ell_1$ norm of the divided difference of the natural logarithm of $\calR$, which is real-valued. 
 \begin{equation} \label{eq:rt-ptf}
     \begin{split}
-        \hat{\theta} &:= \Argmin{\theta\in\bbR^n} \fr{n}\sumN -y_i \theta_i + \Lambda_i e^{\theta_i} + \lambda \norm{D^{(k+1)} \theta}_1, \\
-        \hat{\calR} &:= e^{\hat{\theta}},
+        \hat{\theta} &:= \Argmin{\theta\in\bbR^n} \fr{n}\sumN -y_i \theta_i + w_i e^{\theta_i} + \lambda \norm{D^{(k+1)} \theta}_1,         
     \end{split}
 \end{equation}
-where $D^{k+1} \in \bbZ^{(n-k-1)\times n}$ is a $k$-th order divided difference matrix with $k = 0,1,2,\dots$. Define $D^{(k+1)}$ recursively as $D^{(k+1)} := D^{(1)} D^{(k)}$, where $D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times (n-k)}$ is a banded matrix defined as
+where $D^{k+1} \in \bbZ^{(n-k-1)\times n}$ is a $(k+1)$st order divided difference matrix with $k = 0,1,2,\dots, n-2$, and $\hat{\calR} := e^{\hat{\theta}}$ solves the estimated effective reproduction numbers. Define $D^{(k+1)}$ recursively as $D^{(k+1)} := D^{(1)} D^{(k)}$, where $D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times (n-k)}$ is a banded matrix of dynamic dimensions with diagonal band $(-1,1)$ and off-band components $0$s: 
 $$D^{(1)} := 
 \begin{pmatrix}
 -1 & 1 &  & & \\
  & -1 & 1 & & \\
- & & \vdots & \vdots & \\
+ & & \ddots & \ddots & \\
  & & & -1 & 1
 \end{pmatrix}.
-$$
-Define $D^{(0)} := I_n$, which is an identity matrix with size $n$. An exponential transformation is applied to the PTF estimator $\hat{\theta}$ to get the estimated reproduction numbers. 
+$$ 
+Define $D^{(0)} := I_n$, which is an identity matrix with size $n$. %An exponential transformation is applied to the PTF estimator $\hat{\theta}$ to get the estimated reproduction numbers. 
 
-The tuning parameter $\lambda$ balances the contributions between data fidelity and smoothness. When $\lambda=0$, the problem in \eqref{eq:rt-ptf} reduces to the regular least squares problem. A larger tuning parameter gives a higher importance on the regularization term and yields a smoother curve until the divided differences are all zeros, i.e., all parameters are projected onto the null space of the corresponding divided difference matrix. 
+The tuning parameter $\lambda$ balances the contributions between data fidelity and smoothness. When $\lambda=0$, the problem in \eqref{eq:rt-ptf} reduces to the regular least squares problem. A larger tuning parameter gives a higher importance on the regularization term and yields a smoother curve until the divided differences are all zeros, i.e., all parameters are projected onto the null space of the corresponding divided difference matrix(, since the tuning parameter is large enough to make the penalty term dominate the objective). 
 
-For unevenly spaced observations, the distances between neighboring parameters vary by the periods between observation times, and thus, the divided differences should be adjusted by observation days (or data locations). Given the data locations $x_{1:n} = \{x_1,\dots,x_n\}$, define a $k$th order diagonal matrix $$X^k := \diag \lr{\frac{k}{x_{k+1} - x_1}, \frac{k}{x_{k+2} - x_2}, \cdots, \frac{k}{x_n - x_{n-k}} }$$ for $k \geq 1$. Let $D^{(x,1)} := D^{(1)}$ and define $D^{(x,k+1)}$ for $k\geq 1$ recursively as $$D^{(x,k+1)} := D^{(1)}\cdot X^k \cdot D^{(x,k)}.$$ 
+For unevenly spaced observations, the distances between neighboring parameters vary by the time lengths between observation times, and thus, the divided differences should be adjusted by the days that the incidences are confirmed (i.e., data locations). Given the data locations $x_{1:n} = \{x_1,\dots,x_n\}$, for $k \geq 1$, define a $k$th order diagonal matrix $$X^k := \diag \lr{\frac{k}{x_{k+1} - x_1}, \frac{k}{x_{k+2} - x_2}, \cdots, \frac{k}{x_n - x_{n-k}} }.$$ Let $D^{(x,1)} := D^{(1)}$. For $k\geq 1$, define the $(k+1)$st order divided difference matrix for unevenly spaced incidences recursively as $$D^{(x,k+1)} := D^{(1)}\cdot X^k \cdot D^{(x,k)}.$$ 
 
-\cite{abry2020spatial,pascal2022nonsmooth} considered the second-order divided different of effective reproduction number. In comparison to their studies, our estimator is more flexible in the degree of temporal evolution of the effective reproduction numbers and also avoid the potential numerical issues of penalizing/estimating positive real values. 
+
 Our estimator is locally adaptive so that it captures the local changes such as the initiation of effective control measures. More specifically, it regularizes the similarity among reproduction numbers across a chosen number of neighboring time points and segments the curvature of the reproduction numbers such that there are more jumpiness in some subregions and more smoothness in others. 
+\cite{abry2020spatial,pascal2022nonsmooth} considered the second-order divided difference of effective reproduction numbers. In comparison to their studies, our estimator is more flexible in the degree of temporal evolution of the effective reproduction numbers and also avoids the potential numerical issues of penalizing/estimating positive real values. 
 
 \subsection{Proximal Newton solver} %Specialized ADMM for `generalized' Poisson trend filtering on lines
 
-The proximal Newton method is a second-order algorithm solving a proximal optimization iteratively followed by a line search algorithm adjusting the step size at each iteration for faster convergence. The proximal Newton method for Poisson trend filtering in \eqref{eq:rt-ptf} takes a second-order Taylor expansion of the Poisson loss, which results in a proximal optimization --- Gaussian trend filtering with dynamic weights during iteration. 
+The proximal Newton method is a second-order algorithm solving a proximal optimization iteratively followed by a line search algorithm adjusting the step size at each iteration for faster convergence. The proximal Newton method for Poisson trend filtering in \eqref{eq:rt-ptf} solves an approximate problem iteratively --- specifically, it takes a second-order Taylor expansion of the Poisson loss, which results in a proximal optimization, i.e., trend filtering with squared $\ell_2$ loss, with dynamic weights during iteration, and solves it iteratively until convergence to the objective. 
 
-Let $g(\theta):= \fr{n} \sumN -y_i\theta_i + \Lambda_i e^{\theta_i}$ be the Poisson regression loss and $h(\theta) := \lambda \norm{D^{(k+1)} \theta}_1$ be the regularization. At iterate $t+1$, consider the following approximation of $g(\theta)$ using a second-order Taylor expansion around $\theta^t$, given $\theta^t$, 
+Let $g(\theta):= \fr{n} \sumN -y_i\theta_i + w_i e^{\theta_i}$ be the Poisson loss and $h(\theta) := \lambda \norm{D^{(k+1)} \theta}_1$ be the regularization in \eqref{eq:rt-ptf}. At iterate $t+1$, consider the following approximation of $g(\theta)$ using the second-order Taylor expansion around $\theta^t$, 
 $$ g(\theta) = g(\theta^t) + (\theta - \theta^t)^{\top} \nabla^{(1)}_{\theta} g(\theta^t) + \fr{2} (\theta - \theta^t)^{\top} \nabla^{(2)}_{\theta} g(\theta^t) (\theta - \theta^t), $$
-where $\nabla^{(1)}_{\theta} g(\theta^t) = \fr{n} \lr{-y + \Lambda\circ e^{\theta^t}} \in \bbR^n$ is the gradient of $g(\theta)$ at $\theta^t$ and $\nabla^{(2)}_{\theta} g(\theta^t) = \fr{n}\diag \lr{\Lambda \circ e^{\theta^t}} \in \bbR^{n\times n}$ is the Hessian matrix of $g(\theta)$ at $\theta^t$. %The gradient of $g(\theta)$ then can be approximated by $$\nabla_{\theta} g(\theta) := \nabla_{\theta} g(\theta^t) + \nabla^2_{\theta} g(\theta^t) (\theta - \theta^t) = \fr{n} \lr{W^t \theta - c^t} = \fr{n}W^t \lr{\theta - {c^t}^{\ast}},$$ where $c^t := y-e^{\theta^t}+\theta^t\circ e^{\theta^t}$, $W^t = \mathrm{diag}\lr{e^{\theta^t}}$, and ${c^t}^{\ast} = y\circ e^{-\theta^t} - \boldsymbol{1} + \theta^t$ given $e^{\theta_i^t} \in \bbR_{++}, i=1,...,n$. 
+where $\nabla^{(1)}_{\theta} g(\theta^t) = \fr{n} \lr{-y + w\circ e^{\theta^t}} \in \bbR^n$ is the gradient of $g(\theta)$ at $\theta^t$ and $\nabla^{(2)}_{\theta} g(\theta^t) = \fr{n}\diag \lr{w \circ e^{\theta^t}} \in \bbR^{n\times n}$ is the Hessian matrix of $g(\theta)$ at $\theta^t$. %The gradient of $g(\theta)$ then can be approximated by $$\nabla_{\theta} g(\theta) := \nabla_{\theta} g(\theta^t) + \nabla^2_{\theta} g(\theta^t) (\theta - \theta^t) = \fr{n} \lr{W^t \theta - c^t} = \fr{n}W^t \lr{\theta - {c^t}^{\ast}},$$ where $c^t := y-e^{\theta^t}+\theta^t\circ e^{\theta^t}$, $W^t = \mathrm{diag}\lr{e^{\theta^t}}$, and ${c^t}^{\ast} = y\circ e^{-\theta^t} - \boldsymbol{1} + \theta^t$ given $e^{\theta_i^t} \in \bbR_{++}, i=1,...,n$. 
 
 Define the proximal operator as $\mathrm{prox}_{W,D} (x) := \Argmin{z\in\bbR^n} \fr{2n} \norm{z-x}_W^2 + \lambda \norm{D\theta}_1$, where $\norm{a}_{W}^2 := a^{\top} {W} a$. The proximal optimization problem at iterate $t+1$ can be further written as, given $\theta^t$,
 \begin{equation} \label{eq:prox-gauss}
@@ -85,10 +87,10 @@ Define the proximal operator as $\mathrm{prox}_{W,D} (x) := \Argmin{z\in\bbR^n} 
         &= \mathrm{prox}_{W^t,D^{(k+1)}} (c^{t}),
     \end{split}
 \end{equation}
-where $W^t := \diag \lr{\Lambda\circ e^{\theta^t}}$ is the weighted (Hessian) matrix multiplied by $n$ and ${c^t} := \theta^t - \lr{W^{t}}^{-1} \lr{n\nabla^{(1)}_{\theta} g(\theta^t)} = y\circ \Lambda^{-1}\circ e^{-\theta^t} - \boldsymbol{1} + \theta^t\circ \Lambda^{-1}$, where $\{e^{\theta^t}\}_{i\in[n]} > 0, [n]:=1,2,\dots,n$.
-This is just univariate \textit{Gaussian trend filtering} with weights $W^t$ \citep{tibshirani2014adaptive}. 
+where $W^t := \diag \lr{w\circ e^{\theta^t}}$ is the weighted (Hessian) matrix multiplied by $n$ and ${c^t} := \theta^t - n \lr{W^{t}}^{-1} \nabla^{(1)}_{\theta} g(\theta^t) = y\circ w^{-1}\circ e^{-\theta^t} - \boldsymbol{1} + \theta^t\circ w^{-1}$, where $\{e^{\theta^t}\}_{i\in[n]} > 0, [n]:=1,2,\dots,n$.
+This is just univariate trend filtering with weights $W^t$ \citep{tibshirani2014adaptive}. 
 
-We solve the trend filtering problem in \eqref{eq:prox-gauss} using the specialized ADMM, proposed by \cite{ramdas2016fast}, with the primal $\theta$ step solved in closed-form and the auxiliary step solved by the dynamic programming algorithm for fused lasso proposed by \cite{johnson2013dynamic}. Let the auxiliary variable $z:= D^{(k)}\theta$. The scaled augmented Lagrangian is $$\mathcal{L}_{\lambda, \rho}(\theta, z, u) = \fr{2n} \norm{\theta - c^{t}}_{W^t}^2 + \lambda \norm{D^{(1)}z}_1 + \frac{\rho}{2} \norm{D^{(k)}\theta - z + u}^2 - \frac{\rho}{2} \norm{u}^2, $$ where $\rho$ is a scaled dual parameter and $u$ is a dual variable. The specialized ADMM solves the following subproblems, at ADMM iteration $l+1$: 
+We solve the trend filtering problem in \eqref{eq:prox-gauss} using the specialized ADMM, proposed by \cite{ramdas2016fast}, with the primal $\theta$ step solved in closed-form and the auxiliary step solved by the dynamic programming algorithm for fused lasso proposed by \cite{johnson2013dynamic}. Let the auxiliary variable $z:= D^{(k)}\theta$. The scaled augmented Lagrangian is $$\mathcal{L}_{\lambda, \rho}(\theta, z, u) = \fr{2n} \norm{\theta - c^{t}}_{W^t}^2 + \lambda \norm{D^{(1)}z}_1 + \frac{\rho}{2} \norm{D^{(k)}\theta - z + u}^2 - \frac{\rho}{2} \norm{u}^2, $$ where $\rho$ is a scaled dual parameter and $u$ is a dual variable. At Newton's iteration $t+1$, the specialized ADMM solves the following subproblems, at ADMM iteration $l+1$: 
 \begin{equation}
   \begin{split}
       \theta^{l+1} &:= \Argmin{\theta} \fr{2n} \norm{\theta - c^{t}}_{W^t}^2 + \frac{\rho}{2} \norm{D^{(k+1)} \theta - z^l + u^l}_2^2, \\
@@ -97,8 +99,8 @@ We solve the trend filtering problem in \eqref{eq:prox-gauss} using the speciali
   \end{split}
 \end{equation}
 
-We further adjust the step size $\gamma^t \in (0,1]$ at iterate $t$ by a backtracking line search algorithm: 
-$$\theta^{t+1} \leftarrow \theta^t + \gamma^{t+1} (\theta^{t_+} - \theta^t).$$ The proximal Newton algorithm iterates until the convergence of objective.
+We further adjust the step size $\gamma^{t+1} \in (0,1]$ at iterate $t+1$ by a backtracking line search algorithm to solve for $\theta^{t+1}$, i.e.,   
+$$\theta^{t+1} \leftarrow \theta^t + \gamma^{t+1} (\theta^{t_+} - \theta^t).$$ The proximal Newton algorithm iterates until convergence of the objective.
 
 % defer to the section of Simulation: 
 %Range of $\lambda$: Find the maximum lambda such that the estimated $\theta$ does not fall into the null space of the divided difference matrix.

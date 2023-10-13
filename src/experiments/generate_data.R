@@ -1,5 +1,3 @@
-source("src/experiments/load_functions.R")
-
 ## create problems -------------
 problem_designs <- list(
   # 4 scenarios of Rt curvatures
@@ -44,12 +42,15 @@ data_generator <- function(data=NULL, job, Rt_case, dist = c("poisson", "NB"), .
   len = 300 # number of evenly spaced time points
   Rt <- get_rt(Rt_case, len)
   incidence <- get_incidence(N1, Rt, Rt_case, dist)
-  
+  y <- incidence$y
+  gamma_pars <- incidence$gamma_pars
+    
   ## return list
   lst <- list() 
   lst[["Rt"]] <- Rt
-  lst[["incidence"]] <- incidence
+  lst[["incidence"]] <- y
   lst[["Rt_case"]] <- Rt_case
+  lst[["gamma_pars"]] <- gamma_pars
   return(lst) # input as `instance` in problem solver
 }
 
@@ -115,5 +116,8 @@ get_incidence <- function(N1, Rt, Rt_case, dist){
       count[t] <- rnbinom(1, mu = incidence[t], size = size)
     }
   }
-  return(count)
+  lst <- list() 
+  lst[["y"]] <- count
+  lst[["gamma_pars"]] <- gamma_pars
+  return(lst)
 }

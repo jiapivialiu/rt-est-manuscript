@@ -19,12 +19,14 @@ for(i in 1:nrow(res)){
   res$result[[i]] <- res$result[[i]]$res_list
 }
 Rt_result <- unwrap(res, sep = ".")
-saveRDS(Rt_result, "src/experiments/rt_full_results.RDS")
+saveRDS(Rt_result, "src/experiments/rt_exp3_full_results.RDS")
 
+Rt_result <- readRDS("src/experiments/rt_exp3_full_results.RDS")
+
+library(ggplot2)
 # show runtime
-cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", 
-               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
+cbPalette <- c("#E69F00", "#009E73", "#0072B2", "#999999", 
+               "#F0E442", "#56B4E9", "#D55E00", "#CC79A7")
 Rt_result$prob.pars.Rt_case <- as.factor(Rt_result$prob.pars.Rt_case)
 Rt_result$prob.pars.dist <- as.factor(Rt_result$prob.pars.dist)
 
@@ -38,7 +40,7 @@ runtime_fig <- Rt_result %>%
   facet_wrap(vars(prob.pars.dist)) + 
   scale_colour_manual(values = cbPalette) + 
   labs(y = "Running time in seconds", x = "Rt cases") + 
-  labs(color="Methods") +
+  labs(color = "Methods") +
   theme_bw()
 
 
@@ -63,24 +65,42 @@ fig_logratio_long <- Rt_result %>%
   labs(color="Methods") +
   theme_bw()
 
-fig_kl_pois <- Rt_result %>%
+Rt_result %>%
+  mutate(samples = rep(1:50, )) %>%
   filter(prob.pars.dist == "poisson") %>%
+  group_by()
+  mutate()
+
+fig_kl_pois <- Rt_result %>%
+  filter(algo.pars.method != "EpiEstim(month)") %>%
+  filter(prob.pars.dist == "poisson") %>%
+  mutate(algo.pars.method = fct_recode(algo.pars.method, 
+                                       "EpiEstim" = "EpiEstim(week)")) %>% 
   group_by(prob.pars.Rt_case, algo.pars.method) %>%
+  filter(result.Rt_kl <= 3) %>%
   ggplot(aes(x = factor(prob.pars.Rt_case), y = result.Rt_kl)) +
   geom_boxplot(aes(col = algo.pars.method)) + 
   #facet_wrap(vars(prob.pars.dist, prob.pars.Rt_case)) + 
   scale_colour_manual(values = cbPalette) + 
+  coord_cartesian(ylim = c(0, .3)) + # excluding 3 outliers (>3s) of EpiEstim (1 month, 2 week)
+  scale_y_sqrt()+
   labs(y = "Averaged KL for Poisson incidences", x="Rt cases") +
   labs(color="Methods") +
   theme_bw()
 
 fig_kl_nb <- Rt_result %>%
   filter(prob.pars.dist == "NB") %>%
+  filter(algo.pars.method != "EpiEstim(month)") %>%
+  mutate(algo.pars.method = fct_recode(algo.pars.method, 
+                                       "EpiEstim" = "EpiEstim(week)")) %>% 
   group_by(prob.pars.Rt_case, algo.pars.method) %>%
+  filter(result.Rt_kl <= 3) %>%
   ggplot(aes(x = factor(prob.pars.Rt_case), y = result.Rt_kl)) +
   geom_boxplot(aes(col = algo.pars.method)) + 
   #facet_wrap(vars(prob.pars.dist, prob.pars.Rt_case)) + 
   scale_colour_manual(values = cbPalette) + 
+  coord_cartesian(ylim = c(0, 2.5)) + # excluding outliers (>3s) of EpiEstim
+  scale_y_sqrt()+
   labs(y = "Averaged KL for negative Binomial incidences", x="Rt cases") +
   labs(color="Methods") +
   theme_bw()
@@ -88,7 +108,7 @@ fig_kl_nb <- Rt_result %>%
 
 fig_kl_long <- Rt_result %>%
   group_by(prob.pars.dist, prob.pars.Rt_case, algo.pars.method) %>%
-  ggplot(aes(x =prob.pars.Rt_case, y = result.Rt_kl_long)) +
+  ggplot(aes(x = prob.pars.Rt_case, y = result.Rt_kl_long)) +
   geom_boxplot(aes(col = algo.pars.method)) + 
   facet_wrap(vars(prob.pars.dist)) + 
   scale_colour_manual(values = cbPalette) + 
@@ -109,8 +129,8 @@ ggsave(here::here("fig/kl_pois.png"), fig_kl_pois, width = 5.63, height = 3.78)
 ggsave(here::here("fig/kl_nb.png"), fig_kl_nb, width = 5.63, height = 3.78)
 
 
-fig_kl <- ggarrange(fig_kl_pois, fig_kl_nb, ncol=2, nrow=1, 
+fig_kl <- ggpubr::ggarrange(fig_kl_pois, fig_kl_nb, ncol=2, nrow=1, 
                     common.legend = TRUE, legend = "bottom",
                     font.label = list(size = 14))
-ggsave(here::here("fig/kl.png"), fig_kl, width = 6.67, height = 4.06)
+ggsave(here::here("fig/kl.png"), fig_kl, width = 7.41, height = 5.76)
 
