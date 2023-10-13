@@ -1,4 +1,4 @@
-\begin{thebibliography}{23}
+\begin{thebibliography}{27}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -42,6 +42,14 @@ Anne Cori, Neil~M Ferguson, Christophe Fraser, and Simon Cauchemez.
   numbers during epidemics.
 \newblock \emph{American journal of epidemiology}, 178\penalty0 (9):\penalty0
   1505--1512, 2013.
+
+\bibitem[Cori et~al.(2020)Cori, Cauchemez, Ferguson, Fraser, Dahlqwist,
+  Demarsh, Jombart, Kamvar, Lessler, Li, et~al.]{cori2020package}
+Anne Cori, Simon Cauchemez, Neil~M Ferguson, Christophe Fraser, Elisabeth
+  Dahlqwist, P~Alex Demarsh, Thibaut Jombart, Zhian~N Kamvar, Justin Lessler,
+  Shikun Li, et~al.
+\newblock Package `epiestim'.
+\newblock \emph{CRAN: Vienna Austria}, 2020.
 
 \bibitem[Gressani et~al.(2021)Gressani, Faes, and
   Hens]{gressani2021approximate}
@@ -150,6 +158,20 @@ Veeranjaneyulu Sadhanala, Robert Bassett, James Sharpnack, and Daniel~J
 \newblock Exponential family trend filtering on lattices.
 \newblock \emph{arXiv preprint arXiv:2209.09175}, 2022.
 
+\bibitem[{Sam Abbott} et~al.(2020){Sam Abbott}, {Joel Hellewell}, {Katharine
+  Sherratt}, {Katelyn Gostic}, {Joe Hickson}, {Hamada S. Badr}, {Michael
+  DeWitt}, {Robin Thompson}, {EpiForecasts}, and {Sebastian Funk}]{EpiNow2}
+{Sam Abbott}, {Joel Hellewell}, {Katharine Sherratt}, {Katelyn Gostic}, {Joe
+  Hickson}, {Hamada S. Badr}, {Michael DeWitt}, {Robin Thompson},
+  {EpiForecasts}, and {Sebastian Funk}.
+\newblock \emph{EpiNow2: Estimate Real-Time Case Counts and Time-Varying
+  Epidemiological Parameters}, 2020.
+
+\bibitem[Taubenberger and Morens(2006)]{taubenberger20061918}
+Jeffery~K Taubenberger and David~M Morens.
+\newblock 1918 influenza: the mother of all pandemics.
+\newblock \emph{Revista Biomedica}, 17\penalty0 (1):\penalty0 69--79, 2006.
+
 \bibitem[Thompson et~al.(2019)Thompson, Stockwin, van Gaalen, Polonsky, Kamvar,
   Demarsh, Dahlqwist, Li, Miguel, Jombart, et~al.]{thompson2019improved}
 Robin~N Thompson, Jake~E Stockwin, Rolina~D van Gaalen, Jonny~A Polonsky,
@@ -164,6 +186,13 @@ Ryan~J Tibshirani.
 \newblock Adaptive piecewise polynomial estimation via trend filtering.
 \newblock \emph{The Annals of Statistics}, 42\penalty0 (1):\penalty0 285--323,
   2014.
+
+\bibitem[Tibshirani et~al.(2022)]{tibshirani2022divided}
+Ryan~J Tibshirani et~al.
+\newblock Divided differences, falling factorials, and discrete splines:
+  Another look at trend filtering and related problems.
+\newblock \emph{Foundations and Trends{\textregistered} in Machine Learning},
+  15\penalty0 (6):\penalty0 694--846, 2022.
 
 \bibitem[Trevisin et~al.(2023)Trevisin, Bertuzzo, Pasetto, Mari, Miccoli,
   Casagrandi, Gatto, and Rinaldo]{trevisin2023spatially}

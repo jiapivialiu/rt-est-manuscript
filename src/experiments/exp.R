@@ -5,9 +5,9 @@ source("src/experiments/generate_data.R")
 source("src/experiments/design_algos.R")
 
 # create experiments ----
-#rt_exp = makeExperimentRegistry("src/experiments/rt_exp", seed = 953)
+#rt_exp = makeExperimentRegistry("src/experiments/rt_exp3", seed = 527)
+rt_exp = loadRegistry("src/experiments/rt_exp3", writeable = T)
 rt_exp$cluster.functions = makeClusterFunctionsMulticore(ncpus = 8)
-rt_exp = loadRegistry("src/experiments/rt_exp", writeable = T)
 
 # design experiments ----
 addProblem(name = "pois_scenario1", data = NULL, fun = data_generator)
@@ -25,7 +25,7 @@ addAlgorithm(name = "rt_solver", fun = problem_solver)
 addExperiments(problem_designs, algo_designs, repls = 50, combine = 'crossprod')
 summarizeExperiments(by = c("Rt_case", "dist", "method"))
 
-#removeExperiments(ids = )
+#removeExperiments(ids = 512)
 #summarizeExperiments()
 
 # test before submitting ----
@@ -45,4 +45,4 @@ for(i in 1:nrow(res)){
   res$result[[i]] <- res$result[[i]]$res_list
 }
 Rt_result <- unwrap(res, sep = ".")
-saveRDS(Rt_result, "src/experiments/rt_full_results.RDS")
+saveRDS(Rt_result, "src/experiments/rt_exp3_full_results.RDS")
