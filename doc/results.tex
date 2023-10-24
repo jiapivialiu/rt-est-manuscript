@@ -24,7 +24,7 @@ Examples of each effective reproduction number scenario with corresponding Poiss
 \begin{figure}[tb]
     \centering
     \includegraphics[width=140mm]{fig/plot_samples.png}
-    \caption{An example of effective reproduction numbers and corresponding incidences following Poisson or negative Binomial distribution. Three columns illustrate four $\calR_t$ cases, Poisson incidences, and negative Binomial distributed incidences for each $\calR_t$ case respectively. Four rows correspond to four $\calR_t$ cases respectively.} 
+    \caption{An example of effective reproduction numbers and corresponding incidences following Poisson or negative Binomial distribution. Three columns illustrate four $\calR_t$ cases, Poisson incidences, and negative Binomial distributed incidences for each $\calR_t$ case respectively. Four rows correspond to four $\calR_t$ cases respectively. \textit{Sample ranges vary significantly from less than $1,000$ to more than $10,000$ by random seeds.} } 
     \label{fig:samples}
 \end{figure}
 
@@ -38,9 +38,11 @@ We tune the model over the candidate set of size 50 using cross validation. For 
 We assume the serial intervals are known and use same serial intervals across all models for each problem. 
 
 % KL for exponential family: 
-The accuracy of $\calR_t$ estimates is measured by the mean Kullback-Leibler (KL) divergence for Poisson distributions  $$\frac{1}{n} D_{KL}(\hat{\calR}|| \calR) = \frac{1}{n}\sum_{t=1}^n \hat{\calR}_t \log\left(\frac{\hat{\calR}_t}{\calR_t}\right) + {\calR}_t - \hat{\calR}_t,$$ 
+Kullback-Leibler (KL) divergence is a metric that measures the distance between two probability distributions. Since $\calR_t$ is expectation of a Poisson distribution, we use the mean KL divergence for Poisson distributions (averaged across all coordinates) to measure the accuracy of the $\calR_t$ estimates: 
+$$\frac{1}{n} D_{KL}(\hat{\calR}|| \calR) = \frac{1}{n}\sum_{t=1}^n \hat{\calR}_t \log\left(\frac{\hat{\calR}_t}{\calR_t}\right) + {\calR}_t - \hat{\calR}_t,$$ 
 where $\calR := \left\{ \calR_t \right\}_{t=1}^n$. %It coincides with the Bregman distance $D_{KL}(\theta_0 || \theta_1) = \varphi(\theta_1) - \varphi(\theta_0) - (\theta_1 - \theta_0)^{\top} \varphi'(\theta_0)$, where $\theta_0,\theta_1$ are natural parameters of the same kind of exponential-family distributions \citep{sadhanala2022exponential}. 
-In comparison of the accuracy across methods, we drop the estimates during the first week as the $\calR_t$ estimates of \EpiEstim\ starts at $t=8$. We avoid using the Euclidean ($\ell_2$) norm in favor of KL divergence because Poisson distribution corresponds to points on a discrete lattice, which can be regarded as lying on a curved (non-Euclidean) space in the context of geometry. 
+In comparison of the accuracy across methods, we drop the estimates during the first week as the $\calR_t$ estimates of \EpiEstim\ starts at $t=8$.  
+The Euclidean ($\ell_2$) norm is less appropriate here since we assume Poisson distributed incidences, but the Euclidean norm corresponds to Gaussian data in terms of the log-likelihood functions. 
 %For negative Binomial cases, we use KL divergence to measure the distances between negative Binomial distributions given the %dispersion rate $\phi$, i.e., 
 %\begin{align*}
 %    \frac{1}{n} D^{\ast}_{KL}\lr{\hat{\calR}|| \calR} = \frac{1}{n}\sum_{t=1}^n \hat{\calR}_t \log \left(\frac{\hat{\calR}_t}%{\calR_t}\right) + \lr{\hat{\calR}_t + \phi} \log\lr{\frac{\hat{\calR}_t + \phi}{\calR_t + \phi}}. 
@@ -49,7 +51,7 @@ Other details of the experimental settings are deferred to the supplementary doc
 
 %\subsubsection*{Cross Validation}
 We run leave-third-out cross validation (CV) to choose the best tuning parameter from the candidate set of size $50$, i.e., $\boldsymbol{\lambda} = \{\lambda_1, \cdots, \lambda_{50}\}$. Specifically, we divide the all samples into three folds and build models on each sample set which excludes one fold of the samples across all hyperparameters. Every third samples are placed into the same fold by excluding the first and last samples. We select the tuning parameter that gives the lowest averaged mean squared errors (MSEs) of the estimated reproduction numbers from the observed samples across all folds. 
-The experiments are run in \texttt{R} with version 4.3.1 on a MacBook with an Apple M1 Pro chip and RAM 32GB running under macOS Sonoma 14.0. The \texttt{R} packages are of versions \texttt{EpiEstim\_2.2-4}, \texttt{EpiLPS\_1.2.0} and \texttt{rtestim\_0.0.3}. 
+The experiments are run in \texttt{R} with version 4.3.1 on Cedar cluster provided by Compute Canada. The \texttt{R} packages used for simulation and real-data application are of versions \texttt{EpiEstim\_2.2-4}, \texttt{EpiLPS\_1.2.0}, and \texttt{rtestim\_0.0.3}. 
 
 \subsection{Experimental results}
 
@@ -88,7 +90,7 @@ More experimental results on time comparisons are deferred to the supplementary 
 \subsection{Covid-19 incidences in British Columbia}
 
 % introduce data & tuning parameter setup
-We implement our \RtEstim\ on the Covid-19 confirmed cases in British Columbia (B.C.) as of May 18, 2023 (visualized in \autoref{fig:covid-data}) reported by B.C. Centre for Disease Control. We choose the gamma distribution with shape $2.5$ and scale $2.5$ to approximate the serial interval function, which is empirically found to be a reasonable choice. 
+We implement our \RtEstim\ on the Covid-19 confirmed cases in British Columbia (B.C.) as of May 18, 2023 (visualized in \autoref{fig:covid-data}) reported by B.C. Centre for Disease Control. The reported incidence cases provide a snapshot of how testing recommendations and practices have changed over the three years. We choose the gamma distribution with shape $2.5$ and scale $2.5$ to approximate the serial interval function, which is empirically found to be a reasonable choice. 
 \begin{figure}[tb]
     \centering
     \includegraphics[width=0.99\linewidth]{fig/covid_dat.png}

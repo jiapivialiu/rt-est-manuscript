@@ -158,8 +158,9 @@ sum(rtestim_mod1$convergence == FALSE) == 0
 plot(rtestim_mod1)
 
 # hyperparameter tuning using cross validation: 
-cv_mod1 <- cv_estimate_rt(incidence1, korder = 0, nfold = 3, nsol = 50, 
-                          dist_gamma = gamma_pars1, maxiter=1e7L)
+cv_mod1 <- cv_estimate_rt(incidence1, korder = 0, nfold = 10, nsol = 50, 
+                          dist_gamma = gamma_pars1, maxiter=1e7L, 
+                          error_measure = "mae")
 plot(cv_mod1)
 
 rtestim_tuned_mod1 <- cv_mod1$full_fit$Rt[, which.min(cv_mod1$cv_scores)]
@@ -181,8 +182,8 @@ rtestim_mod2 <- estimate_rt(incidence2, korder=3, nsol=50, maxiter=1e7L,
                             dist_gamma = gamma_pars2)
 sum(rtestim_mod2$convergence == FALSE) == 0
 plot(rtestim_mod2)
-cv_mod2 <- cv_estimate_rt(incidence2, korder=3, nfold=10, nsol=50,  maxiter=1e7L, 
-                          dist_gamma = gamma_pars2)
+cv_mod2 <- cv_estimate_rt(incidence2, korder=3, nfold=3, nsol=50, maxiter=1e7L, 
+                          dist_gamma = gamma_pars2, error_measure = "mse")
 plot(cv_mod2)
 rtestim_tuned_mod2 <- cv_mod2$full_fit$Rt[, which.min(cv_mod2$cv_scores)]
 rt_ci2 <- confband(cv_mod2, "lambda.min") # get 95% confidence band
@@ -200,7 +201,7 @@ rtestim_mod3 <- estimate_rt(incidence3, korder=1, nsol=50, maxiter=1e7L,
 sum(rtestim_mod3$convergence == FALSE) == 0
 plot(rtestim_mod3)
 cv_mod3 <- cv_estimate_rt(incidence3, korder=1, nfold=3, nsol=50, maxiter=1e7L, 
-                          dist_gamma = gamma_pars3)
+                          dist_gamma = gamma_pars3, error_measure = "mse")
 rtestim_tuned_mod3 <- cv_mod3$full_fit$Rt[, which.min(cv_mod3$cv_scores)]
 rt_ci3 <- confband(cv_mod3, "lambda.min") # get 95% confidence band
 rt_ci3 %>%
@@ -217,7 +218,7 @@ rtestim_mod4 <- estimate_rt(incidence4, korder=3, nsol=50, maxiter=1e7L,
 sum(rtestim_mod4$convergence == FALSE) == 0 # check the convergence
 plot(rtestim_mod4)
 cv_mod4 <- cv_estimate_rt(incidence4, korder=3, nfold=3, nsol=50, maxiter=1e7L, 
-                          dist_gamma = gamma_pars4)
+                          dist_gamma = gamma_pars4, error_measure = "mse")
 rtestim_tuned_mod4 <- cv_mod4$full_fit$Rt[, which.min(cv_mod4$cv_scores)]
 rt_ci4 <- confband(cv_mod4, "lambda.min") # get 95% confidence band
 rt_ci4 %>%
@@ -400,7 +401,7 @@ get_nb_incidence <- function(N1, Rt, gamma_pars = c(2.5, 2.5)){
 }
 
 # case 1
-seed <- 629
+seed <- 525
 set.seed(seed)
 nb_incidence1 <- get_nb_incidence(N1, Rt1, gamma_pars1)
 display_dat(nb_incidence1, Rt1)
@@ -428,8 +429,11 @@ check_dat(nb_incidence4, Rt4)
 Estimate Rt using our Poisson trend filtering using `RtEstim`.
 
 ```{r Rt-NB-RtEstim}
-cv_mod_nb1 <- cv_estimate_rt(nb_incidence1, korder=0, nfold=3, nsol=50, 
-                             dist_gamma = c(3, 3))
+#mod_nb1 <- estimate_rt(nb_incidence1, korder=0, nsol=50, 
+#                             dist_gamma = c(3, 3))
+#plot(mod_nb1)
+cv_mod_nb1 <- cv_estimate_rt(nb_incidence1, korder=0, nfold=30, nsol=50, 
+                             dist_gamma = c(3, 3), error_measure = "mae")
 rtestim_tuned_mod_nb1 <- cv_mod_nb1$full_fit$Rt[ ,which.min(cv_mod_nb1$cv_scores)]
 rt_ci_nb1 <- confband(cv_mod_nb1, "lambda.min") # get 95% confidence band
 rt_ci_nb1 %>%
@@ -441,11 +445,11 @@ rt_ci_nb1 %>%
   labs(x="Time", y = "RtEstim Rt") + 
   theme_bw()
 
-mod_nb2 <- estimate_rt(nb_incidence2, korder=3, nsol=50, 
-                             dist_gamma = c(2.5, 2.5))
-plot(mod_nb2)
+#mod_nb2 <- estimate_rt(nb_incidence2, korder=3, nsol=50, 
+#                             dist_gamma = c(2.5, 2.5))
+#plot(mod_nb2)
 cv_mod_nb2 <- cv_estimate_rt(nb_incidence2, korder=3, nfold=3, nsol=50, 
-                             dist_gamma = c(2.5, 2.5))
+                             dist_gamma = c(2.5, 2.5), error_measure = "mse")
 rtestim_tuned_mod_nb2 <- cv_mod_nb2$full_fit$Rt[ ,which.min(cv_mod_nb2$cv_scores)]
 rt_ci_nb2 <- confband(cv_mod_nb2, "lambda.min") # get 95% confidence band
 rt_ci_nb2 %>%
@@ -457,8 +461,8 @@ rt_ci_nb2 %>%
   labs(x="Time", y = "RtEstim Rt") + 
   theme_bw()
 
-cv_mod_nb3 <- cv_estimate_rt(nb_incidence3, korder=1, nfold=3, nsol=50, 
-                             dist_gamma = c(3.5, 3.5))
+cv_mod_nb3 <- cv_estimate_rt(nb_incidence3, korder=1, nfold=3, nsol=100, 
+                             dist_gamma = c(3.5, 3.5), error_measure = "mse")
 rtestim_tuned_mod_nb3 <- cv_mod_nb3$full_fit$Rt[ ,which.min(cv_mod_nb3$cv_scores)]
 rt_ci_nb3 <- confband(cv_mod_nb3, "lambda.min") # get 95% confidence band
 rt_ci_nb3 %>%
@@ -471,7 +475,7 @@ rt_ci_nb3 %>%
   theme_bw()
 
 cv_mod_nb4 <- cv_estimate_rt(nb_incidence4, korder=3, nfold=3, nsol=50, 
-                             dist_gamma = c(3.5, 3.5)) # k=2 or 3?
+                             dist_gamma = c(3.5, 3.5), error_measure = "mse") # k=2 or 3?
 rtestim_tuned_mod_nb4 <- cv_mod_nb4$full_fit$Rt[ ,which.min(cv_mod_nb4$cv_scores)]
 rt_ci_nb4 <- confband(cv_mod_nb4, "lambda.min") # get 95% confidence band
 rt_ci_nb4 %>%
@@ -856,6 +860,7 @@ save_example <- function(res_dat, palette = cbPalette){
     geom_line() +
     #scale_y_log10() + # axis of incidence in log scale
     labs(title = "Poisson incidence", y=" ", x="") + #(in log scale) 
+    coord_cartesian(ylim = c(0, 2500)) +
     theme(plot.title = element_text(hjust = 0.5)) + 
     theme_bw()
   fig3 <- res_dat %>%
@@ -863,6 +868,7 @@ save_example <- function(res_dat, palette = cbPalette){
     geom_line() +
     #scale_y_log10() + # axis of incidence in log scale
     labs(title = "Negative Binomial incidence", y=" ", x="") + #(in log scale) 
+    coord_cartesian(ylim = c(0, 2500)) +
     theme(plot.title = element_text(hjust = 0.5)) + 
     theme_bw()
   
@@ -874,13 +880,13 @@ save_example <- function(res_dat, palette = cbPalette){
   fig22 <- res_dat %>%
     ggplot(aes(y = Pois_count2, x = time)) +
     geom_line() +
-    #scale_y_log10() + # axis of incidence in log scale
+    coord_cartesian(ylim = c(0, 3000)) +
     labs(y=" ", x="") +  #(in log scale) 
     theme_bw()
   fig23 <- res_dat %>%
     ggplot(aes(y = NB_count2, x = time)) +
     geom_line() +
-    #scale_y_log10() + # axis of incidence in log scale
+    coord_cartesian(ylim = c(0, 3000)) +
     labs(y=" ", x="") +  #(in log scale) 
     theme_bw()
   
@@ -892,13 +898,13 @@ save_example <- function(res_dat, palette = cbPalette){
   fig32 <- res_dat %>%
     ggplot(aes(y = Pois_count3, x = time)) +
     geom_line() +
-    #scale_y_log10() + # axis of incidence in log scale
+    coord_cartesian(ylim = c(0, 1500)) +
     labs(y =" ", x="") +  #(in log scale) 
     theme_bw()
   fig33 <- res_dat %>%
     ggplot(aes(y = NB_count3, x = time)) +
     geom_line() +
-    #scale_y_log10() + # axis of incidence in log scale
+    coord_cartesian(ylim = c(0, 1500)) +
     labs(y =" ", x="") +  #(in log scale) 
     theme_bw()
 
@@ -910,13 +916,13 @@ save_example <- function(res_dat, palette = cbPalette){
   fig42 <- res_dat %>%
     ggplot(aes(y = Pois_count4, x = time)) +
     geom_line() +
-    #scale_y_log10() + # axis of incidence in log scale
+    coord_cartesian(ylim = c(0, 4000)) +
     labs(y=" ") +  #(in log scale) 
     theme_bw()
   fig43 <- res_dat %>%
     ggplot(aes(y = NB_count4, x = time)) +
     geom_line() +
-    #scale_y_log10() + # axis of incidence in log scale
+    coord_cartesian(ylim = c(0, 4000)) +
     labs(y=" ") +  #(in log scale) 
     theme_bw()
   
@@ -934,6 +940,7 @@ save_example <- function(res_dat, palette = cbPalette){
 head(res_dat)
 save_example(res_dat)
 ```
+
 
 
 # Real case 

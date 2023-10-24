@@ -1,7 +1,16 @@
 # choose problem solvers -------------
 algo_designs <- list(
-  rt_solver = data.table::CJ(
-    method = c('EpiEstim(week)', 'EpiEstim(month)', 'RtEstim', 'EpiLPS')
+  epiestim_week = data.table(
+    method = 'EpiEstim(week)'
+  ),
+  epiestim_month = data.table(
+    method = 'EpiEstim(month)'
+  ),
+  rtestim = data.table(
+    method = 'RtEstim'
+  ),
+  epilps = data.table(
+    method = 'EpiLPS'
   )
 )
 
@@ -17,7 +26,7 @@ problem_solver <- function(data, method, instance, ...){
   if(method %in% c("EpiEstim(week)", "EpiEstim(month)")){
     config <- generate_SI(method, gamma_pars[1], gamma_pars[2])
   } else if (method == "RtEstim") {
-    korder <- switch(Rt_case, "1" = 0, "2" = 3, "3" = 1, "4" = 3)
+    korder <- switch(Rt_case, "1" = 0, "2" = c(1,3), "3" = 1, "4" = 3)
   } else if (method == "EpiLPS") {
     si <- generate_SI(method, gamma_pars[1], gamma_pars[2])
   }
@@ -32,7 +41,7 @@ problem_solver <- function(data, method, instance, ...){
           config = config,
           method = "non_parametric_si")$R$`Mean(R)`
         Rt_fitted <- impute_NAs(Rt_fitted)
-        Rt_fitted <- c(rep(Rt_fitted[1], 7), Rt_fitted)
+        Rt_fitted <- c(rep(NA, 7), Rt_fitted)
       },
       times = 10, unit = "us"
     ),
@@ -43,17 +52,28 @@ problem_solver <- function(data, method, instance, ...){
           config = config,
           method = "non_parametric_si")$R$`Mean(R)`
         Rt_fitted <- impute_NAs(Rt_fitted) # impute the first few NAs in the fitted Rt
-        Rt_fitted <- c(rep(Rt_fitted[1], 30), Rt_fitted) # fill the first month by NAs
+        Rt_fitted <- c(rep(NA, 30), Rt_fitted) # fill the first month by NAs
       },
       times = 10, unit = "us"
     ),
     "RtEstim" = microbenchmark(
       {
-        cv_mod <- rtestim::cv_estimate_rt(incidence, korder=korder, nfold=3, 
-                                          nsol=50, maxiter = 1e7L, 
-                                          dist_gamma = c(3, 3),
-                                          error_measure = "mse")
-        Rt_fitted <- cv_mod$full_fit$Rt[ ,which.min(cv_mod$cv_scores)]
+        if(length(korder) == 1){
+          cv_mod <- rtestim::cv_estimate_rt(incidence, korder=korder, nfold=3, 
+                                            nsol=50, maxiter = 1e7L, 
+                                            dist_gamma = c(3, 3),
+                                            error_measure = "mse")
+          Rt_fitted <- cv_mod$full_fit$Rt[ ,which.min(cv_mod$cv_scores)]
+        } else {
+          Rt_fitted <- list()
+          for(i in 1:length(korder)) {
+            cv_mod <- rtestim::cv_estimate_rt(incidence, korder=korder[i], nfold=3, 
+                                              nsol=50, maxiter = 1e7L, 
+                                              dist_gamma = c(3, 3),
+                                              error_measure = "mse")
+            Rt_fitted[[i]] <- cv_mod$full_fit$Rt[ ,which.min(cv_mod$cv_scores)]
+          }
+        }
       },
       times = 10, unit = "us"
     ),
@@ -70,15 +90,29 @@ problem_solver <- function(data, method, instance, ...){
   # Save running times and Rt accuracy
   mean_runtime <- as.list(summary(runtime))$mean[1]
   # compute mean KL / Rt ratio
-  Rt_kl_pois <- compute_kl_pois(Rt_fitted[8:len], Rt[8:len])
-  Rt_kl_base <- compute_kl_base(incidence[8:len], Rt[8:len]) # NAs
+  if(method == "EpiEstim(month)"){
+    Rt_kl_pois <- NA
+    Rt_kl_pois_month <- compute_kl_pois(Rt_fitted[31:len], Rt[31:len])
+  } else if (method == "EpiEstim(week)") {
+      Rt_kl_pois <- compute_kl_pois(Rt_fitted[8:len], Rt[8:len])
+      Rt_kl_pois_month <- NA
+  } else if (Rt_case == 2 && method=="RtEstim") {
+      Rt_kl_pois <- list()
+      Rt_kl_pois_month <- list()
+      for(i in 1:length(korder)){
+        Rt_kl_pois[[i]] <- compute_kl_pois(Rt_fitted[[i]][8:len], Rt[8:len])
+        Rt_kl_pois_month[[i]] <- compute_kl_pois(Rt_fitted[[i]][31:len], Rt[31:len])
+      }
+  } else {
+      Rt_kl_pois <- compute_kl_pois(Rt_fitted[8:len], Rt[8:len])
+      Rt_kl_pois_month <- compute_kl_pois(Rt_fitted[31:len], Rt[31:len])
+  }
+  #Rt_kl_base <- compute_kl_base(incidence[8:len], Rt[8:len]) # NAs
   
   lst <- list()
   lst[["runtime"]] <- mean_runtime
-  lst[["Rt_kl_long"]] <- Rt_kl_pois_long
   lst[["Rt_kl"]] <- Rt_kl_pois
-  lst[["Rt_kl_base"]] <- Rt_kl_base
-  lst[["Rt_kl_base_long"]] <- Rt_kl_base_long
+  lst[["Rt_kl_month"]] <- Rt_kl_pois_month
   return(lst)
 }
 
