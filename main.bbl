@@ -1,4 +1,4 @@
-\begin{thebibliography}{27}
+\begin{thebibliography}{32}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -23,12 +23,28 @@ Patrice Abry, Nelly Pustelnik, St{\'e}phane Roux, Pablo Jensen, Patrick
   number r (t): Promoting piecewise smoothness via convex optimization.
 \newblock \emph{Plos one}, 15\penalty0 (8):\penalty0 e0237901, 2020.
 
+\bibitem[Alene et~al.(2021)Alene, Yismaw, Assemie, Ketema, Gietaneh, and
+  Birhan]{alene2021serial}
+Muluneh Alene, Leltework Yismaw, Moges~Agazhe Assemie, Daniel~Bekele Ketema,
+  Wodaje Gietaneh, and Tilahun~Yemanu Birhan.
+\newblock Serial interval and incubation period of covid-19: a systematic
+  review and meta-analysis.
+\newblock \emph{BMC Infectious Diseases}, 21:\penalty0 1--9, 2021.
+
 \bibitem[Azmon et~al.(2014)Azmon, Faes, and Hens]{azmon2014estimation}
 Amin Azmon, Christel Faes, and Niel Hens.
 \newblock On the estimation of the reproduction number based on misreported
   epidemic data.
 \newblock \emph{Statistics in medicine}, 33\penalty0 (7):\penalty0 1176--1192,
   2014.
+
+\bibitem[Bo{\"e}lle et~al.(2011)Bo{\"e}lle, Ansart, Cori, and
+  Valleron]{boelle2011transmission}
+Pierre-Yves Bo{\"e}lle, Severine Ansart, Anne Cori, and Alain-Jacques Valleron.
+\newblock Transmission parameters of the a/h1n1 (2009) influenza virus
+  pandemic: a review.
+\newblock \emph{Influenza and other respiratory viruses}, 5\penalty0
+  (5):\penalty0 306--316, 2011.
 
 \bibitem[Brauer et~al.(2019)Brauer, Castillo-Chavez, and
   Feng]{brauer2019mathematical}
@@ -66,6 +82,14 @@ Oswaldo Gressani, Jacco Wallinga, Christian~L Althaus, Niel Hens, and Christel
   time-varying reproduction number.
 \newblock \emph{PLoS computational biology}, 18\penalty0 (10):\penalty0
   e1010618, 2022.
+
+\bibitem[Griffin et~al.(2020)Griffin, Casey, Collins, Hunt, McEvoy, Byrne,
+  McAloon, Barber, Lane, and More]{griffin2020rapid}
+John Griffin, Miriam Casey, {\'A}ine Collins, Kevin Hunt, David McEvoy, Andrew
+  Byrne, Conor McAloon, Ann Barber, Elizabeth~Ann Lane, and SImon More.
+\newblock Rapid review of available evidence on the serial interval and
+  generation time of covid-19.
+\newblock \emph{BMJ open}, 10\penalty0 (11):\penalty0 e040263, 2020.
 
 \bibitem[Hettinger et~al.(2023)Hettinger, Rubin, and
   Huang]{hettinger2023estimating}
@@ -145,6 +169,13 @@ Eugen Pircalabelu.
 \newblock \emph{Journal of the Royal Statistical Society Series C: Applied
   Statistics}, page qlad027, 2023{\natexlab{b}}.
 
+\bibitem[Rai et~al.(2021)Rai, Shukla, and Dwivedi]{rai2021estimates}
+Balram Rai, Anandi Shukla, and Laxmi~Kant Dwivedi.
+\newblock Estimates of serial interval for covid-19: A systematic review and
+  meta-analysis.
+\newblock \emph{Clinical epidemiology and global health}, 9:\penalty0 157--161,
+  2021.
+
 \bibitem[Ramdas and Tibshirani(2016)]{ramdas2016fast}
 Aaditya Ramdas and Ryan~J Tibshirani.
 \newblock Fast and flexible admm algorithms for trend filtering.
@@ -202,5 +233,14 @@ Cristiano Trevisin, Enrico Bertuzzo, Damiano Pasetto, Lorenzo Mari, Stefano
   mobility data.
 \newblock \emph{Proceedings of the National Academy of Sciences}, 120\penalty0
   (20):\penalty0 e2219816120, 2023.
+
+\bibitem[White et~al.(2009)White, Wallinga, Finelli, Reed, Riley, Lipsitch, and
+  Pagano]{white2009estimation}
+Laura~Forsberg White, Jacco Wallinga, Lyn Finelli, Carrie Reed, Steven Riley,
+  Marc Lipsitch, and Marcello Pagano.
+\newblock Estimation of the reproductive number and the serial interval in
+  early phase of the 2009 influenza a/h1n1 pandemic in the usa.
+\newblock \emph{Influenza and other respiratory viruses}, 3\penalty0
+  (6):\penalty0 267--276, 2009.
 
 \end{thebibliography}

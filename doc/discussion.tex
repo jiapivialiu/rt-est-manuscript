@@ -34,16 +34,24 @@ A group of epidemiological models are compartmental models. They establish the e
 
 
 % limitation
-There are more practical considerations that may influence the quality of $\calR_t$ estimation to be considered late. 
+There are more practical considerations that may influence the quality of $\calR_t$ estimation to be considered later. 
 In our approach, we consider a homogeneous population without distinguishing the imported cases from the local cases. 
 % NB alternatives 
 Poisson distribution is frequently used to model non-negative count data with heteroskedasticity. Another common alternative is negative Binomial distribution with or without a specified level of overdispersion. 
-% 
+%
+We also assume the confirmed incidence is observable to a smoothly time-varying proportion over all incidences. If the observable proportion is constant over time, our effective reproduction numbers will be able to reflect the ``true'' $\calR_t$ values; however, if the proportion varies by time (which is almost true in reality due to the change of surveillance resources and testing recommendations), the estimates may deviate from the ``true'' values. 
+
 We consider a fixed serial interval throughout the transmission dynamics, but as the factors such as population immunity vary, the serial interval may vary as well due to the change of population factors such as herd immunity. % (\citep{nash2023estimating} pp.12). 
 Another common statement is that the distribution density of serial intervals is generally wider than the correspondence of generation intervals as serial interval includes both generation time and incubation time. If we assume generation time and incubation time both follow gamma distributions, the serial interval is likely to perform as a bimodal density. 
+% delay distributions
+A future adjustment on our model is to consider the delay distributions. We approximate the generation time (period from primary infection to secondary infection) using serial interval (period from primary onset to secondary onset) directly without measuring the uncertainty of the report delays. As a further adjustment, we may add another step from infection trajectory to reported case counts to measure the distribution of incubation period (period from infection to onset) and the report delay (period from onset to case report). Besides this, instead of assuming a fixed distribution, a more realistic setting may be to use time-varying parameters of these distributions. 
+% using other data?
+We may also consider other case counts for effective reproduction number estimation if the incidence data is unavailable or not of a good quality. We may use death counts instead, for example, with a corresponding distribution to measure the period between primary and secondary onsets of deaths to displace the current serial interval distribution. 
 
 % how about regional evolution?
 %A limitation is that it only takes the temporal evolution within a single region into account, and fails to consider the spatial connection or spatial-temporal evolution among regions. 
  %A potential future work is to extend the proposed model to analyze spatio-temporal transmission data. Such data has the inherit graphical structure such that temporal evolution within a region can be connected by lines (as time series) and spatial connection (of cross-sectional data) can be constructed by graphs where each pair of neighboring regions is linked by an edge. Moreover, the spatio-temporal evolution, i.e., the effects of previous infectious data of one region on current infections of neighboring regions, can be measured, for example, by linking the node of region $a$ at time $t-1$ to another node of region $b$ at time $t$. 
 %Through this way, different orders of spatial and temporal evolutions can be manually manipulated. 
  %In this case, we can directly apply Poisson trend filtering on graphs with minor adjustment. %A remarkable note is that the edge lengths need to be made comparable across temporal and regional connections.
+
+
