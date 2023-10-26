@@ -2,51 +2,159 @@
 
 \subsection{Renewal model for incidence data} 
 
-Effective reproduction number $\calR_t$, the expected secondary infection by a primary infection in a population at time $t$, is inherently a ratio of new infections at $t$ over the total primary infectious cases until $t$. Here, we assume an ideal scenario of homogenous population that individuals follow similar social behaviors, exposure risks and random mixing patterns such as having similar contact rates to each other or similar susceptibility and infectiousness. 
-Denote the new expected infections at time $t$ as $N_t$. Given an infectious period $\tau_t$ at $t$, we construct the total primary infectiousness as $\Lambda_t := \sum_{i=1}^{\tau_t} p_i N_{t-i}$, where $p_i$ is the infectious probability that a secondary case is infected by a primary case which is infected $i$ timepoints ago. The reproduction number can then be constructed based on the ratio $\calR_t := N_t / \Lambda_t$. Apply a constant observable proportion of infections $c\in (0,1)$ to all incidence counts, and it will get cancelled in the $\calR_t$ ratio. Assuming a smoothly time-varying observable proportion, the estimated $\calR_t$ may deviate from the ``underlying'' values, but the ``true'' changing points remain. Rearranging terms of the ratio yields the widely used renewal equation 
-\begin{equation} \label{eq:renew-equation}
-  N_t = \sum_{i=1}^{\tau_t} p_i\calR_t N_{t-i}
+The effective reproduction number $\calR(t)$
+is defined to be the expected number of secondary infections at time $t$
+produced by a primary infection sometime in the past.
+To make this precise, denote the number
+of new infections at time $t$ as $y_t$. Then the total primary
+infectiousness can be written as $\lambda(t) := \int_0^{\infty} p(i) y(t-i)
+\diff i$,
+where $p(i)$ is the probability that a new secondary infection is the result
+primary infection which occurred $i$ time units in the past. 
+The reproduction number is
+then given as the value that equates
+\begin{equation} \label{eq:pre-renew-equation}
+  y(t) = \calR(t)\lambda(t) = \calR(t)\int_0^\infty p(i)y(t-i)\diff i,
 \end{equation}
-for the analysis of transmission dynamics of infectious diseases. Other approaches, that are based on the renewal equation, include \EpiEstim\ \citep{cori2013new} and \texttt{EpiFilter} \citep{parag2021improved}. 
+otherwise known as the renewal equation. 
+The period between primary and secondary
+infections is exactly the generation time of the disease, but given real data,
+observed at discrete times (say, daily) this delay distribution must be discretized
+into contiguous time intervals,
+that is, $(0,1], (1,2], \dots$ resulting in the sequence $\{p_i\}_1^\infty$
+corresponding to observations $y_t$ and resulting in the
+discretized version of \eqref{eq:pre-renew-equation},
+\begin{equation} \label{eq:renew-equation}
+  y_t = \calR_t\lambda_t = \calR_t\sum_{i = 0}^\infty p_i y_{t-i}.
+\end{equation}
+Many approaches to estimating $\calR_t$ rely on \eqref{eq:renew-equation} as
+motivation for their procedures, among them,
+\EpiEstim\ \citep{cori2013new} and \texttt{EpiFilter}
+\citep{parag2021improved}. 
 
 % serial interval probabilities
-The sequence of probabilities $p_{1:\tau_t}$ gives the probabilities that a secondary infection at $t$ is infected by a primary infection that is infected $1$ to $\tau_t$ timepoints ago. The period between primary and secondary infections is exactly the generation time. Theoretically, $p_{1:\tau_t}$ are probabilities of the generation time in discretized, contiguous time intervals, i.e., $(0,1], (1,2], \dots, (\tau_{t-1}, \tau_t]$. We assume that the infectiousness disappears beyond $\tau_t$ timepoints, so that the sequence $p_{1:\tau_t}$ has a sum of $1$. 
-
-Generation time, however, is usually unobservable and tricky to estimate. We take a common strategy that approximating it by serial interval which is the period between the symptom onsets of primary and secondary infections. When the infectiousness profile after symptoms is independent of the incubation period (i.e., the period from the time of infections to the time of symptom onsets when the cases are confirmed), the serial interval is regarded identical as the generation time \citep{cori2013new}. 
-We assume the distribution of generation time, and correspondingly serial interval, to be independent to time $t$, i.e., the probability $p_i$ is only relevant to the relative time range $i$ between primary and secondary infections. The sequence $p_{1:\tau_t}$ only depends on $t$ by a chosen length $\tau_t$; if $\tau_t$ is given, the probability sequence will be right-truncated at $\tau_t$ and rescaled to have a sum of $1$. 
-We assume that the serial interval follows Gamma distribution, which is demonstrated to be a reasonable choice in many existing studies, e.g., \cite{cori2013new,abry2020spatial,pascal2022nonsmooth}.
-
+In most cases, it is safe to assume that
+infectiousness disappears beyond $\tau$ timepoints ($p(i) = 0$ for $i > \tau$)
+so that the truncated integral of the generation interval distribution
+$\int_0^\tau p(i)\diff i = 1$. 
+Generation time, however, is usually unobservable and tricky to estimate, so
+common practice is to approximate it by the serial interval: the period between
+the symptom onsets of primary and secondary infections. If the infectiousness
+profile after symptom onset is independent of the incubation period (the period
+from the time of infection to the time of symptom onset), then this
+approximation is justifiable: the serial interval distribution and the
+generation interval distribution share the same mean. However, other properties
+may not be similarly shared, and, in general, the generation interval
+distribution is a convolution of the serial interval distribution with the
+distribution of the differance between independent draws from the delay
+distribution from infection to symptom onset. See, for example,
+\citep{gostic2020practical} for a fuller discussion of the dangers of this
+approximation. Nonetheless, treating these as interchangable is common
+\citep{cori2013new} and beyond the scope of this work. Additionally, we assume
+that the generation interval (and, therefore, the serial interval), is constant over time
+$t$. That is, the probability $p(i)$ depends only on the gap between primary and
+secondary infections and not on the time $t$ when the secondary infection
+occurs. For our methods, we will assume that the serial interval can be
+accurately estimated from auxilliary data (say by contact tracing, or previous
+epidemics) and we will take it as fixed, as is common in existing studies, e.g.,
+\cite{cori2013new,abry2020spatial,pascal2022nonsmooth}.
 
 % advantage of using the renewal equation
-The renewal equation in \eqref{eq:renew-equation} quantifies the transmission dynamic that primary incidences result in new incidences by effective reproduction numbers given serial interval. This dynamic is straightforward and efficient in data usage, since it only depends on the observed incidence counts (which can be easily obtainable, usually sufficient and of good quality such as completeness, accuracy, and timeliness) and the specification of serial interval distribution. 
+The renewal equation in \eqref{eq:renew-equation} relates observable data
+streams (incident cases) occurring at different time points to the reproduction
+number given the serial interval. The fact that it depends only on the observed
+incidence counts makes it reasonable to estimate $\calR_t$. However, this
+relationship obscures some difficulties in data collection. Diagnostic testing
+targets symptomatic individuals, omitting asymptomatic primary infections which
+can lead to future secondary infections. Testing practices, availability, and
+uptake can vary across space and time \citep{pitzer2021impact,
+hitchings2021usefulness}. Finally, incident cases as reported to public health
+are subject to delays due to laboratory confirmation, test turnaround times, and
+eventual submission to public health \citep{pellis2021challenges}. For these
+reasons, reported cases are lagging indicators of the course of the pandemic.
+Furthermore, they do not represent the actual number of new infections that
+occur on a given day, as indicated by exposure to the pathogen. The assumptions
+described above (constant serial interval distribution, homogenous mixing,
+similar susceptibility and social behaviours, etc.) are therefore consequential.
+That said, \eqref{eq:renew-equation} also provides some comfort about deviations
+from these assumptions. If $y_t$ is scaled by a constant (in time) describing
+the reporting ratio, then it will cancel from both sides. Similar arguments mean
+that even if such a scaling varies in time, as long as it varies slowly relative
+to the set of $p_i$ that are larger than 0, \eqref{eq:renew-equation} will be a
+reasonably accurate approximation, so that $\calR_t$ can still be estimated well
+from reported incidence data. Finally, even a sudden change, say from $c_1$ for
+$i=1,\ldots,t_1$ to $c_2$ for $i>t_1$ would only result in large errors for $t$
+in the neighbourhood of $t_1$ (where the size of this neighbourhood is again
+determined by the effective support of $\{p_i\}$). This robustness to certain
+types of data reporting issues provides some degree of comfort when depending on
+\eqref{eq:renew-equation} to calculate $\calR_t$.
 
 \subsection{Poisson trend filtering estimator} %Proximal optimization
 
-We use the daily confirmed cases $y_t$ on day $t$ to estimate the observed infectious cases by assuming a consistent incubation period and further assume $y_t$ to be Poisson distributed with mean $N_t$, i.e., 
-\begin{equation*} 
-  y_t \sim \mathrm{Poisson}(N_t),
-\end{equation*}
-where $N_t = \Lambda_t \calR_t$. Considering retrospectively a past period of $n$ days, our interest is to estimate the Poisson parameter $\calR_t$ given confirmed incidence counts ${y}_{1:n} := \{y_1,\dots,y_n\}$ and the total infectiousness based on the confirmed cases $\Lambda^{\ast}_t := \sum_{i=1}^{\tau_t} p_i y_{t-i}$. A natural approach is to solve the maximum likelihood estimates (MLEs), i.e., 
+We use the daily confirmed incident cases $y_t$ on day $t$ to estimate the
+observed infectious cases under the model that $y_t$ given previous incident
+cases $y_{t-1},\ldots,y_1$ and a constant serial interval distribution follows a
+Poisson distribution with mean $\lambda_t$. That is, $y_t \sim
+\mathrm{Poisson}(\lambda_t)$, where $\lambda_t =  \calR_t\sum_{i=0}^{t}p_i
+y_{t-i}$. Given a history of $n$ confirmed incidence counts $\bfy = (y_1,\ldots,y_n)^\top$,
+our interest is to estimate $\calR_t$. A natural approach is to maximize the
+likelihood, producing the MLE:
 \begin{equation} \label{eq:mle}
   \begin{split}
-    \hat{\calR}_t :&= \Argmax{\calR_t \in \bbR_+} \bbP(\calR_{1:n} \mid y_{1:n}, p_{1:\tau_t}) \\
-    &= \Argmax{\calR_t \in \bbR_+} \prod_{t = 1,\dots,n} \frac{e^{- \calR_t \Lambda^{\ast}_t} \lr{\calR_t \Lambda^{\ast}_t}^{y_t} }{y_t!}.
+    \widehat{\calR} &= \Argmax{\calR \in \bbR_+^n} \bbP(\calR \mid \bfy,\ \bfp)
+    = \Argmax{\calR \in \bbR^n_+} \prod_{t = 1,\dots,n} 
+    \frac{e^{- \calR_t \lambda_t} \lr{\calR_t \lambda_t}^{y_t} }{y_t!}\\
+    &= \Argmin{\calR\in\bbR^n_+} \frac{1}{n}\sum_{i = 1}^n \calR_t\lambda_t - y_t\log(\calR_t\lambda_t).
   \end{split}
 \end{equation}
-This maximization problem, however, yields a one-to-one correspondence between the confirmed case (or the total infectiousness) and the effective reproduction number per day, i.e. $\hat{\calR}_t = y_t / \Lambda^{\ast}_t$, so that the estimated curves have no significant graphical smoothness. 
+This optimization problem, however, is easily seen to yields a one-to-one
+correspondence between the confirmed cases and the effective reproduction, i.e.
+$\widehat{\calR}_t = y_t / \lambda_t$, so that the estimated sequence
+$\widehat{\calR}$ will have no significant graphical smoothness.
 
-The MLE provides an unbiased estimation of the true observations, but leads to high variance at the same time. We introduce smoothness of the effective reproduction numbers into the model to lower down the variance for a more balanced bias-variance tradeoff and correspondingly a lower prediction risk. Meanwhile, the smoothed estimation can still keep the critical changing points of the transmissibility for the reference to policy makers. 
+The MLE provides an unbiased estimation of the true observations, but leads to
+high variance at the same time. We introduce smoothness of the effective
+reproduction numbers into the model to decrease the variance, leading to more
+accurate estimation (assuming that neighbouring values of $\calR_t$ are
+similar to each other).
+Meanwhile, the smoothed estimation can still keep the critical changing points
+of the transmissibility for the reference to policy makers. 
 %Smoothness of the effective reproduction numbers is a key to understand the trend of transmissibility of infectious diseases in retrospective studies. 
-Smoother estimated curves give more high-level ideas with less changing points and hide minor details, and vice versa. 
-We assume the effective reproduction numbers to appear as piecewise polynomials with multiple knots (i.e., changing points of graphical curvature) with varying degrees. We specifically consider discrete splines with various degrees of continuity. For instance, the $0$th degree discrete splines are piecewise constant, the $1$st degree curves are piecewise linear, and the $2$nd degree curves are piecewise quadratic. For $k\geq 1$, the $k$th degree discrete splines are continuous and have continuous discrete differences up to degree $k-1$ at the knots. 
+Smoother estimated curves give more high-level ideas with less changing points
+and hide minor details, and vice versa. We assume the effective reproduction
+numbers to appear as piecewise polynomials with multiple knots (i.e., changing
+points of graphical curvature) with varying degrees. We specifically consider
+discrete splines with various degrees of continuity. For instance, the $0$th
+degree discrete splines are piecewise constant, the $1$st degree curves are
+piecewise linear, and the $2$nd degree curves are piecewise quadratic. For
+$k\geq 1$, the $k$th degree discrete splines are continuous and have continuous
+discrete differences up to degree $k-1$ at the knots. 
 
-To achieve such smoothness, we regularize the distance between adjacent effective reproduction numbers. Since $\calR_t > 0$, penalizing the distance between $\calR_t$s directly may cause numerical issues such that there may be negative estimates generated in computation. Therefore, we equivalently penalize the distance between natural logarithms of neighboring $\calR_t$s through divided differences (i.e., discrete derivatives) with various orders.  
-Compared to splines, discrete splines introduce computational efficiency without loss of numerical accuracy. 
-We penalize $\ell_1$ norm of the distance, which introduces sparsity into the curvature, so that the estimates have heterogeneous smoothness in different subregions of the entire domain. It is a more realistic setting compared to homogeneous smoothness in the squared $\ell_2$ norm. 
-The divided differences with various orders realize the temporal evolution of effective reproduction numbers with various degrees. 
+To achieve such smoothness, we regularize the distance between adjacent
+effective reproduction numbers. Since $\calR_t > 0$, penalizing the distance
+between $\calR_t$s directly may cause numerical issues such that there may be
+negative estimates generated in computation. Therefore, we equivalently penalize
+the distance between natural logarithms of neighboring $\calR_t$s through
+divided differences (i.e., discrete derivatives) with various orders.  
+Compared to splines, discrete splines introduce computational efficiency without
+loss of numerical accuracy. We penalize $\ell_1$ norm of the distance, which
+introduces sparsity into the curvature, so that the estimates have heterogeneous
+smoothness in different subregions of the entire domain. It is a more realistic
+setting compared to homogeneous smoothness in the squared $\ell_2$ norm. The
+divided differences with various orders realize the temporal evolution of
+effective reproduction numbers with various degrees. 
 
-We define a penalized regression to solve the MLE problem with the smoothness regularization in \eqref{eq:rt-ptf}. It is a minimization problem with Poisson loss (which is the negative log-likelihood of Poisson distributions) to control the data fidelity and the trend filtering penalty to control the graphical smoothness \citep{kim2009ell_1,tibshirani2014adaptive,tibshirani2022divided}. The problem solves a Poisson trend filtering (PTF) estimator on univariate cases. 
-Let $\theta := \log(\calR) \in \bbR^n$, and then $\Lambda\circ \calR = \Lambda\circ e^{\theta}$, $\log(\Lambda\circ \calR) = \log(\Lambda) + \theta$, where $\circ$ is elementwise product, $e^{a}, \log(a)$ apply to vector $a$ elementwise. Let $w:=\Lambda$ to represent weights in the objective. Define the problem with evenly spaced incidences as: 
+We define a penalized regression to solve the MLE problem with the smoothness
+regularization in \eqref{eq:rt-ptf}. It is a minimization problem with Poisson
+loss (which is the negative log-likelihood of Poisson distributions) to control
+the data fidelity and the trend filtering penalty to control the graphical
+smoothness \citep{kim2009ell_1,tibshirani2014adaptive,tibshirani2022divided}.
+The problem solves a Poisson trend filtering (PTF) estimator on univariate
+cases. Let $\theta := \log(\calR) \in \bbR^n$, and then $\Lambda\circ \calR =
+\Lambda\circ e^{\theta}$, $\log(\Lambda\circ \calR) = \log(\Lambda) + \theta$,
+where $\circ$ is elementwise product, $e^{a}, \log(a)$ apply to vector $a$
+elementwise. Let $w:=\Lambda$ to represent weights in the objective. Define the
+problem with evenly spaced incidences as: 
 %We further regularize the smoothness of the reproduction number using the $\ell_1$ norm of the divided difference of the natural logarithm of $\calR$, which is real-valued. 
 \begin{equation} \label{eq:rt-ptf}
     \begin{split}
@@ -62,6 +170,7 @@ $$D^{(1)} :=
  & & & -1 & 1
 \end{pmatrix}.
 $$ 
+
 Define $D^{(0)} := I_n$, which is an identity matrix with size $n$. %An exponential transformation is applied to the PTF estimator $\hat{\theta}$ to get the estimated reproduction numbers. 
 
 The tuning parameter $\lambda$ balances the contributions between data fidelity and smoothness. When $\lambda=0$, the problem in \eqref{eq:rt-ptf} reduces to the regular least squares problem. A larger tuning parameter gives a higher importance on the regularization term and yields a smoother curve until the divided differences are all zeros, i.e., all parameters are projected onto the null space of the corresponding divided difference matrix(, since the tuning parameter is large enough to make the penalty term dominate the objective). 

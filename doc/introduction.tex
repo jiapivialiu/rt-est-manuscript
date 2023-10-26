@@ -11,14 +11,16 @@ secondary infections caused by a new primary infection that occurs at a specific
 time. Tracking the time series of this quantity
 is therefore useful for understanding whether or not future infections are
 likely to increase or decrease from the current state.
-Let $\calR_t$ denote the effective reproduction number at time $t$. Practically,
-as long as $\calR_t < 1$, infections will decline gradually, eventually
-resulting in a disease-free equilibrium, whereas when $\calR_t
+Let $\calR(t)$ denote the effective reproduction number at time $t$. Practically,
+as long as $\calR(t) < 1$, infections will decline gradually, eventually
+resulting in a disease-free equilibrium, whereas when $\calR(t)
 > 1$, infections will continue to increase, resulting in endemic
 equilibrium. 
 %
 %% significance/necessity of modeling Rt: 
-The sequence of effective reproduction numbers over time is not observable, but
+While $\calR(t)$ is fundamentally a continuous time quantity, it can be related
+to data only at discrete points in time $t = 1,\ldots,n$.
+This sequence of effective reproduction numbers over time is not observable, but
 nonetheless is easily interpretable and retrospectively describes the course of
 an epidemic. Therefore, a number of procedures exist to estimate $\calR_t$ from
 different types of observed incidence data such as cases, deaths, or
