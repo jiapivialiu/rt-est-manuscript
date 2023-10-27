@@ -13,7 +13,7 @@
 %\DeclarePairedDelimiter\norm\lVert\rVert
 
 %% define a rotated tilted `less & greater than' with certain rotated angles
-\usepackage{amssymb,stackengine,graphicx,scalerel}
+\usepackage{stackengine,graphicx,scalerel}
 \newcommand\rotlesssim{\mathrel{\ensurestackMath{\ThisStyle{%
   \stackengine{-.4\LMex}{\SavedStyle<}{%
     \rotatebox{-15}{$\SavedStyle\sim$}}{U}{r}{F}{T}{S}}}}}
@@ -32,17 +32,16 @@
 \usepackage{centernot}
 
 % graphics
-\usepackage{graphicx}
 \DeclareGraphicsExtensions{.pdf,.png,.jpg}
 \graphicspath{ {fig/} }
-\usepackage{wrapfig}
-\usepackage{graphics}
+%\usepackage{wrapfig}
+%\usepackage{graphics}
 
 % tables
 \usepackage{multirow}
-\usepackage{float}
-\setlength{\footskip}{40pt}
-\font\myfont=cmr12 at 20pt
+%\usepackage{float}
+%\setlength{\footskip}{40pt}
+%\font\myfont=cmr12 at 20pt
 
 % theory
 \newtheorem{lemma}{Lemma}
@@ -57,7 +56,7 @@
 
 % others: appendix, color and more
 \usepackage[usenames,dvipsnames]{xcolor}
-\usepackage{appendix}
+%\usepackage{appendix}
 \usepackage{titlesec}
 %\usepackage{fancyhdr}
 %\pagestyle{fancy}
@@ -82,4 +81,4 @@
 %\crefname{appsec}{appendix}{appendices}
 %\Crefname{appsec}{Appendix}{Appendices}
 
-
+\newcommand{\attn}[1]{\textcolor{red}{ATTN: #1}}
