@@ -194,7 +194,7 @@ To investigate the performance under the violation of the Poisson distributional
 assumption (of both \RtEstim\ and \EpiEstim), we also examine estimation
 accuracy with negative Binomial data. \autoref{fig:nb-est} displays a
 realization, analogous to the previous case, for all methods and scenarios.
-\RtEstim\ has more difficulty relative to the Poisson incidence cases,
+\RtEstim\ has more difficulty relative to the Poisson incidence setting,
 especially at the beginning of the outbreak. This is most pronounced in Scenario
 4, where \RtEstim\ is overly smooth, except in the last wave. In Scenario 2,
 \RtEstim\ successfully captures the changepoint, but suffers from the same
@@ -213,10 +213,10 @@ in the Poisson incidence cases.
 
 Finally, it is important to provide a brief comparison of the running times of
 three models across the $8$ experimental settings. We find that almost all
-models across all experiments complete within $10$ seconds to converge.
+models across all experiments complete within $10$ seconds.
 \RtEstim\ generally takes the longest, likely due to a relatively large
 candidate set---$50$ values of $\lambda$ and 3 folds of cross validation---while
-other models only run a single time for a fixed setting of hyperparameters per
+other models run only a single time for a fixed setting of hyperparameters per
 experiment. Additional results on timing comparisons are deferred to the
 supplementary document. 
 
@@ -225,37 +225,59 @@ supplementary document.
 \subsection{Real-data results: Covid-19 incident cases in British Columbia}
 
 % introduce data & tuning parameter setup
-We implement our \RtEstim\ on the Covid-19 confirmed cases in British Columbia
-(B.C.) as of May 18, 2023 (visualized in \autoref{fig:covid-data}) reported by
-B.C. Centre for Disease Control. The reported incidence cases provide a snapshot
-of how testing recommendations and practices have changed over the three years.
-We choose the gamma distribution with shape $2.5$ and scale $2.5$ to approximate
-the serial interval function, which is empirically found to be a reasonable
-choice. 
+We implement \RtEstim\ on Covid-19 incident confirmed cases in British Columbia
+(B.C.) as reported on May 18, 2023 (visualized in \autoref{fig:covid-data}) by
+the B.C.\ Centre for Disease Control. The reported incident cases provide a
+snapshot of how testing recommendations and practices have changed over the
+three years. We use the gamma distribution with shape $2.5$ and scale $2.5$
+to approximate the serial interval function, which is empirically
+reasonable based on \attn{cite some source here...}
 
 \begin{figure}[tb]
     \centering
     \includegraphics[width=0.9\textwidth]{fig/covid_dat.png}
-    \caption{Covid19 daily confirmed incidence counts between March 1st, 2020 and April 15th, 2023 in British Columbia, Canada.} 
+    \caption{Covid-19 daily confirmed incident cases between March 1st, 2020 and April 15th, 2023 in British Columbia, Canada.} 
     \label{fig:covid-data}
 \end{figure} 
 
 % interpret figures -- across all lambdas
-Considering the temporal evolutions of effective reproduction numbers across $3, 4, 5$ days, the estimated reproduction numbers of Covid-19 in British Columbia (illustrated in \autoref{fig:covid-rt}) are less than $3$ during most of the time, which means that one distinct infected individuals can on average infect less than three other individuals in the population. The three degrees of the temporal evolution (across all regularization levels $\lambda$) all yield similar results that $\hat{\calR}_t$ comes to the highest peak around the end of 2021 and then drops down to the lowest trough shortly thereafter. Throughout the estimated curves, the peaks and troughs of the reproduction numbers roughly come prior to the following growths and decays of confirmed cases respectively.
-% CBs for real epidemic applications
-We also visualize the 95\% empirical confidence bands of the point estimates for the ``best'' tuning parameter (in terms of MSEs). 
+Considering the temporal evolution of effective reproduction numbers across $3,
+4, 5$ days, the estimated reproduction numbers of Covid-19 in British Columbia
+(illustrated in \autoref{fig:covid-rt}) are less than $3$ during most of the
+time, which means that one distinct infected individuals can on average infect
+less than three other individuals in the population. \attn{I don't know what the
+previous sentence is trying to say.} Examining three different settings for $k$,
+the temporal evolution of $\widehat{\calR}$ (across all regularization levels
+$\lambda$) are similar near the highest peak around the end of 2021 before
+dropping shortly thereafter. Throughout the estimated curves, the peaks and
+troughs of the reproduction numbers precede the growth and decay cycles of
+confirmed cases, as expected. We also visualize 95\% confidence bands for the
+point estimates at the optimal tuning parameter (in terms of MSE) in \autoref{fig:covid-rt}. \attn{How
+did you calculate ``best''} 
 
-The reproduction numbers are relatively unstable before April 1st, 2022. The highest peak coincides with the emergence and globally spread of the Omicron variant. The estimated reproduction numbers are apparently below the threshold $1$ during two time periods -- roughly from April 1st, 2021 to July 1st, 2021 and from January 1st, 2022 to April 1st, 2022. The first trough coincides with the first authorization for use of Covid-19 vaccines in British Columbia. The second trough shortly after the greatest peak may credit to many aspects, including self-isolation of the infected individuals and application of the second shot of Covid-19 vaccines. Since around April 1st, 2022, the reproduction numbers stay stable (fluctuating around $1$) and the infected cases stay low. 
+The estimated reproduction numbers are relatively unstable before April 1st,
+2022. The highest peak coincides with the emergence and global spread of the
+Omicron variant. The estimated reproduction numbers fall below 1 during two time
+periods---roughly from April 1st, 2021 to July 1st, 2021 and from January 1st,
+2022 to April 1st, 2022. The first trough coincides with the introduction of
+Covid-19 vaccines in British Columbia. The second trough, shortly after the
+greatest peak may be due to variety of factors resulting in the depletion of the
+susceptible population such as increased self-isolation in response to the peak
+and media and immunity incurred via recent infection. Since around April 1st,
+2022, estimated reproduction numbers have remained relatively stable stable
+(fluctuating around $1$) corresponding to low reported cases (though reporting
+behaviours have also changed significantly since the Omicron wave). 
 
-% for different lambda
-Greater regularization levels (by using larger $\lambda$s) result in smoother
-estimated curves. Smoother curves suggest that the estimated reproduction
-numbers are around $1$ during most time periods; however, it may miss to capture
-some outbreaks of the pandemic. More wiggly curves better reflect the
-fluctuation of $\calR_t$, but sometimes fail to highlight the significant peaks
-or troughs. The tuning parameter $\lambda$ needs to be chosen corresponding to
-the information in practice for a better interpretation. Here, we provide the
-CV-chosen $\calR_t$ estimates with confidence bands. 
+% for different lambda (DJM: not clear to me what the following adds. We should
+% discuss the CV choice above.) Greater regularization levels (by using larger
+% $\lambda$'s) result in smoother estimated curves. Smoother curves suggest that
+% the estimated reproduction numbers are around $1$ during most time periods;
+% however, it may miss to capture some outbreaks of the pandemic. More wiggly
+% curves better reflect the fluctuation of $\calR_t$, but sometimes fail to
+% highlight the significant peaks or troughs. The tuning parameter $\lambda$
+% needs to be chosen corresponding to the information in practice for a better
+% interpretation. Here, we provide the CV-chosen $\calR_t$ estimates with
+% confidence bands. 
 
 \begin{figure}[tb]
     \centering
@@ -267,13 +289,23 @@ CV-chosen $\calR_t$ estimates with confidence bands.
 
 \subsection{Pandemic influenza in Baltimore, Maryland, 1918}
 
-We then apply \RtEstim\ on the pandemic influenza in Baltimore, Maryland, 1918. Dataset in \autoref{fig:flu-dat} is obtained from the \texttt{R} package \EpiEstim. The 1918 influenza, caused by H1N1 influenza A virus, was an unprecedentedly deadly influenza that infected almost one-third of the population across the world \citep{taubenberger20061918}. 
-In the estimation displayed in \autoref{fig:flu-res}, the CV-tuned piecewise
-cubic estimates better capture the growing tendency at the beginning of the
-pandemic. It suggests that the pandemic has yielded a decrease after around 20
-days and reached $1$ when the pandemic has lasted for nearly 50 days. However,
-it also suggests an increase at the end of the period, while a steady decline
-(as in CV-tuned piecewise constant and linear estimates) is more reasonable. The
+We also apply \RtEstim\ to reported influenza cases in Baltimore, Maryland
+occurring during the world-wide pandemic of 1918. The dataset (shown in
+\autoref{fig:flu-dat}) is included in the \EpiEstim \texttt{R} package. The 1918
+influenza outbreak, caused by the H1N1 influenza A virus, was an unprecedentedly
+deadly, infecting almost one-third of the population across the world
+\citep{taubenberger20061918}. In \autoref{fig:flu-res}, the CV-tuned piecewise
+cubic estimates best capture the growth at the beginning of the pandemic. It
+suggests that the pandemic grew rapidly over \attn{Is this really daily? Seems
+awfully fast. I suspect weekly. And possibly deaths?} the first 30 before
+declining below $1$ when the after 50 days. However, it also suggests an
+increase toward the end of the period, while a steady decline (as in CV-tuned
+piecewise constant and linear estimates) may be more reasonable \attn{hard to
+say without more data for the next wave. I suspect that this is weekly data, and
+this would be the beginning of the next season. We should make sure}. 
+
+
+\attn{This sentiment is more appropriate to the discussion, I think.} The
 smoothness of $\calR_t$ curves should be chosen based on the purpose of the
 study in practice, e.g., epidemic forecasting may require a more wiggly curve
 that contains more fluctuation information, while retrospective studies that
@@ -283,14 +315,20 @@ less important information smoothed out.
 \begin{figure}[tb]
     \centering
     \includegraphics[width=0.9\linewidth]{fig/flu_dat.png}
-    \caption{Pandemic influenza incidence counts in Baltimore, Maryland in 1918.} 
+    \caption{Influenza incidence counts in Baltimore, Maryland in
+    1918. \attn{The x-axis needs actual dates.}} 
     \label{fig:flu-dat}
 \end{figure} 
 
 \begin{figure}[tb]
     \centering
     \includegraphics[width=0.9\linewidth]{fig/flu_full_res.png}
-    \caption{Estimated effective reproduction numbers for pandemic influenza incidence counts in Baltimore, Maryland in 1918. The left panels display the CV-tuned estimates with 95\% confidence intervals. The right panels demonstrate estimates corresponding to 50 tuning parameters. The top, medium and bottom panels illustrate the estimated reproduction numbers ($\calR_t$) using the Poisson trend filtering (in \eqref{eq:rt-ptf}) with degrees $k=1,2,3$ respectively.} 
+    \caption{Estimated effective reproduction numbers for influenza in
+    Baltimore, Maryland in 1918. The left column displays the CV-tuned estimates
+    with 95\% confidence bands. The right panels show estimates for all
+    50 tuning parameters under consideration. The rows (top to bottom) show
+    estimated reproduction numbers ($\calR_t$) using the Poisson trend filtering
+    (in \eqref{eq:rt-ptf}) with degrees $k=1,2,3$ respectively.} 
     \label{fig:flu-res}
 \end{figure} 
 
