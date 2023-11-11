@@ -5,8 +5,8 @@ source("src/experiments/generate_data.R")
 source("src/experiments/design_algos.R")
 
 # create experiments ----
-#rt_exp = makeExperimentRegistry("src/experiments/rt_exp5", seed = 525)
-rt_exp = loadRegistry("src/experiments/rt_exp5", writeable = T)
+#rt_exp = makeExperimentRegistry("src/experiments/rt_exp6_cv_deviance", seed = 142)
+rt_exp = loadRegistry("src/experiments/rt_exp6_cv_deviance", writeable = T)
 rt_exp$cluster.functions = makeClusterFunctionsMulticore(ncpus = 8)
 
 # design experiments ----
@@ -21,11 +21,23 @@ addProblem(name = "NB_scenario4", data = NULL, fun = data_generator)
 
 addAlgorithm(name = "epiestim_week", fun = problem_solver)
 addAlgorithm(name = "epiestim_month", fun = problem_solver)
-addAlgorithm(name = "rtestim", fun = problem_solver)
 addAlgorithm(name = "epilps", fun = problem_solver)
+addAlgorithm(name = "rtestim0", fun = problem_solver)
+addAlgorithm(name = "rtestim1", fun = problem_solver)
+addAlgorithm(name = "rtestim3", fun = problem_solver)
 
-# add or remove experiments ----
-addExperiments(problem_designs, algo_designs, repls = 1, combine = 'crossprod')
+addExperiments(problem_design1, algo_design1, repls = 50, combine = 'crossprod')
+addExperiments(problem_design2, algo_design1, repls = 50, combine = 'crossprod')
+addExperiments(problem_design3, algo_design1, repls = 50, combine = 'crossprod')
+addExperiments(problem_design4, algo_design1, repls = 50, combine = 'crossprod')
+# rtestim exp's
+addExperiments(problem_design1, algo_design2, repls = 50, combine = 'crossprod')
+addExperiments(problem_design2, algo_design3, repls = 50, combine = 'crossprod')
+addExperiments(problem_design2, algo_design4, repls = 50, combine = 'crossprod')
+addExperiments(problem_design3, algo_design3, repls = 50, combine = 'crossprod')
+addExperiments(problem_design4, algo_design4, repls = 50, combine = 'crossprod')
+
+## summarize all experiments 
 summarizeExperiments(by = c("Rt_case", "dist", "method"))
 
 #removeExperiments(ids = 1:1600)
@@ -34,6 +46,7 @@ summarizeExperiments(by = c("Rt_case", "dist", "method"))
 # test before submitting ----
 source("src/experiments/tests.R")
 
+rt_exp$seed <- 514
 # getting system running time during running jobs ----
 getStatus()
 
@@ -42,30 +55,28 @@ submitJobs()
 # get reduced results ----
 res <- ijoin(
   getJobPars(ids=findJobs()$job.id),
-  reduceResultsDataTable(ids=findJobs()$job.id,fun = function(x) list(res_list = x))
+  reduceResultsDataTable(ids=findJobs()$job.id, fun = function(x) list(res_list = x))
 )
 for(i in 1:nrow(res)){
   res$result[[i]] <- res$result[[i]]$res_list
 }
-Rt_no_result <- unwrap(res[,-"result"])#, sep = "."
-Rt_no_result
-res_no_rtestim <- unwrap(res[(res$algorithm!="rtestim" | Rt_no_result$Rt_case!=2), ])
+Rt_result <- unwrap(res)
 
-my_list <- res[Rt_no_result$Rt_case==2,][algorithm=="rtestim",]$result
-combined_dat <- lapply(my_list, function(component) {
-  data.frame(
-    runtime = component$runtime, 
-    Rt_kl = component$Rt_kl[[1]], 
-    Rt_kl2 = component$Rt_kl[[2]],
-    Rt_kl_month = component$Rt_kl_month[[1]],
-    Rt_kl_month2 = component$Rt_kl_month[[2]])
-})
-res_rtestim <- do.call(rbind, combined_dat)
-res_rtestim <- data.table(
-  Rt_no_result[Rt_no_result$Rt_case==2,][algorithm=="rtestim",],
-  res_rtestim
-)
+#Rt_no_result <- unwrap(res[,-"result"])#, sep = "."
+#Rt_no_result
+#res_no_rtestim <- unwrap(res[(res$algorithm!="rtestim" | Rt_no_result$Rt_case!=2), ])
+#my_list <- res[Rt_no_result$Rt_case==2,][algorithm=="rtestim",]$result
+#combined_dat <- lapply(my_list, function(component) {
+#  data.frame(
+#    runtime = component$runtime, 
+#    Rt_kl = component$Rt_kl,
+#    Rt_kl_month = component$Rt_kl_month)
+#})
+#res_rtestim <- do.call(rbind, combined_dat)
+#res_rtestim <- data.table(
+#  Rt_no_result[Rt_no_result$Rt_case==2,][algorithm=="rtestim",],
+#  res_rtestim
+#)
+#Rt_result <- full_join(res_no_rtestim, res_rtestim)
 
-Rt_result <- full_join(res_no_rtestim, res_rtestim)
-
-saveRDS(Rt_result, "src/experiments/rt_exp5_results.RDS")
+saveRDS(Rt_result, "src/experiments/rt_exp6_results.RDS")

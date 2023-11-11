@@ -1,33 +1,39 @@
 ## create problems -------------
-problem_designs <- list(
+problem_design1 <- list(
   # 4 scenarios of Rt curvatures
   pois_scenario1 = data.table::CJ(
     Rt_case = 1,
     dist = "poisson" # Poisson-distributed incidence
   ),
+  NB_scenario1 = data.table::CJ(
+    Rt_case = 1,
+    dist = "NB" # negative Binomial-distributed incidence
+  )
+)
+problem_design2 <- list(
   pois_scenario2 = data.table::CJ(
     Rt_case = 2,
     dist = "poisson"
   ),
+  NB_scenario2 = data.table::CJ(
+    Rt_case = 2,
+    dist = "NB"
+  )
+)
+problem_design3 <- list(
   pois_scenario3 = data.table::CJ(
     Rt_case = 3,
     dist = "poisson"
   ),
-  pois_scenario4 = data.table::CJ(
-    Rt_case = 4,
-    dist = "poisson" 
-  ),
-  NB_scenario1 = data.table::CJ(
-    Rt_case = 1,
-    dist = "NB" # negative Binomial-distributed incidence
-  ),
-  NB_scenario2 = data.table::CJ(
-    Rt_case = 2,
-    dist = "NB"
-  ),
   NB_scenario3 = data.table::CJ(
     Rt_case = 3,
     dist = "NB"
+  )
+)
+problem_design4 <- list(
+  pois_scenario4 = data.table::CJ(
+    Rt_case = 4,
+    dist = "poisson" 
   ),
   NB_scenario4 = data.table::CJ(
     Rt_case = 4,
@@ -43,6 +49,7 @@ data_generator <- function(data=NULL, job, Rt_case, dist = c("poisson", "NB"), .
   Rt <- get_rt(Rt_case, len)
   incidence <- get_incidence(N1, Rt, Rt_case, dist)
   y <- incidence$y
+  w <- incidence$w
   gamma_pars <- incidence$gamma_pars
     
   ## return list
@@ -51,6 +58,7 @@ data_generator <- function(data=NULL, job, Rt_case, dist = c("poisson", "NB"), .
   lst[["incidence"]] <- y
   lst[["Rt_case"]] <- Rt_case
   lst[["gamma_pars"]] <- gamma_pars
+  lst[["total_infect"]] <- w
   return(lst) # input as `instance` in problem solver
 }
 
@@ -86,8 +94,9 @@ get_rt_case4 <- function(len){
 # Get Poisson incidence cases: 
 get_incidence <- function(N1, Rt, Rt_case, dist){
   len <- length(Rt)
-  incidence <- numeric(len) # N_1:n
-  count <- numeric(len) # y_1:n
+  incidence <- double(len) # N_1:n
+  count <- double(len) # y_1:n
+  w <- double(len)
   incidence[1] <- N1
   gamma_pars <- switch(Rt_case,
                        "1" = c(3, 3),
@@ -101,7 +110,8 @@ get_incidence <- function(N1, Rt, Rt_case, dist){
     }
     for(t in 2:len){
       prob <- discretize_gamma(1:(t-1), gamma_pars[1], gamma_pars[2])
-      incidence[t] <- Rt[t] * sum(rev(prob) * count[1:(t-1)])
+      w[t] <- sum(rev(prob) * count[1:(t-1)])
+      incidence[t] <- Rt[t] * w[t]
       count[t] <- rpois(1, incidence[t])
     }
   } else if (dist == "NB") { # set overdispersion size=5
@@ -112,12 +122,14 @@ get_incidence <- function(N1, Rt, Rt_case, dist){
     }
     for(t in 2:len){
       prob <- discretize_gamma(1:(t-1), gamma_pars[1], gamma_pars[2])
-      incidence[t] <- Rt[t] * sum(rev(prob) * count[1:(t-1)])
+      w[t] <- sum(rev(prob) * count[1:(t-1)])
+      incidence[t] <- Rt[t] * w[t]
       count[t] <- rnbinom(1, mu = incidence[t], size = size)
     }
   }
   lst <- list() 
   lst[["y"]] <- count
   lst[["gamma_pars"]] <- gamma_pars
+  lst[["w"]] <- w
   return(lst)
 }

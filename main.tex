@@ -34,9 +34,22 @@ British Columbia}
 \maketitle
 
 \begin{abstract}
-    We need an abstract.
+    To reveal the transmissibility of infectious diseases, epidemiologists have 
+    meticulously devoted attention to effective reproduction numbers estimation 
+    in recent years. 
+    Plenty of refined approaches have been proposed to produce accurate estimation 
+    using the data resources limited by the challenges of surveillance data collection.
+    Arbitrary model assumptions (that are unverifiable through data) and sophisticated frameworks 
+    (that result in computational inefficiency) are critical limitations in many existing approaches.
+    We propose a Poisson trend filtering estimator \RtEstim\ for effective reproduction 
+    numbers estimation. Our \RtEstim\ estimator produces accurate estimation 
+    based on the minimum requirements on available data and model assumptions with computational
+    efficiency, especially for large-scale data. 
+    Our \RtEstim\ is found empirically robust under the violation of the distributional assumption of
+    Poisson incidences. Implementation is accessible in our lightweight 
+    \texttt{R} package \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
 
-    {\bf Keywords:} kwd1 $|$ kwd2
+    {\bf Keywords:} Poisson trend filtering $|$ accurate effective reproduction number $|$ approximate confidence bands
 \end{abstract}
 
 \footnotetext[1]{To whom correspondence should be
@@ -49,7 +62,7 @@ British Columbia}
 
 %\printnotation
 %\input{doc/notations.tex}
-
+\newpage
 %\hypersetup{linkcolor=black}
 \tableofcontents % for easy edits, remove later
 
@@ -64,6 +77,9 @@ British Columbia}
 \input{doc/methods}
 \input{doc/results}
 \input{doc/discussion}
+
+%\section*{Acknowledgement}
+
 
 \addcontentsline{toc}{section}{References}
 \bibliography{doc/ptf}

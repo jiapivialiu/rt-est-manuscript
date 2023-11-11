@@ -2,12 +2,11 @@
 
 Implementation of the our approach is provided in the \texttt{R} package
 \href{https://dajmcdon.github.io/rtestim/}{\texttt{rtestim}}. All experiments
-are run in \texttt{R} with version 4.3.1 on Cedar cluster provided by Compute
-Canada \attn{requires attribution in the acknowledgements, possibly a citation}.
+are run in \texttt{R} with version 4.3.1 on a MacBook with an Apple M1 Pro 
+chip and RAM 32GB running under macOS Sonoma 14.0. 
 The \texttt{R} packages used for simulation and real-data application are
 versions \texttt{EpiEstim\_2.2-4}, \texttt{EpiLPS\_1.2.0}, and
-\texttt{rtestim\_0.0.3}. 
-
+\texttt{rtestim\_0.0.4}. 
 
 \subsection{Simulation settings}
 
@@ -27,7 +26,8 @@ throughout the epidemic.
 The first three scenarios and the last scenario are motivated by
 \citep{parag2021improved, gressani2022epilps} respectively. 
 % name the scenarios
-We name the four scenarios as (1) 2-segment constant, (2) 2-segment exponential curve, (3) 4-segment linear, and (4) periodic respectively. 
+We name the four scenarios as (1) 2-segment constant, (2) 2-segment exponential 
+curve, (3) 4-segment linear, and (4) periodic respectively. 
 
 In all cases, the times of observation are regular, and consider epidemics of
 length $n=300$. Specifically, in Scenario 1, $\calR_t = 2, 0.8$ before and after
@@ -95,16 +95,12 @@ the Kullback-Leibler (KL) divergence: a standard metric that measures the
 distance between two probability distributions. Since $\calR_t$ can be regarded
 as the expectation of Poisson distribution, we use the mean KL divergence for
 Poisson distributions (averaged across all coordinates) to measure the accuracy
-of the $\calR_t$ estimates: $$\frac{1}{n} D_{KL}(\widehat{\calR} \Vert \calR) =
-\frac{1}{n}\sum_{t=1}^n \widehat{\calR}_t \log\left(\frac{\widehat{\calR}_t}
-{\calR_t}\right) + {\calR}_t - \widehat{\calR}_t,$$ \attn{I think the above
-formula is close but wrong. Check, but I think you need to multiply everything
-inside the sum by $\eta_t$, and you should reverse the order (expectation under
-the truth). This suggests using (letting $w_t = \eta_t / \sum_t \eta_t$):
-$$ D_{KL}(\calR \Vert \widehat{\calR}) = \sum_{t=1}^n w_t \left( \calR_t
-\log\left(\frac{\calR_t}{\widehat{\calR}_t}\right) + \widehat{\calR}_t -
-\calR_t\right)$$} where $\calR := \left\{ \calR_t \right\}_{t=1}^n$.
-%It coincides with the Bregman distance $D_{KL}(\theta_0 || \theta_1) = \varphi(\theta_1) - \varphi(\theta_0) - (\theta_1 - \theta_0)^{\top} \varphi'(\theta_0)$, where $\theta_0,\theta_1$ are natural parameters of the same kind of exponential-family distributions \citep{sadhanala2022exponential}. 
+of the $\calR_t$ estimates, i.e., $\overline{D}_{KL}(\calR \parallel \widehat{\calR}) = 
+\fr{n} D_{KL}(\calR \parallel \widehat{\calR})$, 
+where $$D_{KL}(\calR \parallel \widehat{\calR}) = \sum_{t=1}^n w_t \lr{\calR_t \log\left(\frac{\calR_t}
+{\widehat{\calR}_t}\right) + \widehat{\calR}_t - {\calR}_t},$$ 
+where $\calR = \left\{ \calR_t \right\}_{t=1}^n$ and 
+$w_t = \eta_t / \sum_t \eta_t$ is the rescaled total infectiousness.
 To fairly compare across methods, we drop the estimates during the first
 week because estimates from \EpiEstim\ do not begin until $t=8$ (using a weekly
 window). KL-divergence is more appropriate for measuring accuracy because it
@@ -115,24 +111,23 @@ has the effect of increasing the relative cost of mistakes when $\Lambda_t$ is s
 %\begin{align*}
 %    \frac{1}{n} D^{\ast}_{KL}\lr{\hat{\calR}|| \calR} = \frac{1}{n}\sum_{t=1}^n \hat{\calR}_t \log \left(\frac{\hat{\calR}_t}%{\calR_t}\right) + \lr{\hat{\calR}_t + \phi} \log\lr{\frac{\hat{\calR}_t + \phi}{\calR_t + \phi}}. 
 %\end{align*}
-Other details of the experimental settings are deferred to the Appendix. 
 
-%\subsubsection*{Cross Validation}
-\attn{I think this goes to the Appendix too.}
-We run leave-third-out cross validation (CV) to choose the best tuning parameter
-from the candidate set of size $50$, i.e., $\boldsymbol{\lambda} = \{\lambda_1,
-\cdots, \lambda_{50}\}$. Specifically, we divide the all samples into three
-folds and build models on each sample set which excludes one fold of the samples
-across all hyperparameters. Every third samples are placed into the same fold by
-excluding the first and last samples. We select the tuning parameter that gives
-the lowest averaged mean squared errors (MSEs) \attn{switch to deviance,
-corresponds to KL} of the estimated reproduction numbers from the observed
-samples across all folds. 
+For a better interpretation of model performance, we introduce a baseline performance of
+$\calR^{\ast}$, which is the sliding average of past true $\calR$. We take 
+the sliding window to be a week, which is similar as the setting of the estimators 
+used in the experiments. Specifically, $\calR^{\ast}_t$ at time $t>7$ is set to be 
+the average of $\calR^{\ast}_{t-7},\cdots,\calR^{\ast}_{t-1}$. 
+The baseline $\calR^{\ast}_t$ performance represents the ``close-to-best'' performance 
+that we can achieve given the knowledge of $\calR$. 
+All KL divergences between $\widehat{\calR}$ and $\calR$ are divided by the 
+corresponding baseline, i.e., KL divergence between $\calR^{\ast}_t$ and $\calR$, 
+to conduct the KL ratio $r = \frac{D_{KL}(\calR \parallel \widehat{\calR})}{D_{KL}(\calR \parallel \calR^{\ast})}$. 
+If $r<1$, $\widehat{\calR}$ outperforms the baseline; the larger the ratio is, 
+the worse the performance of $\widehat{\calR}$ is. 
+Other details of the experimental settings are deferred to the Appendix. 
 
 
 \subsection{Simulation results}
-
-\attn{To make this plots more readable, I think that each method should be compared to a reasonable baseline. That way the y-axis is more easily interpretable. The only option I can think of is the MLE. Typically, there's an "Oracle": what you'd do if you know something about the process. But I can't think of something that's not just $\calR$.}
 
 \RtEstim\ overall outperforms \EpiEstim\ and \EpiLPS\ in the experimental study.
 \autoref{fig:kl-res} visualizes the KL divergence across the three models. Under
@@ -149,8 +144,16 @@ datail.
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=.9\textwidth]{fig/kl.png}
-    \caption{Boxplot of Kullback-Leibler divergence between the estimated effective reproduction numbers and the true ones across all methods given Poisson incidences and negative Binomial incidences across 50 samples. Left panel visualizes the KL divergences for the Poisson incidence cases. Right panel displays the KL divergences for the negative Binomial incidence cases.}% Outliers (larger than $3$) of EpiEstim is excluded for a better visualization.} 
+    \includegraphics[width=.99\textwidth]{fig/kl.png}
+    \caption{Boxplot of KL divergence between the estimated effective reproduction 
+    numbers and the true ones across all methods across 50 random samples for 
+    each approach given Poisson incidences \textit{(left panel)} and negative 
+    Binomial incidences \textit{(right panel)} respectively. 
+    Both y-axes are on a squared root scale for a better visualization. 
+    A few outliers of \EpiEstim\ and \EpiLPS\ for Scenario 2 given both Poisson 
+    and negative Binomial incidences are excluded. Full visualization is deferred 
+    to the supplementary document. 
+    A few \RtEstim\ models for Scenario 2 run expired, and thus, are excluded here.} 
     \label{fig:kl-res}
 \end{figure}
 
@@ -180,11 +183,8 @@ $\calR_t$, it easily captures the sharp decrease change.
 
 \begin{figure}[tb]
     \centering
-    \includegraphics[width=.9\textwidth]{fig/Pois-res-plot.png}
-    \caption{Effective reproduction number estimation for Poisson data.
-    \texttt{RtEstim (k=1)} is the alternative estimation using $k=1$ in Scenario
-    2. \attn{I'm not sure what this means. Can you fix the y-axis and (in the
-    legend) put \texttt{RtEstim (k=?)} with a space for both cases.}}
+    \includegraphics[width=.99\textwidth]{fig/Pois-res-plot.png}
+    \caption{Example of effective reproduction number estimation for Poisson incidences.}
     \label{fig:pois-est}
 \end{figure}
 
@@ -204,10 +204,9 @@ in the Poisson incidence cases.
 
 \begin{figure}[tb]
     \centering
-    \includegraphics*[width=.9\textwidth]{fig/NB-res-plot.png}
-    \caption{Effective reproduction number estimation for negative Binomial
-    incidences. \texttt{RtEstim (k=1)} is the alternative estimation using $k=1$
-    in Scenario 2. \attn{see comments on previous figure.}}
+    \includegraphics*[width=.99\textwidth]{fig/NB-res-plot.png}
+    \caption{Example of effective reproduction number estimation for negative Binomial
+    incidences.}
     \label{fig:nb-est}
 \end{figure}
 
@@ -221,7 +220,6 @@ experiment. Additional results on timing comparisons are deferred to the
 supplementary document. 
 
 
-
 \subsection{Real-data results: Covid-19 incident cases in British Columbia}
 
 % introduce data & tuning parameter setup
@@ -231,29 +229,32 @@ the B.C.\ Centre for Disease Control. The reported incident cases provide a
 snapshot of how testing recommendations and practices have changed over the
 three years. We use the gamma distribution with shape $2.5$ and scale $2.5$
 to approximate the serial interval function, which is empirically
-reasonable based on \attn{cite some source here...}
+reasonable, since they are close to the parameters in a recent study 
+\citep{lehtinen2021relationship}, which summarizes estimated parameters of the 
+serial interval distributions of SARS-CoV-2 by different approaches. 
 
 \begin{figure}[tb]
     \centering
     \includegraphics[width=0.9\textwidth]{fig/covid_dat.png}
-    \caption{Covid-19 daily confirmed incident cases between March 1st, 2020 and April 15th, 2023 in British Columbia, Canada.} 
+    \caption{Covid-19 daily confirmed incident cases between March 1st, 
+    2020 and April 15th, 2023 in British Columbia, Canada.} 
     \label{fig:covid-data}
 \end{figure} 
 
 % interpret figures -- across all lambdas
-Considering the temporal evolution of effective reproduction numbers across $3,
-4, 5$ days, the estimated reproduction numbers of Covid-19 in British Columbia
-(illustrated in \autoref{fig:covid-rt}) are less than $3$ during most of the
-time, which means that one distinct infected individuals can on average infect
-less than three other individuals in the population. \attn{I don't know what the
-previous sentence is trying to say.} Examining three different settings for $k$,
+Considering the first, second, and third polynomial degrees, the estimated 
+effective reproduction numbers of Covid-19 in British Columbia
+(illustrated in \autoref{fig:covid-rt}) are always less than $3$ except at the 
+very early stage, which means that one distinct infected individuals on average 
+infects less than three other individuals in the population. 
+Examining three different settings for $k$, 
 the temporal evolution of $\widehat{\calR}$ (across all regularization levels
 $\lambda$) are similar near the highest peak around the end of 2021 before
 dropping shortly thereafter. Throughout the estimated curves, the peaks and
 troughs of the reproduction numbers precede the growth and decay cycles of
 confirmed cases, as expected. We also visualize 95\% confidence bands for the
-point estimates at the optimal tuning parameter (in terms of MSE) in \autoref{fig:covid-rt}. \attn{How
-did you calculate ``best''} 
+point estimates at the smallest one of the ``optimal'' tuning parameters with 
+lowest CV scores in \autoref{fig:covid-rt}.     
 
 The estimated reproduction numbers are relatively unstable before April 1st,
 2022. The highest peak coincides with the emergence and global spread of the
@@ -281,52 +282,53 @@ behaviours have also changed significantly since the Omicron wave).
 
 \begin{figure}[tb]
     \centering
-    \includegraphics[width=0.9\linewidth]{fig/covid_full_res.png}
-    \caption{Estimated effective reproduction numbers for Covid19 daily confirmed counts between March 1st, 2020 and April 15th, 2023 in British Columbia, Canada. The left panels display the CV-tuned estimates with 95\% confidence intervals. The right panels demonstrate estimates corresponding to 50 tuning parameters. The top, medium and bottom panels illustrate the estimated reproduction numbers ($\calR_t$) using the Poisson trend filtering (in \eqref{eq:rt-ptf}) with degrees $k=1,2,3$ respectively.} 
+    \includegraphics[width=0.99\linewidth]{fig/covid_full_res.png}
+    \caption{Estimated effective reproduction numbers for Covid19 daily confirmed 
+    counts between March 1st, 2020 and April 15th, 2023 in British Columbia, Canada. 
+    The left panels demonstrate estimates corresponding to 50 tuning parameters. 
+    The right panels display the CV-tuned estimates with 95\% confidence intervals. 
+    The top, medium and bottom panels illustrate the estimated reproduction numbers 
+    ($\calR_t$) using the Poisson trend filtering (in \eqref{eq:rt-ptf}) with 
+    degrees $k=1,2,3$ respectively.} 
     \label{fig:covid-rt}
 \end{figure} 
 
 
-\subsection{Pandemic influenza in Baltimore, Maryland, 1918}
+\subsection{Real-data results: Pandemic influenza in Baltimore, Maryland, 1918}
 
-We also apply \RtEstim\ to reported influenza cases in Baltimore, Maryland
-occurring during the world-wide pandemic of 1918. The dataset (shown in
-\autoref{fig:flu-dat}) is included in the \EpiEstim \texttt{R} package. The 1918
-influenza outbreak, caused by the H1N1 influenza A virus, was an unprecedentedly
+We also apply \RtEstim\ to daily reported influenza cases in Baltimore, Maryland
+occurring during the world-wide pandemic of 1918 from September to November. 
+The dataset (shown in \autoref{fig:flu-dat}) is included in the \EpiEstim \texttt{R} package. 
+The 1918 influenza outbreak, caused by the H1N1 influenza A virus, was an unprecedentedly
 deadly, infecting almost one-third of the population across the world
 \citep{taubenberger20061918}. In \autoref{fig:flu-res}, the CV-tuned piecewise
 cubic estimates best capture the growth at the beginning of the pandemic. It
-suggests that the pandemic grew rapidly over \attn{Is this really daily? Seems
-awfully fast. I suspect weekly. And possibly deaths?} the first 30 before
+suggests that the pandemic grew rapidly over the first 30 before
 declining below $1$ when the after 50 days. However, it also suggests an
-increase toward the end of the period, while a steady decline (as in CV-tuned
-piecewise constant and linear estimates) may be more reasonable \attn{hard to
-say without more data for the next wave. I suspect that this is weekly data, and
-this would be the beginning of the next season. We should make sure}. 
+increase toward the end of the period. With the currently available dataset, it is
+hard to tell if there is a next wave or a steady decline ahead. The CV-tuned piecewise 
+constant and linear estimates in \autoref{fig:flu-res} both suggest a steady decline. 
+It is supported by a couple of arguments. The influenza incidences reduce to $0$ in the end. 
+The $\calR$ estimates of \EpiEstim\ with 1-week, 2-week and 4-week sliding windows 
+in \cite{cori2013new} are all lower than the threshold $1$ in their right tails. 
 
 
-\attn{This sentiment is more appropriate to the discussion, I think.} The
-smoothness of $\calR_t$ curves should be chosen based on the purpose of the
-study in practice, e.g., epidemic forecasting may require a more wiggly curve
-that contains more fluctuation information, while retrospective studies that
-solely target on understanding of the pandemic may prefer a smoother curve with
-less important information smoothed out. 
 
 \begin{figure}[tb]
     \centering
     \includegraphics[width=0.9\linewidth]{fig/flu_dat.png}
-    \caption{Influenza incidence counts in Baltimore, Maryland in
-    1918. \attn{The x-axis needs actual dates.}} 
+    \caption{Daily influenza incidence counts in Baltimore, Maryland between September 
+    and November in 1918.} 
     \label{fig:flu-dat}
 \end{figure} 
 
 \begin{figure}[tb]
     \centering
-    \includegraphics[width=0.9\linewidth]{fig/flu_full_res.png}
+    \includegraphics[width=0.99\linewidth]{fig/flu_full_res.png}
     \caption{Estimated effective reproduction numbers for influenza in
-    Baltimore, Maryland in 1918. The left column displays the CV-tuned estimates
-    with 95\% confidence bands. The right panels show estimates for all
-    50 tuning parameters under consideration. The rows (top to bottom) show
+    Baltimore, Maryland in 1918. The left panels show estimates for all
+    50 tuning parameters under consideration. The right column displays the 
+    CV-tuned estimates with 95\% confidence bands. The rows (top to bottom) show
     estimated reproduction numbers ($\calR_t$) using the Poisson trend filtering
     (in \eqref{eq:rt-ptf}) with degrees $k=1,2,3$ respectively.} 
     \label{fig:flu-res}
