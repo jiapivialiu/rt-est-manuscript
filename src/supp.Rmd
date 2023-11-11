@@ -113,7 +113,7 @@ Let $\alpha := D \theta$, and then $\theta = D^{\dagger} \alpha$, where
 $D^{\dagger} D = I_{n}$. 
 The PTF objective to be minimized can be written correspondingly as 
 $$\mathcal{L}_{\lambda}(\alpha) := \eta^\top \exp\lr{D^{\dagger} \alpha} - \bfy^\top D^{\dagger} \alpha + \lambda \norm{\alpha}_1.$$ 
-Solve the following problem $\lambda_{max} := \sup_{\alpha\neq \boldsymbol{0}} \lambda$ through solving $\sup_{\alpha} \frac{\partial \mathcal{L}_{\lambda}(\alpha)}{\pm \partial \alpha_i} = \sup_{\alpha_i} D^{\dagger}\lr{ e^{D^{\dagger} \alpha} \eta - y} = \max_{i} {\lvert D^{\dagger} \lr{\eta - y}\rvert}_i$ as $D^{\dagger} \alpha \to \boldsymbol{0}$ for $i=1,\cdots, n$. 
+Solve the following problem $\lambda_{max} := \sup_{\alpha\neq \boldsymbol{0}} \lambda$ through solving $\sup_{\alpha} \frac{\partial \mathcal{L}_{\lambda}(\alpha)}{\pm \partial \alpha_i} = \sup_{\alpha_i} \lr{D^{\dagger}}^{\top}\lr{ e^{D^{\dagger} \alpha} \eta - y} = \max_{i} {\lvert \lr{D^{\dagger}}^{\top} \lr{\eta - y}\rvert}_i$ as $D^{\dagger} \alpha \to \boldsymbol{0}$ for $i=1,\cdots, n$. 
 
 
 ## Cross validation of RtEstim in simulation 
