@@ -228,8 +228,9 @@ In this case, the divided difference of $\theta$ with order $k+1$ is always $0$,
 and thus $\theta$ is in the null space of $D$, i.e., $\theta\in\mathcal{N}(D)$. 
 It happens for any $\lambda$ beyond the threshold $\lambda_{max}$, so that 
 $\lambda_{max}$ is the minimum $\lambda$ producing $\theta\in\mathcal{N}(D)$. 
-It is of the following form: $$\lambda_{max} = \norm{\lr{D^{\dagger}}^{\top} \lr{\eta - y}}_{\infty}.$$
-We may compute $\lambda_1 = \lambda_{max}$ through data, and then let 
+It is of the following form: $$\lambda_{max} = \norm{\lr{D^{\dagger}}^{\top} \lr{\eta - y}}_{\infty},$$
+where $D^{\dagger}$ is the generalized inverse of $D$ with $D^{\dagger} D = I$. 
+We may compute $\lambda_1 = \lambda_{max}$ through data, and then let the minimum
 $\lambda_M = \lambda_{min}$ be proportional to $\lambda_{max}$ by a ratio $r \in (0,1)$. 
 Given the size $M\geq 3$, we generate $\lambda$ values logarithmically equally spaced between 
 $\lambda_{min}$ and $\lambda_{max}$. 
@@ -253,7 +254,7 @@ we prefer the $k$-fold CV in tuning parameter selection.
 Model accuracy can be measured by multiple metrics including mean squared errors 
 $\mathrm{MSE}(\hat{y}, y) = \fr{n}\norm{\hat{y} - y}_2^2$, mean absolute errors 
 $\mathrm{MAE}(\hat{y}, y) = \fr{n}\norm{\hat{y} - y}_1$, and 
-deviance in terms of Kullback-Leibler divergence between the estimated 
+deviance in terms of Kullback-Leibler (KL) divergence between the estimated 
 incidences $\hat{y}$ and the observed incidences $y$. 
 We measure the deviance through the following function: 
 $$D_{\mathrm{KL}} \lr{y \parallel \hat{y}} = \fr{n} \sum_{i=1}^n 2\lr{y_i \log(y_i) - y_i\log(\hat{y}_i) - y_i + \hat{y}_i}.$$ 
@@ -288,7 +289,7 @@ the estimated $\calR_t$. Based on Theorem 2 in \cite{vaiter2017degrees}, the
 standard error of the approximate estimators with squared $\ell_2$ penalty is 
 \begin{align}
   Var(\hat{\mu}(y)) =& \lr{ {\partial_{\hat{\mu}(y)}}^2 F(\hat{\mu}(y), y) + \nabla^2 J(\hat{\theta}(y))}^{\dagger} \\
-  =& \lr{I\lr{\hat{\mu}(y)}^{-2} + \lambda \lr{D^{(k+1)}}^{\top} D^{(k+1)}}^{\dagger}.
+  =& \lr{I\lr{\hat{\mu}(y)}^{-2} + \lambda \lr{D^{\ast}}^{\top} D^{\ast}}^{\dagger}.
 \end{align} 
 Since $\hat{\mu}(y) = \eta\circ \hat{\calR}$, $Var(\hat{\calR}_i) = Var(\hat{\mu}_i(y)) / w_i^2$ 
 for each $i = 1, \cdots, n$. 

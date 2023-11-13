@@ -91,7 +91,7 @@ problems, we use the generation interval distribution used to create the data.
 
 % KL for exponential family: 
 To measure estimation accuracy, we compare $\widehat{\calR}$ to $\calR$ using
-the Kullback-Leibler (KL) divergence: a standard metric that measures the
+the KL divergence: a standard metric that measures the
 distance between two probability distributions. Since $\calR_t$ can be regarded
 as the expectation of Poisson distribution, we use the mean KL divergence for
 Poisson distributions (averaged across all coordinates) to measure the accuracy
@@ -103,7 +103,7 @@ where $\calR = \left\{ \calR_t \right\}_{t=1}^n$ and
 $w_t = \eta_t / \sum_t \eta_t$ is the rescaled total infectiousness.
 To fairly compare across methods, we drop the estimates during the first
 week because estimates from \EpiEstim\ do not begin until $t=8$ (using a weekly
-window). KL-divergence is more appropriate for measuring accuracy because it
+window). KL divergence is more appropriate for measuring accuracy because it
 connects directly to the Poisson likelihood used to generate the data, whereas
 standard measures like the mean-squared error correspond to Gaussian data. This
 has the effect of increasing the relative cost of mistakes when $\Lambda_t$ is small.
@@ -130,13 +130,13 @@ Other details of the experimental settings are deferred to the Appendix.
 \subsection{Simulation results}
 
 \RtEstim\ overall outperforms \EpiEstim\ and \EpiLPS\ in the experimental study.
-\autoref{fig:kl-res} visualizes the KL divergence across the three models. Under
+\autoref{fig:kl-res} visualizes the KL divergence ratio across the three models. Under
 both Poisson and negative Binomial distributions, \RtEstim\ is easily the most
-accurate across Scenarios 1, 3, and 4: the median of KL divergence is much lower
+accurate across Scenarios 1, 3, and 4: the median of KL divergence ratio is much lower
 and the boxes frequently fail to overlap indicating that better performance than
 the other two methods across all 50 simulations. The advantage is less for the
 negative Binomial case compared to the Poisson case, but still obvious. \EpiLPS\
-tends to dominate in Scenario 2 as the boxes of KL scores are lower than those
+tends to dominate in Scenario 2 as the boxes of KL ratios are lower than those
 of the other two methods for both incidence distributions, but \EpiLPS\ has
 large outliers for negative Binomial incidences cases. We will examine a single
 realization of each experiment to investigate these global conclusions in more
@@ -145,8 +145,9 @@ datail.
 \begin{figure}[htb]
     \centering
     \includegraphics[width=.99\textwidth]{fig/kl.png}
-    \caption{Boxplot of KL divergence between the estimated effective reproduction 
-    numbers and the true ones across all methods across 50 random samples for 
+    \caption{Boxplot of KL divergence ratios of KL divergence between the estimated 
+    $\hat{\calR}_t$ and the true $\calR_t$ over the KL divergence between the 
+    baseline $\calR^{\ast}_t$ and true $\calR_t$ across all methods across 50 random samples for 
     each approach given Poisson incidences \textit{(left panel)} and negative 
     Binomial incidences \textit{(right panel)} respectively. 
     Both y-axes are on a squared root scale for a better visualization. 
