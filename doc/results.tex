@@ -132,15 +132,30 @@ Other details of the experimental settings are deferred to the Appendix.
 \RtEstim\ overall outperforms \EpiEstim\ and \EpiLPS\ in the experimental study.
 \autoref{fig:kl-res} visualizes the KL divergence ratio across the three models. Under
 both Poisson and negative Binomial distributions, \RtEstim\ is easily the most
-accurate across Scenarios 1, 3, and 4: the median of KL divergence ratio is much lower
+accurate across Scenarios 1 and 3: the median of KL divergence ratio is much lower
 and the boxes frequently fail to overlap indicating that better performance than
-the other two methods across all 50 simulations. The advantage is less for the
-negative Binomial case compared to the Poisson case, but still obvious. \EpiLPS\
-tends to dominate in Scenario 2 as the boxes of KL ratios are lower than those
-of the other two methods for both incidence distributions, but \EpiLPS\ has
-large outliers for negative Binomial incidences cases. We will examine a single
+the other two methods across all 50 simulations. 
+The advantage is less for the
+negative Binomial case compared to the Poisson case, but still obvious. 
+In Scenario 4, \RtEstim\ and \EpiLPS\ 
+have similar performance. They are both better than the baseline in Poisson cases, 
+when \RtEstim\ is slightly better. The median of \EpiLPS\ is slightly lower
+than the baseline in the negative Binomial cases, while the median of \RtEstim is slightly 
+higher than the baseline. 
+%\EpiLPS\ tends to dominate in Scenario 2 as the boxes of KL ratios are lower than those
+%of the other two methods for both incidence distributions, but \EpiLPS\ has
+%large outliers for negative Binomial incidences cases. 
+\EpiLPS\ and \RtEstim\ are close in Scenario 2 as well. Similar as Scenario 4, \RtEstim\ (with $k=1$)
+has the lowest KL ratios in terms of its median and third quarter in Poisson cases, while 
+\EpiLPS\ is slightly better in negative Binomial cases. 
+A notable behaviour is that all algorithms 
+perform much worse than the baseline in Scenario 2 with negative Binomial cases. 
+\EpiLPS\ and \RtEstim\ perform almost $5-50$ times worse than the baseline. 
+A possible explanation is the relatively large dispersion. Random samples can vary dramatically, 
+and cause difficulties in estimation. 
+We will examine a single
 realization of each experiment to investigate these global conclusions in more
-datail.
+detail.
 
 \begin{figure}[htb]
     \centering
