@@ -122,7 +122,19 @@ appear to be piecewise polynomials of an order selected by the user.
 Importantly, The estimates are locally adaptive, meaning that different time
 ranges may posses heterogeneous smoothness.
 
-\attn{Insert "killer" figure here.}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=.99\textwidth]{fig/intro-fig.png}
+    \caption{A demonstration of effective reproduction number estimation 
+    by \RtEstim\ and the corresponding fitted incidence cases for the Covid-19 epidemic 
+    in British Columbia, Canada during a period from March 13, 2020 to June 28, 2023. 
+    The \textcolor{customblue}{\textbf{blue}} curve in the top panel is the estimated piecewise-linear $\calR_t$ and the 
+    gray ribbon is the corresponding 95\% confidence bands. 
+    The black curve in the bottom panel is the observed Covid-19 daily confirmed 
+    cases, and the \textcolor{customorange}{\textbf{orange}} curve is the fitted incidences corresponding to the 
+    estimated $\calR_t$.}
+    \label{fig:intro-fig}
+\end{figure}
 
 % Due to the limitations including but not limited to
 % insufficient surveillance resources and incomplete reporting, the incidence

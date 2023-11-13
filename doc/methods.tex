@@ -210,81 +210,93 @@ below, our procedure is computationally efficient for estimation over an entire
 sequence of penalty strengths $\lambda$ and provides methods for choosing how
 smooth the final estimate should be.
 
-\subsection{Numerical optimization of the $\calR_t$ estimator}
-
-\attn{To appendix? Almost certainly.}
-
-The proximal Newton method is a second-order algorithm solving a proximal optimization iteratively followed by a line search algorithm adjusting the step size at each iteration for faster convergence. The proximal Newton method for Poisson trend filtering in \eqref{eq:rt-ptf} solves an approximate problem iteratively --- specifically, it takes a second-order Taylor expansion of the Poisson loss, which results in a proximal optimization, i.e., trend filtering with squared $\ell_2$ loss, with dynamic weights during iteration, and solves it iteratively until convergence to the objective. 
-
-Let $g(\theta)= \eta^\top \exp(\theta)-\bfy^\top \theta$ be the Poisson loss and
-$h(\theta) = \lambda \Vert D^{(k+1)} \theta\Vert_1$ be the regularization in
-\eqref{eq:rt-ptf}. At iterate $j+1$, consider the following approximation of
-$g(\theta)$ using the second-order Taylor expansion around $\theta^j$, 
-$$g(\theta) = g(\theta^j) + (\theta - \theta^j)^{\top} \nabla^{(1)}_{\theta}
-g(\theta^j) + \fr{2} (\theta - \theta^j)^{\top} \nabla^{(2)}_{\theta}
-g(\theta^j) (\theta - \theta^j), $$ where $\nabla^{(1)}_{\theta} g(\theta^j) =
-\fr{n} \eta^\top \exp(\theta^j) - y \in \bbR^n$ is the gradient of $g(\theta)$
-evaluated at $\theta^j$, and $\nabla^{(2)}_{\theta} g(\theta^j) = \fr{n}\diag
-\lr{\eta \circ \exp(\theta^j)} \in \bbR^{n\times n}$ is the Hessian matrix of
-$g(\theta)$ evaluated at $\theta^j$ and $\circ$ means elementwise product.
-%The gradient of $g(\theta)$ then can be approximated by $$\nabla_{\theta} g(\theta) := \nabla_{\theta} g(\theta^t) + \nabla^2_{\theta} g(\theta^t) (\theta - \theta^t) = \fr{n} \lr{W^t \theta - c^t} = \fr{n}W^t \lr{\theta - {c^t}^{\ast}},$$ where $c^t := y-e^{\theta^t}+\theta^t\circ e^{\theta^t}$, $W^t = \mathrm{diag}\lr{e^{\theta^t}}$, and ${c^t}^{\ast} = y\circ e^{-\theta^t} - \boldsymbol{1} + \theta^t$ given $e^{\theta_i^t} \in \bbR_{++}, i=1,...,n$. 
-
-Define the proximal operator as $\mathrm{prox}_{W,D} (\bfx) :=
-\Argmin{\bfz\in\bbR^n} \fr{2n} \norm{\bfz-\bfx}_W^2 + \lambda \norm{D\theta}_1$,
-where $\norm{\mathbf{a}}_{W}^2 := \mathbf{a}^{\top} {W} \mathbf{a}$. The
-proximal optimization problem at iterate $j+1$ given $\theta^j$ becomes
-\begin{equation} \label{eq:prox-gauss}
-    \begin{split}
-        \theta^{j_+} :&= \Argmin{\theta\in\bbR^n} (\theta - \theta^j)^{\top} \nabla^{(1)}_{\theta} g(\theta^j) + \fr{2} (\theta - \theta^j)^{\top} \nabla^{(2)}_{\theta} g(\theta^j) (\theta - \theta^j) + h(\theta), \\
-        &= \Argmin{\theta\in\bbR^n} \fr{2n} \norm{\theta - \mathbf{c}^{j}}_{W^j}^2 + \lambda \norm{D^{(k+1)}\theta}_1, \\
-        &= \mathrm{prox}_{W^j,D^{(k+1)}} (\mathbf{c}^{j}),
-    \end{split}
-\end{equation}
-where $W^j := \diag \lr{\eta\circ\exp(\theta^j)}$ is the weighted (Hessian)
-matrix multiplied by $n$ and $$\mathbf{c}^j := \theta^j - n \lr{W^{j}}^{-1}
-\nabla^{(1)}_{\theta} g(\theta^j) = \bfy \circ \eta^{-1} \circ \exp(-\theta^j) -
-\boldsymbol{1} + \theta^j \circ \eta^{-1}.$$
-This is just univariate Gaussian trend filtering with weights $W^t$ \citep{tibshirani2014adaptive}. 
-
-We solve the trend filtering problem in \eqref{eq:prox-gauss} using the
-specialized ADMM, proposed by \cite{ramdas2016fast}, with the primal $\theta$
-step solved in closed-form and the auxiliary step solved by the dynamic
-programming algorithm for fused lasso proposed by \cite{johnson2013dynamic}. Let
-the auxiliary variable $\bfz:= D^{(k)}\theta$. The scaled augmented Lagrangian
-is $$\mathcal{L}_{\lambda, \rho}(\theta, \bfz, \mathbf{u}) = \fr{2n}
-\norm{\theta - \mathbf{c}^{j}}_{W^j}^2 + \lambda \norm{D^{(1)}\bfz}_1 +
-\frac{\rho}{2} \norm{D^{(k)}\theta - \bfz + \mathbf{u}}^2 - \frac{\rho}{2}
-\norm{\mathbf{u}}^2, $$ where $\rho$ is a scaled dual parameter and $\mathbf{u}$
-is the dual variable. At the $(j+1)\th$ Newton step, the specialized ADMM
-solves the following subproblems, at ADMM iteration $l+1$: 
-\begin{equation}
-  \begin{split}
-    \theta^{l+1} &:= \Argmin{\theta} \fr{2n} \norm{\theta - \mathbf{c}^{l}}_{W^j}^2 + \frac{\rho}{2} \norm{D^{(k+1)} \theta - \bfz^l + \mathbf{u}^l}_2^2, \\
-    \bfz^{l+1} &:= \Argmin{\bfz} \frac{\lambda}{\rho} \norm{D^{(1)} \bfz}_1 +
-    \fr{2} \norm{D^{(k+1)} \theta^{l+1} - \bfz + \mathbf{u}^l}_2^2, \\
-    \mathbf{u}^{l+1} &\leftarrow \mathbf{u}^l + D^{(k+1)} \theta^{l+1} - \bfz^{l+1}.
-  \end{split}
-\end{equation}
-
-Finally, the step size $\gamma^{j+1} \in (0,1]$ at iterate $j+1$ is adjusted by a backtracking line search algorithm to solve for $\theta^{j+1}$, i.e.,   
-$$\theta^{j+1} \leftarrow \theta^j + \gamma^{j+1} (\theta^{j_+} - \theta^j).$$ The proximal Newton algorithm iterates until convergence of the objective.
-
-% defer to the section of Simulation: 
-%Range of $\lambda$: Find the maximum lambda such that the estimated $\theta$ does not fall into the null space of the divided difference matrix.
-%% other computational considerations: low quality data (missingness, outliers, seasonalities, ...)? 
-
 
 \subsection{Solving over a sequence of tuning parameters}
+\label{sec:candidate-set}
 
-\attn{Need a section about the solving for a sequence of $\lambda$.}
+We can solve the Poisson trend filtering estimator over an arbitrary sequence of 
+$\lambda$ that produces different levels of smoothness in the estimated curves. 
+We consider a candidate set $\boldsymbol{\lambda} = \{\lambda_m\}_{m=1}^M$ of 
+size $M$, which contains a strictly decreasing $\lambda$ sequence.% with 
+%$\lambda_M \geq \lambda_{min}$ and $\lambda_1 \leq \lambda_{max}$. 
+
+Let $D := D^{(k+1)}$ for simplicity of the following notations. 
+As $\lambda \to\infty$, the penalty term $\lambda \norm{D^{(k+1)}\theta}_1$ dominants 
+the PTF objective, so that minimizing the objective is asymptotically equivalent to 
+minimizing the penalty term, which results in $\norm{D^{(k+1)}\theta}_1 = 0$. 
+In this case, the divided difference of $\theta$ with order $k+1$ is always $0$, 
+and thus $\theta$ is in the null space of $D$, i.e., $\theta\in\mathcal{N}(D)$. 
+It happens for any $\lambda$ beyond the threshold $\lambda_{max}$, so that 
+$\lambda_{max}$ is the minimum $\lambda$ producing $\theta\in\mathcal{N}(D)$. 
+It is of the following form: $$\lambda_{max} = \norm{\lr{D^{\dagger}}^{\top} \lr{\eta - y}}_{\infty},$$
+where $D^{\dagger}$ is the generalized inverse of $D$ with $D^{\dagger} D = I$. 
+We may compute $\lambda_1 = \lambda_{max}$ through data, and then let the minimum
+$\lambda_M = \lambda_{min}$ be proportional to $\lambda_{max}$ by a ratio $r \in (0,1)$. 
+Given the size $M\geq 3$, we generate $\lambda$ values logarithmically equally spaced between 
+$\lambda_{min}$ and $\lambda_{max}$. 
 
 \subsection{Choosing a final $\lambda$}
+\label{sec:cv}
 
-\attn{And one about CV. Mention  that other procedures don't choose this.}
+We measure the model accuracy over the candidate set through a $k$-fold 
+cross validation (CV) to choose the best tuning parameter. 
+Specifically, we divide the all samples (except the earliest and latest case counts) 
+roughly evenly and randomly into $k$ folds, and build models on each sample set 
+by leaving each fold out across all tuning parameters from the chosen 
+candidate set $\boldsymbol{\lambda}$ as in \autoref{sec:candidate-set}. 
+% 
+Leave-$k$th-out CV is a reasonable alternative, but its performance is 
+not as satisfactory as randomly splitting the samples, since 
+different folds generated in this way can be so similar to each other that hinder 
+the variability of their performance on varying tuning parameters. Therefore, 
+we prefer the $k$-fold CV in tuning parameter selection. 
 
-\subsection{Approximate confidence bands}
+Model accuracy can be measured by multiple metrics including mean squared errors 
+$\mathrm{MSE}(\hat{y}, y) = \fr{n}\norm{\hat{y} - y}_2^2$, mean absolute errors 
+$\mathrm{MAE}(\hat{y}, y) = \fr{n}\norm{\hat{y} - y}_1$, and 
+deviance in terms of Kullback-Leibler (KL) divergence between the estimated 
+incidences $\hat{y}$ and the observed incidences $y$. 
+We measure the deviance through the following function: 
+$$D_{\mathrm{KL}} \lr{y \parallel \hat{y}} = \fr{n} \sum_{i=1}^n 2\lr{y_i \log(y_i) - y_i\log(\hat{y}_i) - y_i + \hat{y}_i}.$$ 
+Let $\log(y_i) := 0$, if $y_i=0$. 
 
-\attn{And one about confidence bands.}
+We create a path algorithm to choose the best tuning parameter across the candidate 
+set $\boldsymbol{\lambda}$. Model is fitted sequentially by visiting each component 
+of $\boldsymbol{\lambda}$ in order. The estimates generated by model with a larger 
+$\lambda$ are input as the initial values for the next model with a smaller $\lambda$. 
+By solving through a sequence of tuning parameters, we have a better chance to 
+achieve a better trade-off between bias and variance, and accordingly a lower prediction risk, 
+compared to many existing approaches, e.g., \EpiEstim\ and \EpiLPS, that do not support 
+such tuning parameter selection. 
+A larger candidate set requires more computational cost, but can potentially 
+provide a better fit. 
+
+
+\subsection{Approximate confidence bands} 
+\label{sec:conf-band} 
+
+We also provide empirical confidence intervals of the estimators with approximate 
+standard errors of an approximate estimator based on the results shown in \cite{vaiter2017degrees}. 
+Let $\hat{\mu}(y) := \eta\circ \hat{\calR}(y) = \eta\circ \exp\lr{\hat{\theta}(y)}$ 
+be the approximate incidences estimator solving 
+$\min_{\hat{\mu}(y)} F(\hat{\mu}(y), y) + J(\hat{\mu}(y))$, where  
+$F(\hat{\mu}(y), y):=\sum_{i=1}^n -y_i \log(\hat{\mu}_i(y)) + \hat{\mu}_i(y)$ be 
+the Poisson loss which is equivalent to the loss in \eqref{eq:rt-ptf}, and 
+$J(\hat{\theta}(y)) := \lambda \norm{D^{\ast} \theta}_2^2$ be the normal 
+approximation of the original penalty, where $D^{\ast}$ is a block diagonal matrix 
+where each block is the divided difference matrix for the corresponding segment of 
+the estimated $\calR_t$. Based on Theorem 2 in \cite{vaiter2017degrees}, the 
+standard error of the approximate estimators with squared $\ell_2$ penalty is 
+\begin{align}
+  Var(\hat{\mu}(y)) =& \lr{ {\partial_{\hat{\mu}(y)}}^2 F(\hat{\mu}(y), y) + \nabla^2 J(\hat{\theta}(y))}^{\dagger} \\
+  =& \lr{I\lr{\hat{\mu}(y)}^{-2} + \lambda \lr{D^{\ast}}^{\top} D^{\ast}}^{\dagger}.
+\end{align} 
+Since $\hat{\mu}(y) = \eta\circ \hat{\calR}$, $Var(\hat{\calR}_i) = Var(\hat{\mu}_i(y)) / w_i^2$ 
+for each $i = 1, \cdots, n$. 
+
+An approximate $95\%$ confidence interval then can be written as $\hat{\calR} \pm t_{0.975, n-df} s$, 
+where $s_i$ is the squared root of $Var(\hat{\calR}_i)$ for each $i = 1, \cdots, n$ 
+and $df$ is the number of knots in the estimated $\calR_t$ curves. 
 
 \subsection{Bayesian perspective}
 %The epidemiology evolution mechanism suggests a hierarchical framework that posteriori of reproduction number depends on its prior and the distribution of confirmed cases. 
@@ -304,4 +316,3 @@ $\calR_t$, and thus it can provide credible interval estimates as well. Our
 approach produces the maximum \emph{a posteriori} estimate via an efficient
 convex optimization, omitting the need for MCMC sampling. But the associated
 confidence bands are approximated differently.
-
