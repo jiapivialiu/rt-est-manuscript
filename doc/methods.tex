@@ -262,28 +262,27 @@ times rather than once.
 \subsection{Approximate confidence bands} 
 \label{sec:conf-band} 
 
-We also provide empirical confidence bands of the estimators with approximate 
-approximate coverage guarantees. based on the results shown in \cite{vaiter2017degrees}. 
-Let $\hat{\mu}(y) := \eta\circ \hat{\calR}(y) = \eta\circ \exp\lr{\hat{\theta}(y)}$ 
-be the approximate incidences estimator solving 
-$\min_{\hat{\mu}(y)} F(\hat{\mu}(y), y) + J(\hat{\mu}(y))$, where  
-$F(\hat{\mu}(y), y):=\sum_{i=1}^n -y_i \log(\hat{\mu}_i(y)) + \hat{\mu}_i(y)$ be 
-the Poisson loss which is equivalent to the loss in \eqref{eq:rt-ptf}, and 
-$J(\hat{\theta}(y)) := \lambda \norm{D^{\ast} \theta}_2^2$ be the normal 
-approximation of the original penalty, where $D^{\ast}$ is a block diagonal matrix 
-where each block is the divided difference matrix for the corresponding segment of 
-the estimated $\calR_t$. Based on Theorem 2 in \cite{vaiter2017degrees}, the 
-standard error of the approximate estimators with squared $\ell_2$ penalty is 
-\begin{align}
-  Var(\hat{\mu}(y)) =& \lr{ {\partial_{\hat{\mu}(y)}}^2 F(\hat{\mu}(y), y) + \nabla^2 J(\hat{\theta}(y))}^{\dagger} \\
-  =& \lr{I\lr{\hat{\mu}(y)}^{-2} + \lambda \lr{D^{\ast}}^{\top} D^{\ast}}^{\dagger}.
-\end{align} 
-Since $\hat{\mu}(y) = \eta\circ \hat{\calR}$, $Var(\hat{\calR}_i) = Var(\hat{\mu}_i(y)) / w_i^2$ 
-for each $i = 1, \cdots, n$. 
+We also provide empirical confidence bands of the estimators with  
+approximate coverage guarantees. 
+Consider the related estimator $\widetilde{\calR}_t$ defined as
+$$\widetilde{\calR} = \exp(\widetilde{\theta}) \quad\textrm{where}\quad
+\widetilde{\theta} = \Argmin{\theta\in\bbR^n} \eta^\top \exp(\theta) - \bfy^\top
+\theta + \lambda \snorm{\widetilde{D} \theta}_2^2,$$ where $\widetilde{D}$ is a
+block-diagonal matrix such that each block is the divided difference matrix for
+the corresponding segment of the original estimated $\calR_t$, and let
+$\widetilde{\bfy} = \eta \circ \calR$. Then it can be shown \citep[for example,
+Theorem 2 in][]{vaiter2017degrees}, that an estimator for
+$\Var(\widetilde{\bfy})$ is given by $\big(\mathrm{diag}(\widetilde{\bfy}^{-2})
++ \lambda \widetilde{D}^{\top} \widetilde{D}\big)^{\dagger}.$ Finally, an
+application of the delta method shows that $\Var(\widetilde{\bfy}_t) / \eta_t^2$
+is an estimator for $\Var(\widetilde{\calR}_t)$ for each $t = 1, \cdots, n$. We
+therefore use $\big(\mathrm{diag}(\widetilde{\bfy}^{-2}) + \lambda
+\widetilde{D}^{\top} \widetilde{D}\big)^{\dagger}_t / \eta_t^2$ as an estimator
+for $\Var{\widehat{\calR}_t}$. An approximate $(1-\alpha)\%$ confidence interval
+then can be written as $\widehat{\calR} \pm \textrm{T}(\alpha/2, n-\textrm{df}) s$, where $s_t$ is
+the square-root of $\Var(\widehat{\calR}_t)$ for each $t = 1, \cdots, n$ and $\textrm{df}$ is
+the number of blocks in $\widetilde{D}$ plus $k+1$. 
 
-An approximate $95\%$ confidence interval then can be written as $\hat{\calR} \pm t_{0.975, n-df} s$, 
-where $s_i$ is the squared root of $Var(\hat{\calR}_i)$ for each $i = 1, \cdots, n$ 
-and $df$ is the number of knots in the estimated $\calR_t$ curves. 
 
 \subsection{Bayesian perspective}
 %The epidemiology evolution mechanism suggests a hierarchical framework that posteriori of reproduction number depends on its prior and the distribution of confirmed cases. 
