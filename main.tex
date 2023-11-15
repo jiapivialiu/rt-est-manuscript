@@ -34,22 +34,22 @@ British Columbia}
 \maketitle
 
 \begin{abstract}
-    To reveal the transmissibility of infectious diseases, epidemiologists have 
-    meticulously devoted attention to effective reproduction numbers estimation 
-    in recent years. 
-    Plenty of refined approaches have been proposed to produce accurate estimation 
-    using the data resources limited by the challenges of surveillance data collection.
-    Arbitrary model assumptions (that are unverifiable through data) and sophisticated frameworks 
-    (that result in computational inefficiency) are critical limitations in many existing approaches.
-    We propose a Poisson trend filtering estimator \RtEstim\ for effective reproduction 
-    numbers estimation. Our \RtEstim\ estimator produces accurate estimation 
-    based on the minimum requirements on available data and model assumptions with computational
-    efficiency, especially for large-scale data. 
-    Our \RtEstim\ is found empirically robust under the violation of the distributional assumption of
-    Poisson incidences. Implementation is accessible in our lightweight 
-    \texttt{R} package \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
+  To understand the transmissibility and spread of infectious diseases,
+  epidemiologists turn to estimates of the effective reproduction number.
+  While many approaches exist, their utility may be limited by the
+  challenges of surveillance data collection. Arbitrary model assumptions
+  that are unverifiable with data alone and sophisticated, though
+  computationally inefficient, frameworks that
+  are critical limitations for many
+  existing approaches. We propose a Poisson trend filtering estimator
+  \RtEstim\ for effective reproduction numbers estimation. \RtEstim\
+  produces remains accurate even under some process misspecifications and
+  is computationally efficient,
+  even for large-scale data. The 
+  implementation is easily accessible in a lightweight \texttt{R} package
+  \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
 
-    {\bf Keywords:} Poisson trend filtering $|$ accurate effective reproduction number $|$ approximate confidence bands
+  {\bf Keywords:} \attn{1--2 word phrases $|$ that aren't in the title.}
 \end{abstract}
 
 \footnotetext[1]{To whom correspondence should be
@@ -82,6 +82,8 @@ British Columbia}
 
 
 \addcontentsline{toc}{section}{References}
+\attn{Need to check these for formatting.}
+\bibliographystyle{doc/rss.bst}
 \bibliography{doc/ptf}
 
 %\appendix
