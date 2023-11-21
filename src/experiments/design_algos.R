@@ -89,10 +89,11 @@ problem_solver <- function(data, method, instance, ...) {
       {
         cv_mod <- rtestim::cv_estimate_rt(
           incidence,
-          korder = korder, nfold = 3,
+          korder = korder, nfold = 10,
           nsol = 50, maxiter = 1e7L,
           dist_gamma = gamma_pars,
-          error_measure = "deviance"
+          error_measure = "deviance",
+          lambda_min_ratio = 1e-6
         )
         Rt_fitted <- cv_mod$full_fit$Rt[, which.min(cv_mod$cv_scores)]
       },
@@ -116,22 +117,22 @@ problem_solver <- function(data, method, instance, ...) {
     Rt_kl_pois_month <- compute_kl_pois(Rt[31:len], Rt_fitted[31:len], w[31:len])
   }
   # Rt_kl_base <- compute_kl_base(incidence[8:len], Rt[8:len]) # NAs
-  KL_base <- compute_kl_base_pois(Rt, w)
-  KL_base_month <- compute_kl_base_pois(Rt, w, window_size = 30)
+  #KL_base <- compute_kl_base_pois(Rt, w)
+  #KL_base_month <- compute_kl_base_pois(Rt, w, window_size = 30)
   
   Rt_mle_week <- incidence[8:len] / w[8:len]
   Rt_mle_month <- incidence[31:len] / w[31:len]
-  KL_base2 <- compute_kl_pois(Rt[8:len], Rt_mle_week, w[8:len])
-  KL_base_month2 <- compute_kl_pois(Rt[31:len], Rt_mle_month, w[31:len])
+  #KL_base2 <- compute_kl_pois(Rt[8:len], Rt_mle_week, w[8:len])
+  #KL_base_month2 <- compute_kl_pois(Rt[31:len], Rt_mle_month, w[31:len])
   
   lst <- list()
   lst[["runtime"]] <- mean_runtime
   lst[["Rt_kl"]] <- Rt_kl_pois
   lst[["Rt_kl_month"]] <- Rt_kl_pois_month
-  lst[["KL_base"]] <- KL_base
-  lst[["KL_base_month"]] <- KL_base_month
-  lst[["KL_base2"]] <- KL_base2
-  lst[["KL_base_month2"]] <- KL_base_month2
+  #lst[["KL_base"]] <- KL_base
+  #lst[["KL_base_month"]] <- KL_base_month
+  #lst[["KL_base2"]] <- KL_base2
+  #lst[["KL_base_month2"]] <- KL_base_month2
   return(lst)
 }
 

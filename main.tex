@@ -2,8 +2,6 @@
 \input{doc/header/header}
 \input{doc/header/defs}
 
-%\usepackage{arxiv}
-
 \usepackage[utf8]{inputenc} % allow utf-8 input
 \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
 \usepackage{url}            % simple URL typesetting
@@ -41,15 +39,28 @@ British Columbia}
   that are unverifiable with data alone and sophisticated, though
   computationally inefficient, frameworks that
   are critical limitations for many
-  existing approaches. We propose a Poisson trend filtering estimator
-  \RtEstim\ for effective reproduction numbers estimation. \RtEstim\
-  produces remains accurate even under some process misspecifications and
-  is computationally efficient,
-  even for large-scale data. The 
+  existing approaches. We propose a discrete spline-based approach 
+  \RtEstim\ that solves a convex optimization problem --- Poisson trend filtering
+  --- using the proximal Newton method. 
+  It produces a locally adaptive estimator for effective reproduction number 
+  estimation with heterogeneous smoothness. 
+  \RtEstim\ remains accurate even under some process misspecifications and
+  is computationally efficient, even for large-scale data. The 
   implementation is easily accessible in a lightweight \texttt{R} package
   \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
 
-  {\bf Keywords:} \attn{1--2 word phrases $|$ that aren't in the title.}
+  {\bf Keywords:} tuning parameter selection $|$ heterogeneous smoothness
+\end{abstract}
+
+\renewcommand{\abstractname}{Author summary}
+\begin{abstract}
+  Effective reproduction number estimation faces many challenges, for example, 
+  data is usually collected from multiple sources and there are reporting delays, that cause many problems, 
+  such as missing values, underreporting and lack of standardization. 
+  Such poor conditions of data hinder the accurate estimation of effective reproduction number.  
+  Our motivation is to develop a model that returns accurate estimation, which is robust to violation of model misspecification, and a tool that is straightforward to use and computationally efficient, even for large-scale data. 
+  Considering the temporal evolution of effective reproduction number for multiple degrees, we propose a convex optimization model with an $\ell_1$ trend filtering penalty for univariate data. We solve our model using the proximal Newton method, which converges rapidly and is numerically stable. 
+  Our software, \texttt{R} package \RtEstim, can return the output in seconds for univariate incidence sequences with length 300 using candidate sets of length fifty and ten-fold cross validation. 
 \end{abstract}
 
 \footnotetext[1]{To whom correspondence should be
@@ -62,7 +73,7 @@ British Columbia}
 
 %\printnotation
 %\input{doc/notations.tex}
-\newpage
+%\newpage
 %\hypersetup{linkcolor=black}
 \tableofcontents % for easy edits, remove later
 
@@ -82,7 +93,7 @@ British Columbia}
 
 
 \addcontentsline{toc}{section}{References}
-\attn{Need to check these for formatting.}
+
 \bibliographystyle{doc/rss.bst}
 \bibliography{doc/ptf}
 

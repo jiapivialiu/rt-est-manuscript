@@ -14,7 +14,6 @@ Let $\calR(t)$ denote the effective reproduction number at time $t$.
 Practically, as long as $\calR(t) < 1$, infections will decline gradually,
 eventually resulting in a disease-free equilibrium, whereas when $\calR(t) > 1$,
 infections will continue to increase, resulting in endemic equilibrium. 
-%
 %% significance/necessity of modeling Rt: 
 While $\calR(t)$ is fundamentally a continuous time quantity, it can be related
 to data only at discrete points in time $t = 1,\ldots,n$.
@@ -31,7 +30,6 @@ estimation methodologies rely on various assumptions to
 compensate. Because model assumptions may not be easily verifiable from data
 alone, it is also critical for any estimation procedure to be robust to model
 misspecification. 
-%% usage: retrospective or real-time estimation, and prediction
 
 %% literature review: Bayesian approaches: EpiEstim, EpiFilter, EpiNow2, EpiNowCast
 Many existing approaches for effective reproduction number estimation are
@@ -49,7 +47,6 @@ little domain expertise for use, and it is computationally fast.
 simultaneously estimate the serial interval distribution.
 \citet{nash2023estimating} further extended \EpiEstim\ by using
 ``reconstructed'' daily incidence data to handle irregularly spaced observations.
-% bayEstim is a version of implementation of {cori2013new} and {thompson2019improved}. 
 % 
 \cite{abbott2020estimating} proposed a Bayesian latent variable framework,
 \texttt{EpiNow2} \citep{EpiNow2}, which leverages incident cases, deaths or
@@ -60,15 +57,14 @@ imputation followed by a truncation adjustment. These modifications are intended
 to increase accuracy at the most recent (but most uncertain) timepoints, to aid policymakers.
 %
 \citet{parag2021improved} also proposed a Bayesian approach, \texttt{EpiFilter}
-based the (discretized) on Kalman filter and smoother. \texttt{EpiFilter} also
+based on the (discretized) Kalman filter and smoother. \texttt{EpiFilter} also
 estimates the posterior of $\calR_t$ given a Gamma prior and Poisson distributed
 incident cases. Compared to \EpiEstim, however, \texttt{EpiFilter} estimates
 $\calR_t$ retrospectively using all available incidence data both before and
 after time $t$, with the goal of being more robust in low-incidence cases.  
-%koyama2021estimating: devised a state-space method for fitting a discrete-time variant of the Hawkes process to a given dataset of daily
 \citet{gressani2022epilps} proposed a Bayesian P-splines approach, \EpiLPS, that
-assumes negative Binomial distributed incidences. \citet{trevisin2023spatially}
-also proposed a Bayesian model estimated with particle filtering to incoroporate
+assumes negative Binomial distributed incidence. \citet{trevisin2023spatially}
+also proposed a Bayesian model estimated with particle filtering to incorporate
 spatial structures.
 %
 Bayesian approaches estimate the posterior distribution of the effective
@@ -86,55 +82,46 @@ regression with second-order temporal regularization, additional spatial
 penalties, and with Poisson loss. \citet{pascal2022nonsmooth}
 extended this procedure by introducing another penalty on outliers.
 %
-\cite{pircal2023spline} is a spline-based model relying on the assumption of exponential-family distributed incidences. %but in a more continuous-time setting. [Important!] 
+\cite{pircalabelu2023spline} proposed a spline-based model relying on the 
+assumption of exponential-family distributed incidence. 
 \cite{ho2023accounting} estimates $\calR_t$ while monitoring the time-varying
 level of overdispersion. 
 %
 There are other spline-based approaches such as
-\cite{azmon2014estimation,gressani2021approximate,pircalabelu2023spline},
+\cite{azmon2014estimation,gressani2021approximate},
 autoregressive models with random effects \citep{jin2023epimix} that are robust
 to low incidence cases, and generalized autoregressive moving average (GARMA)
 models \citep{hettinger2023estimating} that are robust to measurement errors in
 incidence data. 
-%\cite{jin2023epimix} proposed EpiMix, which included exogenous factors other than incidence cases, and introduced random effects in regression model. It is also robust against low incidence cases. 
-%
-%There are many other practical considerations in effective reproduction number estimation. \cite{hettinger2023estimating} proposed a generalized autoregresive moving average (GARMA) model, which solved the bias introduced by practical concerns such as particular forms of measurement errors in incidence data. They also incorporates multiple serial interval distributions. %Basically extended EpiEstim. 
-%and compartmental models. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% our approach %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 We propose a retrospective effective reproduction number estimator
 called \RtEstim\ that requires only incidence data. Our model makes the
 conditional Poisson assumption, similar to much of the prior work described
-above, but is empirically more robust to misspecification. This estimator is a
+above, but is empirically more robust to misspecification. This estimator is defined by a
 convex optimization problem with Poisson loss and $\ell_1$ penalty on the
 temporal evolution of $\log(\calR_t)$ to impose smoothness over time. 
-% , which is known as the trend filtering
-% penalty \citep{kim2009ell_1,tibshirani2014adaptive,sadhanala2022exponential}.
-% Thus, \RtEstim\ is a \textit{Poisson trend filtering} problem.
-% \cite{sadhanala2022exponential} proposed trend filtering with exponential family
-% loss on lattices. Here, we focus on Poisson loss on univariate data that is
-% modified to integrate the serial interval functions. 
-As a result \RtEstim\ generates discrete splines, and the estimated curves (in
+As a result, \RtEstim\ generates discrete splines, and the estimated curves (in
 $\log$-space) appear to be piecewise polynomials of an order selected by the
 user. Importantly, The estimates are locally adaptive, meaning that different
 time ranges may posses heterogeneous smoothness. Because we penalize the
-logarithm of $\calR_t$, we naturally accomodate the positivity requirement, can
+logarithm of $\calR_t$, we naturally accommodate the positivity requirement, can
 handle large or small incidence measurements, and are automatically (reasonably)
-robust to outliers without additional constraints. An small illustration using
+robust to outliers without additional constraints. A small illustration using
 three years of Covid-19 case data in British Columbia is shown in \autoref{fig:intro-fig}.
 
 \begin{figure}[tb]
     \centering
-    \includegraphics[width=.99\textwidth]{fig/intro-fig.png}
+    \includegraphics[width=.99\textwidth]{fig/intro-fig-new.png}
     \caption{A demonstration of effective reproduction number estimation 
     by \RtEstim\ and the corresponding fitted incidence cases for the Covid-19 epidemic 
-    in British Columbia, Canada during a period from March 13, 2020 to June 28, 2023. 
-    The \textcolor{customblue}{\textbf{blue}} curve in the top panel is the estimated piecewise-linear $\calR_t$ and the 
-    gray ribbon is the corresponding 95\% confidence bands. 
+    in British Columbia, Canada during a period from March 28, 2020 to June 28, 2023. 
+    The \textcolor{customblue}{\textbf{blue}} curve in the top panel is the estimated piecewise
+    quadratic $\calR_t$ and the gray ribbon is the corresponding 95\% confidence band. 
     The black curve in the bottom panel is the observed Covid-19 daily confirmed 
-    cases, and the \textcolor{customorange}{\textbf{orange}} curve is the fitted incidences corresponding to the 
-    estimated $\calR_t$.}
+    cases, and the \textcolor{customorange}{\textbf{orange}} curve is the fitted incidence 
+    corresponding to the estimated $\calR_t$.}
     \label{fig:intro-fig}
 \end{figure}
 
@@ -143,7 +130,7 @@ three years of Covid-19 case data in British Columbia is shown in \autoref{fig:i
 % cases are only observed to a certain proportion of the unknown, true values.
 % Here, we assume that this proportion is smoothly time-varying, which will not
 % cause an immediate changing point in the pattern of transmissibility of
-% epidemics. With this assumption, we argue that the observable incidences contain
+% epidemics. With this assumption, we argue that the observable incidence contain
 % the true curvature and changing points of the underlying effective reproduction
 % numbers of epidemics. We consider a fixed serial interval distribution that
 % needs to be pre-specified. It can either be chosen parameters of Gamma
@@ -153,7 +140,7 @@ three years of Covid-19 case data in British Columbia is shown in \autoref{fig:i
 % \citep{white2009estimation,boelle2011transmission,rai2021estimates,alene2021serial,griffin2020rapid}. 
 While our approach is straightforward and requires little domain knowledge for
 implementation, we also implement a number of refinements. 
-% \RtEstim\ produces accurate estimations that are empirically robust in model misspecification, i.e., the violation of distributional assumption of incidences. 
+% \RtEstim\ produces accurate estimations that are empirically robust in model misspecification, i.e., the violation of distributional assumption of incidence. 
 % 
  %We follow the common assumption of Poisson distributed incidence data, but the empirical study shows that the estimators are robust in negative binomial settings. 
 %Thus, RtEstim is accurate, robust in model misspecification, and computationally efficient. 

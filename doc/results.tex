@@ -72,7 +72,7 @@ Binomial sample incidence sequence are displayed in \autoref{fig:samples}.
 We compare \RtEstim\ to \EpiEstim\ and \EpiLPS. Unfortunately,
 \texttt{EpiFilter} frequently fails to converge due to the large case counts in
 many simulations. \EpiEstim\ estimates the posterior distribution of effective
-reproduction numbers given a Gamma prior and Poisson distributed incidences. It
+reproduction numbers given a Gamma prior and Poisson distributed incidence. It
 estimates the reproduction number over a sliding window, assuming the
 reproduction number is constant during the specific time window. A longer
 sliding window averages out more fluctuations, leading to smoother estimates,
@@ -92,9 +92,10 @@ problems, we use the generation interval distribution used to create the data.
 To measure estimation accuracy, we compare $\widehat{\calR}$ to $\calR$ using
 the Kullback-Leibler (KL) divergence: a standard metric that measures the
 distance between two probability distributions. Since $\calR_t$ can be regarded
-as the expectation of Poisson distribution, we use the average KL divergence for
+as the expectation of Poisson distribution, we use the KL divergence for
 Poisson distributions (averaged across all coordinates) to measure the accuracy
-of the $\calR_t$ estimates $$\frac{1}{n} D_{KL}(\calR \parallel \widehat{\calR}) = \frac{1}{n}\sum_{t=1}^n w_t \lr{\calR_t \log\left(\frac{\calR_t}
+of the $\calR_t$ estimates 
+$$D_{KL}(\calR \parallel \widehat{\calR}) = \sum_{t=1}^n w_t \lr{\calR_t \log\left(\frac{\calR_t}
 {\widehat{\calR}_t}\right) + \widehat{\calR}_t - {\calR}_t},$$ 
 where $\calR = \left\{ \calR_t \right\}_{t=1}^n$ and 
 $w_t = \eta_t / \sum_t \eta_t$ is the rescaled total infectiousness.
@@ -108,78 +109,65 @@ has the effect of increasing the relative cost of mistakes when $\Lambda_t$ is s
 %\begin{align*}
 %    \frac{1}{n} D^{\ast}_{KL}\lr{\hat{\calR}|| \calR} = \frac{1}{n}\sum_{t=1}^n \hat{\calR}_t \log \left(\frac{\hat{\calR}_t}%{\calR_t}\right) + \lr{\hat{\calR}_t + \phi} \log\lr{\frac{\hat{\calR}_t + \phi}{\calR_t + \phi}}. 
 %\end{align*}
-
-
-\attn{I think this is a good try, but I don't like the resulting figures. Do you? In it's current state, I think this has more costs (takes more explanation) than benefits (prettier figures). I say we delete the next paragraph and go back to the KL directly (no baseline).}
-For a better interpretation of model performance, we introduce a baseline performance of
-$\calR^{\ast}$, which is the sliding average of past true $\calR$. We take 
-the sliding window to be a week, which is similar as the setting of the estimators 
-used in the experiments. Specifically, $\calR^{\ast}_t$ at time $t>7$ is set to be 
-the average of $\calR^{\ast}_{t-7},\cdots,\calR^{\ast}_{t-1}$. 
-The baseline $\calR^{\ast}_t$ performance represents the ``close-to-best'' performance 
-that we can achieve given the knowledge of $\calR$. 
-All KL divergences between $\widehat{\calR}$ and $\calR$ are divided by the 
-corresponding baseline, i.e., KL divergence between $\calR^{\ast}_t$ and $\calR$, 
-to conduct the KL ratio $r = \frac{D_{KL}(\calR \parallel \widehat{\calR})}{D_{KL}(\calR \parallel \calR^{\ast})}$. 
-If $r<1$, $\widehat{\calR}$ outperforms the baseline; the larger the ratio is, 
-the worse the performance of $\widehat{\calR}$ is. 
+%\attn{I think this is a good try, but I don't like the resulting figures. Do you? In it's current state, I think this has more costs %(takes more explanation) than benefits (prettier figures). I say we delete the next paragraph and go back to the KL directly (no %baseline).}
+%For a better interpretation of model performance, we introduce a baseline performance of
+%$\calR^{\ast}$, which is the sliding average of past true $\calR$. We take 
+%the sliding window to be a week, which is similar as the setting of the estimators 
+%used in the experiments. Specifically, $\calR^{\ast}_t$ at time $t>7$ is set to be 
+%the average of $\calR^{\ast}_{t-7},\cdots,\calR^{\ast}_{t-1}$. 
+%The baseline $\calR^{\ast}_t$ performance represents the ``close-to-best'' performance 
+%that we can achieve given the knowledge of $\calR$. 
+%All KL divergences between $\widehat{\calR}$ and $\calR$ are divided by the 
+%corresponding baseline, i.e., KL divergence between $\calR^{\ast}_t$ and $\calR$, 
+%to conduct the KL ratio $r = \frac{D_{KL}(\calR \parallel \widehat{\calR})}{D_{KL}(\calR \parallel \calR^{\ast})}$. 
+%If $r<1$, $\widehat{\calR}$ outperforms the baseline; the larger the ratio is, 
+%the worse the performance of $\widehat{\calR}$ is. 
 Other details of the experimental settings are deferred to the Appendix. 
 
 
 \subsection{Simulation results}
 
 \RtEstim\ overall outperforms \EpiEstim\ and \EpiLPS\ in the experimental study.
-\autoref{fig:kl-res} visualizes the KL divergence ratio across the three models. Under
+\autoref{fig:kl-res} visualizes the KL divergence across the three models. Under
 both Poisson and negative Binomial distributions, \RtEstim\ is easily the most
-accurate across Scenarios 1 and 3: the median of KL divergence ratio is much lower
-and the boxes frequently fail to overlap indicating that better performance than
+accurate across Scenarios 1 and 3: the median of KL divergence is much lower
+and the boxes frequently fail to overlap indicating a better performance than
 the other two methods across all 50 simulations. 
 The advantage is less for the
 negative Binomial case compared to the Poisson case, but still obvious. 
-In Scenario 4, \RtEstim\ and \EpiLPS\ 
-have similar performance. They are both better than the baseline in Poisson cases, 
-when \RtEstim\ is slightly better. The median of \EpiLPS\ is slightly lower
-than the baseline in the negative Binomial cases, while the median of \RtEstim is slightly 
-higher than the baseline. 
-%\EpiLPS\ tends to dominate in Scenario 2 as the boxes of KL ratios are lower than those
-%of the other two methods for both incidence distributions, but \EpiLPS\ has
-%large outliers for negative Binomial incidences cases. 
-\EpiLPS\ and \RtEstim\ are close in Scenario 2 as well. Similar as Scenario 4, \RtEstim\ (with $k=1$)
-has the lowest KL ratios in terms of its median and third quarter in Poisson cases, while 
-\EpiLPS\ is slightly better in negative Binomial cases. 
-A notable behaviour is that all algorithms 
-perform much worse than the baseline in Scenario 2 with negative Binomial cases. 
-\EpiLPS\ and \RtEstim\ perform almost $5-50$ times worse than the baseline. 
-A possible explanation is the relatively large dispersion. Random samples can vary dramatically, 
-and cause difficulties in estimation. 
+% 
+\RtEstim\ and \EpiLPS\ have similar performance in Scenarios 2 and 4. 
+For the Poisson case, \RtEstim\ and \EpiLPS\ both have very small KL scores, which are
+very close to 0. In Scenario 4, \RtEstim\ is slightly better for Poisson and \EpiLPS\ 
+is better for negative Binomial, but the boxes largely overlap to each other. 
+\EpiLPS\ has a slightly lower median and a smaller IQR in Scenario 2 for the negative Binomial case. 
+The two degrees of \RtEstim\ used for Scenario 2 perform very close to each other 
+for both distributions, which implies a low risk of model misspecification. 
+% 
 We will examine a single
 realization of each experiment to investigate these global conclusions in more
 detail.
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=.99\textwidth]{fig/kl.png}
-    \caption{Boxplot of KL divergence ratios of KL divergence between the estimated 
-    $\hat{\calR}_t$ and the true $\calR_t$ over the KL divergence between the 
-    baseline $\calR^{\ast}_t$ and true $\calR_t$ across all methods across 50 random samples for 
-    each approach given Poisson incidences \textit{(left panel)} and negative 
-    Binomial incidences \textit{(right panel)} respectively. 
-    Both y-axes are on a squared root scale for a better visualization. 
-    A few outliers of \EpiEstim\ and \EpiLPS\ for Scenario 2 given both Poisson 
-    and negative Binomial incidences are excluded. Full visualization is deferred 
-    to the supplementary document. 
-    A few \RtEstim\ models for Scenario 2 run expired, and thus, are excluded here.} 
+    \includegraphics[width=.99\textwidth]{fig/KL_no_outlier.png}
+    \caption{Boxplot of KL divergence between the estimated 
+    $\hat{\calR}_t$ and the true $\calR_t$ across 50 random samples for 
+    each approach given Poisson incidence \textit{(in top panels)} and negative 
+    Binomial incidence \textit{(in bottom panels)} respectively.  
+    Outliers are excluded. Full visualization is deferred to the supplementary document. 
+    A few \RtEstim\ models for Scenario 2 run expired, since they reach the maximum
+    iteration number, and thus, are excluded here.} 
     \label{fig:kl-res}
 \end{figure}
-
 
 
 % experiment results
 \autoref{fig:pois-est} shows 1 realization for the estimated reproduction
 numbers under the Poisson generative model for all 4 scenarios. Compared to
 \EpiEstim\ and \EpiLPS, which have rather severe difficulties at the beginning
-of the time series, \RtEstim\ estimates are more accurate---they nearly overlap
-with the true values---without suffering from the edge problem. Scenario 2 is a
+of the time series, \RtEstim\ estimates are more accurate --- they nearly overlap
+with the true values --- without suffering from the edge problem. Scenario 2 is a
 difficult problem for all methods: the sharp increase at the end of the stage of
 exponential growth is difficult to capture. Although the truth is piecewise
 exponential and likely best represented with a piecewise cubic curve, the actual
@@ -193,13 +181,13 @@ phases. Scenario 1 is the simplest case with only one knot and two constant
 segments. Besides the edge problem, \EpiEstim\ and \EpiLPS\ produce ``smooth''
 estimated curves that are continuous at the changepoint, which results in
 large mistakes in that neighbourhood. Since the
-piecewise constant \RtEstim\ estimator does force any smoothness in
+piecewise constant \RtEstim\ estimator does not force any smoothness in
 $\calR_t$, it easily captures the sharp decrease change. 
 
 \begin{figure}[tb]
     \centering
     \includegraphics[width=.99\textwidth]{fig/Pois-res-plot.png}
-    \caption{Example of effective reproduction number estimation for Poisson incidences.}
+    \caption{Example of effective reproduction number estimation for Poisson incidence.}
     \label{fig:pois-est}
 \end{figure}
 
@@ -221,16 +209,15 @@ in the Poisson incidence cases.
     \centering
     \includegraphics*[width=.99\textwidth]{fig/NB-res-plot.png}
     \caption{Example of effective reproduction number estimation for negative Binomial
-    incidences.}
+    incidence.}
     \label{fig:nb-est}
 \end{figure}
 
-\attn{Is this still accurate? 3 folds? I think we should up this to 10.}
 Finally, it is important to provide a brief comparison of the running times of
 three models across the $8$ experimental settings. We find that almost all
 models across all experiments complete within $10$ seconds.
 \RtEstim\ generally takes the longest, likely due to a relatively large
-candidate set---$50$ values of $\lambda$ and 3 folds of cross validation---while
+candidate set --- $50$ values of $\lambda$ and $10$ folds of cross validation --- while
 other models run only a single time for a fixed setting of hyperparameters per
 experiment. Additional results on timing comparisons are deferred to the
 supplementary document. 
@@ -275,7 +262,7 @@ lowest CV scores in \autoref{fig:covid-rt}.
 The estimated reproduction numbers are relatively unstable before April 1st,
 2022. The highest peak coincides with the emergence and global spread of the
 Omicron variant. The estimated reproduction numbers fall below 1 during two time
-periods---roughly from April 1st, 2021 to July 1st, 2021 and from January 1st,
+periods --- roughly from April 1st, 2021 to July 1st, 2021 and from January 1st,
 2022 to April 1st, 2022. The first trough coincides with the introduction of
 Covid-19 vaccines in British Columbia. The second trough, shortly after the
 greatest peak may be due to variety of factors resulting in the depletion of the
@@ -304,8 +291,8 @@ behaviours have also changed significantly since the Omicron wave).
     The left panels demonstrate estimates corresponding to 50 tuning parameters. 
     The right panels display the CV-tuned estimates with 95\% confidence intervals. 
     The top, medium and bottom panels illustrate the estimated reproduction numbers 
-    ($\calR_t$) using the Poisson trend filtering (in \eqref{eq:rt-ptf}) with 
-    degrees $k=1,2,3$ respectively.} 
+    ($\calR_t$) using the Poisson trend filtering (in \eqref{eq:rt-ptf}) with second, 
+    third, and fourth degrees (i.e., orders $k=1,2,3$) respectively.} 
     \label{fig:covid-rt}
 \end{figure} 
 
@@ -324,7 +311,7 @@ declining below $1$ when the after 50 days. However, it also suggests an
 increase toward the end of the period. With the currently available dataset, it is
 hard to tell if there is a next wave or a steady decline ahead. The CV-tuned piecewise 
 constant and linear estimates in \autoref{fig:flu-res} both suggest a steady decline. 
-It is supported by a couple of arguments. The influenza incidences reduce to $0$ in the end. 
+It is supported by a couple of arguments. The influenza incidence reduce to $0$ in the end. 
 The $\calR$ estimates of \EpiEstim\ with 1-week, 2-week and 4-week sliding windows 
 in \cite{cori2013new} are all lower than the threshold $1$ in their right tails. 
 
@@ -346,7 +333,7 @@ in \cite{cori2013new} are all lower than the threshold $1$ in their right tails.
     50 tuning parameters under consideration. The right column displays the 
     CV-tuned estimates with 95\% confidence bands. The rows (top to bottom) show
     estimated reproduction numbers ($\calR_t$) using the Poisson trend filtering
-    (in \eqref{eq:rt-ptf}) with degrees $k=1,2,3$ respectively.} 
+    (in \eqref{eq:rt-ptf}) with second, third, and fourth degrees (i.e., orders $k=1,2,3$) respectively.} 
     \label{fig:flu-res}
 \end{figure} 
 
