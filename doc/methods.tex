@@ -34,9 +34,9 @@ motivation for their procedures, among them,
 
 % serial interval probabilities
 In most cases, it is safe to assume that
-infectiousness disappears beyond $\tau$ timepoints ($p(i) = 0$ for $i > \tau$)
+infectiousness disappears beyond $\tau$ timepoints ($p_i = 0$ for $i > \tau$)
 so that the truncated integral of the generation interval distribution
-$\int_0^\tau p(i)\diff i = 1$.
+$\int_0^\tau p_i\diff i = 1$.
 Generation time, however, is usually unobservable and tricky to estimate, so
 common practice is to approximate it by the serial interval: the period between
 the symptom onsets of primary and secondary infections. If the infectiousness
@@ -46,16 +46,16 @@ approximation is justifiable: the serial interval distribution and the
 generation interval distribution share the same mean. However, other properties
 may not be similarly shared, and, in general, the generation interval
 distribution is a convolution of the serial interval distribution with the
-distribution of the differance between independent draws from the delay
+distribution of the difference between independent draws from the delay
 distribution from infection to symptom onset. See, for example,
 \citet{gostic2020practical} for a fuller discussion of the dangers of this
-approximation. Nonetheless, treating these as interchangable is common
+approximation. Nonetheless, treating these as interchangeable is common
 \citep{cori2013new} and beyond the scope of this work. Additionally, we assume
 that the generation interval (and, therefore, the serial interval), is constant over time
 $t$. That is, the probability $p(i)$ depends only on the gap between primary and
 secondary infections and not on the time $t$ when the secondary infection
 occurs. For our methods, we will assume that the serial interval can be
-accurately estimated from auxilliary data (say by contact tracing, or previous
+accurately estimated from auxiliary data (say by contact tracing, or previous
 epidemics) and we will take it as fixed, as is common in existing studies, e.g.,
 \cite{cori2013new,abry2020spatial,pascal2022nonsmooth}.
 
@@ -237,10 +237,10 @@ the log-scale between $\lambda_1$ and $\lambda_M$.
 \subsection{Choosing a final $\lambda$}
 \label{sec:cv}
 
-We estimate model accuracy over the candidate set through $k$-fold cross
+We estimate model accuracy over the candidate set through $K$-fold cross
 validation (CV) to choose the best tuning parameter. Specifically, we divide
 $\bfy$ (except the first and last observations) roughly evenly and randomly into
-$k$ folds, estimate $\calR_t$ for all $\boldsymbol{\lambda}$ leaving one fold
+$K$ folds, estimate $\calR_t$ for all $\boldsymbol{\lambda}$ leaving one fold
 out, and then predict the held-out observations. Model accuracy can be measured
 by multiple metrics such as mean squared error $\mathrm{MSE}(\widehat{y},\ y) =
 n^{-1}\snorm{\widehat{y} - y}_2^2$ or mean absolute error
@@ -255,40 +255,60 @@ $\lambda$ are used as the initial values (warm starts) for the next smaller $\la
 By solving through the entire sequence of tuning parameters, we have a better chance to 
 achieve a better trade-off between bias and variance, and accordingly, improved
 accuracy relative to procedures examining one fixed value of $\lambda$. Note
-that for any $k$ and any $M$, we will end up estimating the model $(k+1)M$
+that for any $K$ and any $M$, we will end up estimating the model $(k+1)M$
 times rather than once.
 
 
 \subsection{Approximate confidence bands} 
 \label{sec:conf-band} 
 
+% use D instead of Ds
 We also provide empirical confidence bands of the estimators with  
 approximate coverage guarantees. 
 Consider the related estimator $\widetilde{\calR}_t$ defined as
 $$\widetilde{\calR} = \exp(\widetilde{\theta}) \quad\textrm{where}\quad
 \widetilde{\theta} = \Argmin{\theta\in\bbR^n} \eta^\top \exp(\theta) - \bfy^\top
-\theta + \lambda \snorm{\widetilde{D} \theta}_2^2,$$ where $\widetilde{D}$ is a
-block-diagonal matrix such that each block is the divided difference matrix for
-the corresponding segment of the original estimated $\calR_t$, and let
-$\widetilde{\bfy} = \eta \circ \calR$. Then it can be shown \citep[for example,
-Theorem 2 in][]{vaiter2017degrees}, that an estimator for
+\theta + \lambda \snorm{D \theta}_2^2.$$ 
+Let $\widetilde{\bfy} = \eta \circ \calR$, and then it can be shown \citep[for example,
+Theorem 2 in][]{vaiter2017degrees} that an estimator for
 $\Var(\widetilde{\bfy})$ is given by $\big(\mathrm{diag}(\widetilde{\bfy}^{-2})
-+ \lambda \widetilde{D}^{\top} \widetilde{D}\big)^{\dagger}.$ Finally, an
++ \lambda D^{\top} D\big)^{\dagger}.$ Finally, an
 application of the delta method shows that $\Var(\widetilde{\bfy}_t) / \eta_t^2$
 is an estimator for $\Var(\widetilde{\calR}_t)$ for each $t = 1, \cdots, n$. We
 therefore use $\big(\mathrm{diag}(\widetilde{\bfy}^{-2}) + \lambda
-\widetilde{D}^{\top} \widetilde{D}\big)^{\dagger}_t / \eta_t^2$ as an estimator
-for $\Var{\widehat{\calR}_t}$. An approximate $(1-\alpha)\%$ confidence interval
+D^{\top} D\big)^{\dagger}_t / \eta_t^2$ as an estimator
+for $\Var(\widehat{\calR}_t)$. An approximate $(1-\alpha)\%$ confidence interval
 then can be written as $\widehat{\calR} \pm \textrm{T}(\alpha/2, n-\textrm{df}) s$, where $s_t$ is
 the square-root of $\Var(\widehat{\calR}_t)$ for each $t = 1, \cdots, n$ and $\textrm{df}$ is
-the number of blocks in $\widetilde{D}$ plus $k+1$. 
+the number of changepoints in $\widetilde{\theta}$ plus $k+1$. 
+
+%We also provide empirical confidence bands of the estimators with  
+%approximate coverage guarantees. 
+%Consider the related estimator $\widetilde{\calR}_t$ defined as
+%$$\widetilde{\calR} = \exp(\widetilde{\theta}) \quad\textrm{where}\quad
+%\widetilde{\theta} = \Argmin{\theta\in\bbR^n} \eta^\top \exp(\theta) - \bfy^\top
+%\theta + \lambda \snorm{\widetilde{D} \theta}_2^2,$$ where $\widetilde{D}$ is a
+%block-diagonal matrix such that each block is the divided difference matrix for
+%the corresponding segment of the original estimated $\calR_t$, and let
+%$\widetilde{\bfy} = \eta \circ \calR$. Then it can be shown \citep[for example,
+%Theorem 2 in][]{vaiter2017degrees} that an estimator for
+%$\Var(\widetilde{\bfy})$ is given by $\big(\mathrm{diag}(\widetilde{\bfy}^{-2})
+%+ \lambda \widetilde{D}^{\top} \widetilde{D}\big)^{\dagger}.$ Finally, an
+%application of the delta method shows that $\Var(\widetilde{\bfy}_t) / \eta_t^2$
+%is an estimator for $\Var(\widetilde{\calR}_t)$ for each $t = 1, \cdots, n$. We
+%therefore use $\big(\mathrm{diag}(\widetilde{\bfy}^{-2}) + \lambda
+%\widetilde{D}^{\top} \widetilde{D}\big)^{\dagger}_t / \eta_t^2$ as an estimator
+%for $\Var(\widehat{\calR}_t)$. An approximate $(1-\alpha)\%$ confidence interval
+%then can be written as $\widehat{\calR} \pm \textrm{T}(\alpha/2, n-\textrm{df}) s$, where $s_t$ is
+%the square-root of $\Var(\widehat{\calR}_t)$ for each $t = 1, \cdots, n$ and $\textrm{df}$ is
+%the number of blocks in $\widetilde{D}$ plus $k+1$. 
 
 
 \subsection{Bayesian perspective}
 %The epidemiology evolution mechanism suggests a hierarchical framework that posteriori of reproduction number depends on its prior and the distribution of confirmed cases. 
 
 %We here provide an alternative interpretation of our approach from the Bayesian perspective. 
-Unlike many other methods for $\calR_t$ estimation, our apporach is frequentist
+Unlike many other methods for $\calR_t$ estimation, our approach is frequentist
 rather than Bayesian. Nonetheless, it has a corresponding Bayesian
 interpretation: as a state-space model with Poisson observational noise,
 autoregressive transition equation of degree $k\geq 0$, e.g., $\theta_{t+1} =

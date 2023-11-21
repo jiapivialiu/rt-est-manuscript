@@ -5,8 +5,8 @@ source("src/experiments/generate_data.R")
 source("src/experiments/design_algos.R")
 
 # create experiments ----
-#rt_exp = makeExperimentRegistry("src/experiments/rt_exp6_cv_deviance", seed = 142)
-rt_exp = loadRegistry("src/experiments/rt_exp6_cv_deviance", writeable = T)
+#rt_exp = makeExperimentRegistry("src/experiments/rt_exp7_cv10_deviance", seed = 156)
+rt_exp = loadRegistry("src/experiments/rt_exp7_cv10_deviance", writeable = T)
 rt_exp$cluster.functions = makeClusterFunctionsMulticore(ncpus = 8)
 
 # design experiments ----
@@ -27,26 +27,24 @@ addAlgorithm(name = "rtestim1", fun = problem_solver)
 addAlgorithm(name = "rtestim3", fun = problem_solver)
 
 addExperiments(problem_design1, algo_design1, repls = 50, combine = 'crossprod')
-addExperiments(problem_design2, algo_design1, repls = 50, combine = 'crossprod')
+addExperiments(problem_design2, algo_design1, repls = 100, combine = 'crossprod')
 addExperiments(problem_design3, algo_design1, repls = 50, combine = 'crossprod')
 addExperiments(problem_design4, algo_design1, repls = 50, combine = 'crossprod')
 # rtestim exp's
 addExperiments(problem_design1, algo_design2, repls = 50, combine = 'crossprod')
-addExperiments(problem_design2, algo_design3, repls = 50, combine = 'crossprod')
-addExperiments(problem_design2, algo_design4, repls = 50, combine = 'crossprod')
+addExperiments(problem_design2, algo_design3, repls = 100, combine = 'crossprod')
+addExperiments(problem_design2, algo_design4, repls = 100, combine = 'crossprod')
 addExperiments(problem_design3, algo_design3, repls = 50, combine = 'crossprod')
 addExperiments(problem_design4, algo_design4, repls = 50, combine = 'crossprod')
 
 ## summarize all experiments 
 summarizeExperiments(by = c("Rt_case", "dist", "method"))
-
-#removeExperiments(ids = 1:1600)
+#removeExperiments(ids = 1:1700)
 #summarizeExperiments()
 
 # test before submitting ----
 source("src/experiments/tests.R")
 
-rt_exp$seed <- 514
 # getting system running time during running jobs ----
 getStatus()
 
@@ -54,8 +52,8 @@ submitJobs()
 
 # get reduced results ----
 res <- ijoin(
-  getJobPars(ids=findJobs()$job.id),
-  reduceResultsDataTable(ids=findJobs()$job.id, fun = function(x) list(res_list = x))
+  getJobPars(ids=findDone()$job.id),
+  reduceResultsDataTable(ids=findDone()$job.id, fun = function(x) list(res_list = x))
 )
 for(i in 1:nrow(res)){
   res$result[[i]] <- res$result[[i]]$res_list
@@ -79,4 +77,4 @@ Rt_result <- unwrap(res)
 #)
 #Rt_result <- full_join(res_no_rtestim, res_rtestim)
 
-saveRDS(Rt_result, "src/experiments/rt_exp6_results.RDS")
+saveRDS(Rt_result, "src/experiments/rt_exp7_results2.RDS")

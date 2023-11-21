@@ -41,7 +41,7 @@ graphs are adjusted, correctly penalizing the distance between irregularly
 spaced data. Computing the total
 primary infectiousness is also easily generalized to irregular reporting by
 modifying the discretization of the serial interval distribution. Additionally,
-the because the $\ell_1$-penalty introduces sparsity (operating like a median
+because the $\ell_1$ penalty introduces sparsity (operating like a median
 rather than a mean), this procedure is relatively insensitive to outliers
 compared to $\ell_2$ regularization.
 
@@ -98,8 +98,8 @@ subpopulations that may have different mixing behaviour.
 While the Poisson distribution is common, it does not handle overdispersion
 (observation variance larger than the mean). The negative binomial distribution
 is a good alternative, but more difficult to estimate in this context.
-As described in the introduction, justifying the expression for $\calR$ assumes
-that a relatively constant proportion of true infections are reported. However,
+As described in the introduction section, justifying the expression for $\calR$ assumes
+that a relatively constant proportion of true infections is reported. However,
 if this proportion varies with time (say, due to change in surveillance
 practices and testing recommendations), the estimates may be biased over this
 window. A good example is that in early January 2021, during the height of the
@@ -131,7 +131,7 @@ requiring more nuanced knowledge than is typically available.
 % distributions. 
 % using other data?
 Pushing this analysis further, to accommodate other types of incidence data
-(hospitalizations or deaths), a modified interval distribution would be
+(hospitalizations or deaths), a modified generation interval distribution would be
 necessary, and further assumptions would be required as well. Or else, one would
 first need to deconvolve deaths to infection onset before using our software.
 
