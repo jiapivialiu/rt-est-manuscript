@@ -23,10 +23,10 @@ and finally suppression of pandemic. Scenario 4 involves sinusoidal waves
 throughout the epidemic.
 % motivation
 The first three scenarios and the last scenario are motivated by
-\citep{parag2021improved, gressani2022epilps} respectively. 
+\citet{parag2021improved} and \citet{gressani2022epilps} respectively. 
 % name the scenarios
 We name the four scenarios as (1) 2-segment constant, (2) 2-segment exponential 
-curve, (3) 4-segment linear, and (4) periodic respectively. 
+curve, (3) 4-segment linear line, and (4) periodic curve respectively. 
 
 In all cases, the times of observation are regular, and consider epidemics of
 length $n=300$. Specifically, in Scenario 1, $\calR_t = 2, 0.8$ before and after
@@ -55,7 +55,7 @@ distribution with dispersion size 5, i.e., $y_t\sim \textrm{NB}(\Lambda_t,
 \textrm{size}=5)$. We generate 50 random samples for each setting of
 experiments, resulting in 400 total experiments. An example of each effective
 reproduction number scenario with a single corresponding Poisson and negative
-Binomial sample incidence sequence are displayed in \autoref{fig:samples}. 
+Binomial sample incidence sequences is displayed in \autoref{fig:samples}. 
 
 \begin{figure}[hp!]
     \centering
@@ -85,7 +85,7 @@ of the conditional posterior based on the negative Binomial likelihood. For
 \RtEstim\ on the four scenarios respectively, we estimate (1) piecewise constant
 $k=0$, (2) piecewise linear \& cubic $k=1,3$, (3) piecewise linear $k=1$ and (4)
 piecewise cubic polynomials $k=3$. In each case, we examine a grid of 50
-$\lambda$s, selecting the best using cross validation. For all models and
+$\lambda$s, selecting the best using 10-fold cross validation. For all models and
 problems, we use the generation interval distribution used to create the data. 
 
 % KL for exponential family: 
@@ -155,7 +155,7 @@ detail.
     $\hat{\calR}_t$ and the true $\calR_t$ across 50 random samples for 
     each approach given Poisson incidence \textit{(in top panels)} and negative 
     Binomial incidence \textit{(in bottom panels)} respectively.  
-    Outliers are excluded. Full visualization is deferred to the supplementary document. 
+    Outliers are excluded. Full visualization is deferred to the Appendix. 
     A few \RtEstim\ models for Scenario 2 run expired, since they reach the maximum
     iteration number, and thus, are excluded here.} 
     \label{fig:kl-res}
@@ -170,12 +170,12 @@ of the time series, \RtEstim\ estimates are more accurate --- they nearly overla
 with the true values --- without suffering from the edge problem. Scenario 2 is a
 difficult problem for all methods: the sharp increase at the end of the stage of
 exponential growth is difficult to capture. Although the truth is piecewise
-exponential and likely best represented with a piecewise cubic curve, the actual
+exponential are likely best represented with a piecewise cubic curve, the actual
 curvature is so gentle that linear estimation ($k=1$) appears potentially
 reasonable. We, therefore, fit piecewise linear and cubic $\hat{\calR}_t$ curves
 using \RtEstim\ for Scenario 2 to evaluate model misspecification. However, both
 cases have difficulty recovering the acute rise in the growth phase. An
-explanation of such failure is that the model imposes continuity at the
+explanation of such failure is that the model imposes discontinuity at the
 changepoint, which hinders the estimates from fitting the two discontinuous
 phases. Scenario 1 is the simplest case with only one knot and two constant
 segments. Besides the edge problem, \EpiEstim\ and \EpiLPS\ produce ``smooth''
@@ -220,7 +220,7 @@ models across all experiments complete within $10$ seconds.
 candidate set --- $50$ values of $\lambda$ and $10$ folds of cross validation --- while
 other models run only a single time for a fixed setting of hyperparameters per
 experiment. Additional results on timing comparisons are deferred to the
-supplementary document. 
+Appendix. 
 
 
 \subsection{Real-data results: Covid-19 incident cases in British Columbia}
@@ -257,7 +257,7 @@ dropping shortly thereafter. Throughout the estimated curves, the peaks and
 troughs of the reproduction numbers precede the growth and decay cycles of
 confirmed cases, as expected. We also visualize 95\% confidence bands for the
 point estimates at the smallest one of the ``optimal'' tuning parameters with 
-lowest CV scores in \autoref{fig:covid-rt}.     
+lowest CV (i.e., KL divergence) scores in \autoref{fig:covid-rt}.     
 
 The estimated reproduction numbers are relatively unstable before April 1st,
 2022. The highest peak coincides with the emergence and global spread of the
@@ -268,7 +268,7 @@ Covid-19 vaccines in British Columbia. The second trough, shortly after the
 greatest peak may be due to variety of factors resulting in the depletion of the
 susceptible population such as increased self-isolation in response to the peak
 and media and immunity incurred via recent infection. Since around April 1st,
-2022, estimated reproduction numbers have remained relatively stable stable
+2022, estimated reproduction numbers have remained relatively stable
 (fluctuating around $1$) corresponding to low reported cases (though reporting
 behaviours have also changed significantly since the Omicron wave). 
 
@@ -291,8 +291,8 @@ behaviours have also changed significantly since the Omicron wave).
     The left panels demonstrate estimates corresponding to 50 tuning parameters. 
     The right panels display the CV-tuned estimates with 95\% confidence intervals. 
     The top, medium and bottom panels illustrate the estimated reproduction numbers 
-    ($\calR_t$) using the Poisson trend filtering (in \eqref{eq:rt-ptf}) with second, 
-    third, and fourth degrees (i.e., orders $k=1,2,3$) respectively.} 
+    ($\calR_t$) using the Poisson trend filtering (in \eqref{eq:rt-ptf}) with 
+    degrees $k=1,2,3$ respectively.} 
     \label{fig:covid-rt}
 \end{figure} 
 
@@ -301,13 +301,13 @@ behaviours have also changed significantly since the Omicron wave).
 
 We also apply \RtEstim\ to daily reported influenza cases in Baltimore, Maryland
 occurring during the world-wide pandemic of 1918 from September to November. 
-The dataset (shown in \autoref{fig:flu-dat}) is included in the \EpiEstim \texttt{R} package. 
+The dataset (shown in \autoref{fig:flu-dat}) is included in the \EpiEstim\ \texttt{R} package. 
 The 1918 influenza outbreak, caused by the H1N1 influenza A virus, was an unprecedentedly
 deadly, infecting almost one-third of the population across the world
 \citep{taubenberger20061918}. In \autoref{fig:flu-res}, the CV-tuned piecewise
 cubic estimates best capture the growth at the beginning of the pandemic. It
-suggests that the pandemic grew rapidly over the first 30 before
-declining below $1$ when the after 50 days. However, it also suggests an
+suggests that the pandemic grew rapidly over the first 30 days before
+declining below $1$ after 50 days. However, it also suggests an
 increase toward the end of the period. With the currently available dataset, it is
 hard to tell if there is a next wave or a steady decline ahead. The CV-tuned piecewise 
 constant and linear estimates in \autoref{fig:flu-res} both suggest a steady decline. 
@@ -333,7 +333,7 @@ in \cite{cori2013new} are all lower than the threshold $1$ in their right tails.
     50 tuning parameters under consideration. The right column displays the 
     CV-tuned estimates with 95\% confidence bands. The rows (top to bottom) show
     estimated reproduction numbers ($\calR_t$) using the Poisson trend filtering
-    (in \eqref{eq:rt-ptf}) with second, third, and fourth degrees (i.e., orders $k=1,2,3$) respectively.} 
+    (in \eqref{eq:rt-ptf}) with degrees $k=1,2,3$ respectively.} 
     \label{fig:flu-res}
 \end{figure} 
 
