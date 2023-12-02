@@ -54,4 +54,4 @@ intro_fig <- ggarrange(fig_rt_fit, fig_inc_fit, ncol=1,
                          common.legend = TRUE, legend = "bottom")
 intro_fig
 
-ggsave(here::here("fig/intro-fig-new.png"), intro_fig, width = 8.51, height = 5.79)
+ggsave(here::here("fig/intro-fig-new.png"), intro_fig, width = 7.34, height = 6.06)

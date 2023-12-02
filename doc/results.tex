@@ -1,9 +1,9 @@
 \section{Results}
 
-Implementation of the our approach is provided in the \texttt{R} package
+Implementation of the our approach is provided in the \R\ package
 \href{https://dajmcdon.github.io/rtestim/}{\texttt{rtestim}}. All experiments
-are run in \texttt{R} with version 4.3.1 on a MacBook with an Apple M1 Pro chip
-and 32GB RAM running under macOS Sonoma 14.0. The \texttt{R} packages used for
+are run in \R\ with version 4.3.1 on a MacBook with an Apple M1 Pro chip
+and 32GB RAM running under macOS Sonoma 14.0. The \R\ packages used for
 simulation and real-data application are versions \texttt{EpiEstim 2.2-4},
 \texttt{EpiLPS 1.2.0}, and \texttt{rtestim 0.0.4}. 
 
@@ -47,10 +47,10 @@ We assume that the serial interval follows Gamma distribution with fixed shapes
 and scales $(3,3)$, $(2.5,2.5)$, $(3.5,3.5)$ and $(3.5,3.5)$ for Scenarios 1--4
 respectively. We consider all epidemics starting from $y_1=2$ cases and
 generating until timepoints $t=300$. We compute the expected incidence
-$\Lambda_t$ using the renewal equation, and generate the incidence samples from
+$\Lambda_t$ using the renewal equation, and generate the incident samples from
 the Poisson distribution $y_t\sim \textrm{Pois}(\Lambda_t)$. To verify the
 performance of our model under the violation of this distributional assumption
-of incidence, we also generate incidence samples using the negative Binomial
+of incidence, we also generate incident samples using the negative Binomial
 distribution with dispersion size 5, i.e., $y_t\sim \textrm{NB}(\Lambda_t,
 \textrm{size}=5)$. We generate 50 random samples for each setting of
 experiments, resulting in 400 total experiments. An example of each effective
@@ -204,7 +204,7 @@ especially at the beginning of the outbreak. This is most pronounced in Scenario
 \RtEstim\ successfully captures the changepoint, but suffers from the same
 problem as in the Poisson setting. In Scenario 3, the piecewise linear \RtEstim\
 recovers the curvature of $\calR_t$ well, but is less accurate than
-in the Poisson incidence cases.
+in the Poisson incidence.
 
 \begin{figure}[tb]
     \centering
@@ -312,7 +312,7 @@ However, it also suggests an increase of the infectiousness toward the end of th
 With the currently available dataset, it is hard to tell if there is a next wave 
 or a steady decline ahead. The CV-tuned piecewise 
 constant and linear estimates in \autoref{fig:flu-res} both suggest a steady decline. 
-This is supported by a couple of arguments. The influenza incidence reduce to $0$ in the end. 
+This is supported by a couple of arguments. The influenza incidence reduces to $0$ in the end. 
 The $\calR$ estimates of \EpiEstim\ with 1-week, 2-week and 4-week sliding windows 
 in \cite{cori2013new} are all lower than the threshold $1$ in their right tails. 
 
@@ -321,7 +321,7 @@ in \cite{cori2013new} are all lower than the threshold $1$ in their right tails.
 \begin{figure}[tb]
     \centering
     \includegraphics[width=0.9\linewidth]{fig/flu_dat.png}
-    \caption{Daily influenza incidence counts in Baltimore, Maryland between September 
+    \caption{Daily influenza incident counts in Baltimore, Maryland between September 
     and November in 1918.} 
     \label{fig:flu-dat}
 \end{figure} 

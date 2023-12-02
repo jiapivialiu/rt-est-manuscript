@@ -63,7 +63,7 @@ epidemics) and we will take it as fixed, as is common in existing studies, e.g.,
 The renewal equation in \eqref{eq:renew-equation} relates observable data
 streams (incident cases) occurring at different time points to the reproduction
 number given the serial interval. The fact that it depends only on the observed
-incidence counts makes it reasonable to estimate $\calR_t$. However, 
+incident counts makes it reasonable to estimate $\calR_t$. However, 
 data collection idiosyncrasies can obscure this relationship. Diagnostic testing
 targets symptomatic individuals, omitting asymptomatic primary infections which
 can lead to future secondary infections. Testing practices, availability, and
@@ -97,7 +97,7 @@ cases $y_{t-1},\ldots,y_1$ and a constant serial interval distribution follows a
 Poisson distribution with mean $\Lambda_t$. That is, 
 $$
 y_t \mid y_1,\ldots,y_{t-1} \sim \mathrm{Poisson}(\Lambda_t), \textrm{ where } \Lambda_t =  \calR_t\sum_{i=0}^{t-1}p_i y_{t-i} = \calR_t\eta_t.$$ 
-Given a history of $n$ confirmed incidence counts $\bfy = (y_1,\ldots,y_n)^\top$,
+Given a history of $n$ confirmed incident counts $\bfy = (y_1,\ldots,y_n)^\top$,
 our goal is to estimate $\calR_t$. A natural approach is to maximize the
 likelihood, producing the MLE:
 \begin{equation} \label{eq:mle}

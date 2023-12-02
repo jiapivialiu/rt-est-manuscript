@@ -62,7 +62,7 @@ based on the (discretized) Kalman filter and smoother. \texttt{EpiFilter} also
 estimates the posterior of $\calR_t$ given a Gamma prior and Poisson distributed
 incident cases. Compared to \EpiEstim, however, \texttt{EpiFilter} estimates
 $\calR_t$ retrospectively using all available incidence data both before and
-after time $t$, with the goal of being more robust in low-incidence cases.  
+after time $t$, with the goal of being more robust in low-incidence periods.  
 \citet{gressani2022epilps} proposed a Bayesian P-splines approach, \EpiLPS, that
 assumes negative Binomial distributed incidence. \citet{trevisin2023spatially}
 also proposed a Bayesian model estimated with particle filtering to incorporate
@@ -91,7 +91,7 @@ level of overdispersion.
 There are other spline-based approaches such as
 \cite{azmon2014estimation,gressani2021approximate},
 autoregressive models with random effects \citep{jin2023epimix} that are robust
-to low incidence cases, and generalized autoregressive moving average (GARMA)
+to low incidence, and generalized autoregressive moving average (GARMA)
 models \citep{hettinger2023estimating} that are robust to measurement errors in
 incidence data. 
 
@@ -116,7 +116,7 @@ three years of Covid-19 case data in Canada is shown in \autoref{fig:intro-fig}.
     \centering
     \includegraphics[width=.9\textwidth]{fig/intro-fig-new.png}
     \caption{A demonstration of effective reproduction number estimation 
-    by \RtEstim\ and the corresponding fitted incidence cases for the Covid-19 epidemic 
+    by \RtEstim\ and the corresponding fitted incident cases for the Covid-19 epidemic 
     in Canada during a period from March 28, 2020 to June 28, 2023. 
     The \textcolor{customblue}{\textbf{blue}} curve in the top panel is the estimated piecewise
     quadratic $\calR_t$ and the gray ribbon is the corresponding 95\% confidence band. 
