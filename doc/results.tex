@@ -19,7 +19,7 @@ and after an intervention, while Scenario 2 grows exponentially, then decays.
 The other two scenarios are more complicated, where more waves in the epidemics
 are involved. Scenario 3 has four linear segments with three discontinuities,
 which reflect the effect of an intervention, resurgence to rapid transmission,
-and finally suppression of pandemic. Scenario 4 involves sinusoidal waves
+and finally suppression of the epidemic. Scenario 4 involves sinusoidal waves
 throughout the epidemic.
 % motivation
 The first three scenarios and the last scenario are motivated by
@@ -28,7 +28,7 @@ The first three scenarios and the last scenario are motivated by
 We name the four scenarios as (1) 2-segment constant, (2) 2-segment exponential 
 curve, (3) 4-segment linear line, and (4) periodic curve respectively. 
 
-In all cases, the times of observation are regular, and consider epidemics of
+In all cases, the times of observation are regular, and epidemics are of
 length $n=300$. Specifically, in Scenario 1, $\calR_t = 2, 0.8$ before and after
 $t=70$. In Scenario 2, $\calR_t$ increases and decreases exponentially with
 rates $0.015, 0.005$ pre and post $t=50$. In Scenario 3, $\calR_t$ reduces from
@@ -78,15 +78,15 @@ reproduction number is constant during the specific time window. A longer
 sliding window averages out more fluctuations, leading to smoother estimates,
 whereas, a shorter sliding window is more responsive to sudden spikes or
 declines. We tried the default, a weekly sliding window, as well as a monthly
-window. However, since neither considerably outperform the other across all
+window. However, since neither considerably outperforms the other across all
 scenarios, we defer the monthly case to the Appendix. \EpiLPS\ is another
 Bayesian approach that estimates P-splines coupled with Laplace approximations
 of the conditional posterior based on the negative Binomial likelihood. For
 \RtEstim\ on the four scenarios respectively, we estimate (1) piecewise constant
 $k=0$, (2) piecewise linear \& cubic $k=1,3$, (3) piecewise linear $k=1$ and (4)
 piecewise cubic polynomials $k=3$. In each case, we examine a grid of 50
-$\lambda$s, selecting the best using 10-fold cross validation. For all models and
-problems, we use the generation interval distribution used to create the data. 
+$\lambda$ values, selecting the best using 10-fold cross validation. For all models and
+problems, we use the serial interval distribution used to create the data. 
 
 % KL for exponential family: 
 To measure estimation accuracy, we compare $\widehat{\calR}$ to $\calR$ using
@@ -139,7 +139,7 @@ negative Binomial case compared to the Poisson case, but still obvious.
 \RtEstim\ and \EpiLPS\ have similar performance in Scenarios 2 and 4. 
 For the Poisson case, \RtEstim\ and \EpiLPS\ both have very small KL scores, which are
 very close to 0. In Scenario 4, \RtEstim\ is slightly better for Poisson and \EpiLPS\ 
-is better for negative Binomial, but the boxes largely overlap to each other. 
+is better for negative Binomial, but the boxes largely overlap each other. 
 \EpiLPS\ has a slightly lower median and a smaller IQR in Scenario 2 for the negative Binomial case. 
 The two degrees of \RtEstim\ used for Scenario 2 perform very close to each other 
 for both distributions, which implies a low risk of model misspecification. 
@@ -155,9 +155,7 @@ detail.
     $\hat{\calR}_t$ and the true $\calR_t$ across 50 random samples for 
     each approach given Poisson incidence \textit{(in top panels)} and negative 
     Binomial incidence \textit{(in bottom panels)} respectively.  
-    Outliers are excluded. Full visualization is deferred to the Appendix. 
-    A few \RtEstim\ models for Scenario 2 run expired, since they reach the maximum
-    iteration number, and thus, are excluded here.} 
+    Outliers are excluded. Full visualization is deferred to the Appendix.} 
     \label{fig:kl-res}
 \end{figure}
 
@@ -167,22 +165,25 @@ detail.
 numbers under the Poisson generative model for all 4 scenarios. Compared to
 \EpiEstim\ and \EpiLPS, which have rather severe difficulties at the beginning
 of the time series, \RtEstim\ estimates are more accurate --- they nearly overlap
-with the true values --- without suffering from the edge problem. Scenario 2 is a
-difficult problem for all methods: the sharp increase at the end of the stage of
-exponential growth is difficult to capture. Although the truth is piecewise
-exponential are likely best represented with a piecewise cubic curve, the actual
+with the true values --- without suffering from the edge problem. 
+Scenario 2 presents an easy problem in terms of accurate estimation for all methods, 
+except at the change point occurring at the end of the exponential growth. 
+Although the truth is likely best represented with a piecewise cubic curve, the actual
 curvature is so gentle that linear estimation ($k=1$) appears potentially
 reasonable. We, therefore, fit piecewise linear and cubic $\hat{\calR}_t$ curves
-using \RtEstim\ for Scenario 2 to evaluate model misspecification. However, both
-cases have difficulty recovering the acute rise in the growth phase. An
-explanation of such failure is that the model imposes discontinuity at the
+using \RtEstim\ for Scenario 2 to evaluate model misspecification. 
+However, \RtEstim\ with both degrees have difficulty recovering the acute rise 
+in the growth phase. Due to this, \RtEstim\ has difficulty in convergence and 
+can require more than $10^7$ iterates for all models across the $\lambda$ sequence 
+and $10$-fold CV to converge in a couple of simulation samples. 
+An explanation of such failure is that the model imposes discontinuity at the
 changepoint, which hinders the estimates from fitting the two discontinuous
 phases. Scenario 1 is the simplest case with only one knot and two constant
 segments. Besides the edge problem, \EpiEstim\ and \EpiLPS\ produce ``smooth''
 estimated curves that are continuous at the changepoint, which results in
-large mistakes in that neighbourhood. Since the
-piecewise constant \RtEstim\ estimator does not force any smoothness in
-$\calR_t$, it easily captures the sharp decrease change. 
+large mistakes in that neighbourhood. Since the piecewise constant 
+\RtEstim\ estimator does not force any smoothness in $\calR_t$, it easily 
+captures the sharp change. 
 
 \begin{figure}[tb]
     \centering
@@ -228,9 +229,8 @@ Appendix.
 % introduce data & tuning parameter setup
 We implement \RtEstim\ on Covid-19 incident confirmed cases in British Columbia
 (B.C.) as reported on May 18, 2023 (visualized in \autoref{fig:covid-data}) by
-the B.C.\ Centre for Disease Control. The reported incident cases provide a
-snapshot of how testing recommendations and practices have changed over the
-three years. We use the gamma distribution with shape $2.5$ and scale $2.5$
+the B.C.\ Centre for Disease Control. 
+We use the gamma distribution with shape $2.5$ and scale $2.5$
 to approximate the serial interval function, which is empirically
 reasonable, since they are close to the parameters in a recent study 
 \citep{lehtinen2021relationship}, which summarizes estimated parameters of the 
@@ -285,7 +285,7 @@ behaviours have also changed significantly since the Omicron wave).
 
 \begin{figure}[tb]
     \centering
-    \includegraphics[width=0.99\linewidth]{fig/covid_full_res.png}
+    \includegraphics[width=0.9\linewidth]{fig/covid_full_res.png}
     \caption{Estimated effective reproduction numbers for Covid19 daily confirmed 
     counts between March 1st, 2020 and April 15th, 2023 in British Columbia, Canada. 
     The left panels demonstrate estimates corresponding to 50 tuning parameters. 
@@ -301,17 +301,18 @@ behaviours have also changed significantly since the Omicron wave).
 
 We also apply \RtEstim\ to daily reported influenza cases in Baltimore, Maryland
 occurring during the world-wide pandemic of 1918 from September to November. 
-The dataset (shown in \autoref{fig:flu-dat}) is included in the \EpiEstim\ \texttt{R} package. 
-The 1918 influenza outbreak, caused by the H1N1 influenza A virus, was an unprecedentedly
-deadly, infecting almost one-third of the population across the world
-\citep{taubenberger20061918}. In \autoref{fig:flu-res}, the CV-tuned piecewise
-cubic estimates best capture the growth at the beginning of the pandemic. It
-suggests that the pandemic grew rapidly over the first 30 days before
-declining below $1$ after 50 days. However, it also suggests an
-increase toward the end of the period. With the currently available dataset, it is
-hard to tell if there is a next wave or a steady decline ahead. The CV-tuned piecewise 
+The dataset (shown in \autoref{fig:flu-dat}) is included in the \EpiEstim\ \R\ package. 
+The 1918 influenza outbreak, caused by the H1N1 influenza A virus, was unprecedentedly
+deadly with case fatality rate over 2.5\%, infecting almost one-third of the population across the world
+\citep{taubenberger20061918}. The CV-tuned piecewise cubic estimates in \autoref{fig:flu-res}
+better capture the growth at the beginning of the pandemic in \autoref{fig:flu-dat}. 
+The estimated $\calR_t$ curve suggests that the transmissibility of the pandemic 
+grew rapidly over the first 30 days before declining below $1$ after 50 days. 
+However, it also suggests an increase of the infectiousness toward the end of the period. 
+With the currently available dataset, it is hard to tell if there is a next wave 
+or a steady decline ahead. The CV-tuned piecewise 
 constant and linear estimates in \autoref{fig:flu-res} both suggest a steady decline. 
-It is supported by a couple of arguments. The influenza incidence reduce to $0$ in the end. 
+This is supported by a couple of arguments. The influenza incidence reduce to $0$ in the end. 
 The $\calR$ estimates of \EpiEstim\ with 1-week, 2-week and 4-week sliding windows 
 in \cite{cori2013new} are all lower than the threshold $1$ in their right tails. 
 
@@ -327,7 +328,7 @@ in \cite{cori2013new} are all lower than the threshold $1$ in their right tails.
 
 \begin{figure}[tb]
     \centering
-    \includegraphics[width=0.99\linewidth]{fig/flu_full_res.png}
+    \includegraphics[width=0.9\linewidth]{fig/flu_full_res.png}
     \caption{Estimated effective reproduction numbers for influenza in
     Baltimore, Maryland in 1918. The left panels show estimates for all
     50 tuning parameters under consideration. The right column displays the 

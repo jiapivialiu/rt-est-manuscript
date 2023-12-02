@@ -90,7 +90,7 @@ problem_solver <- function(data, method, instance, ...) {
         cv_mod <- rtestim::cv_estimate_rt(
           incidence,
           korder = korder, nfold = 10,
-          nsol = 50, maxiter = 1e7L,
+          nsol = 50, maxiter = 3e7L,
           dist_gamma = gamma_pars,
           error_measure = "deviance",
           lambda_min_ratio = 1e-6

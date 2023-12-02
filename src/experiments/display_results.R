@@ -1,4 +1,4 @@
-Rt_result <- readRDS("src/experiments/rt_exp7_results.RDS")
+Rt_result <- readRDS("src/experiments/rt_exp7_results_all.RDS")
 
 library(ggplot2)
 library(forcats)
@@ -330,4 +330,4 @@ KL_fig_no_outlier <- Rt_result_no_outliers %>%
 KL_fig_no_outlier
 
 ggsave(here::here("fig/KL_no_outlier.png"), KL_fig_no_outlier, 
-       width = 9.19, height = 6.48)
+       width = 7.34, height = 6.06)

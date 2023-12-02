@@ -41,7 +41,8 @@ estimate $\calR_t$ for each $i = 1,\ldots, t$. An advantage of \EpiEstim\ is its
 straightforward statistical model: new incidence data follows the Poisson
 distribution conditional on past incidence combined with the conjugate gamma prior
 distribution for $\calR_t$ with fixed hyperparameters. Additionally, the serial
-interval distribution is fixed and known. For this reason, \EpiEstim\ requires
+interval distribution, the distribution of the period between onsets of primary and secondary 
+infections in a population, is fixed and known. For this reason, \EpiEstim\ requires
 little domain expertise for use, and it is computationally fast.
 \citet{thompson2019improved} modified this method to distinguish imported cases from local transmission and
 simultaneously estimate the serial interval distribution.
@@ -104,19 +105,19 @@ convex optimization problem with Poisson loss and $\ell_1$ penalty on the
 temporal evolution of $\log(\calR_t)$ to impose smoothness over time. 
 As a result, \RtEstim\ generates discrete splines, and the estimated curves (in
 $\log$-space) appear to be piecewise polynomials of an order selected by the
-user. Importantly, The estimates are locally adaptive, meaning that different
-time ranges may posses heterogeneous smoothness. Because we penalize the
+user. Importantly, the estimates are locally adaptive, meaning that different
+time ranges may possess heterogeneous smoothness. Because we penalize the
 logarithm of $\calR_t$, we naturally accommodate the positivity requirement, can
 handle large or small incidence measurements, and are automatically (reasonably)
 robust to outliers without additional constraints. A small illustration using
-three years of Covid-19 case data in British Columbia is shown in \autoref{fig:intro-fig}.
+three years of Covid-19 case data in Canada is shown in \autoref{fig:intro-fig}.
 
 \begin{figure}[tb]
     \centering
-    \includegraphics[width=.99\textwidth]{fig/intro-fig-new.png}
+    \includegraphics[width=.9\textwidth]{fig/intro-fig-new.png}
     \caption{A demonstration of effective reproduction number estimation 
     by \RtEstim\ and the corresponding fitted incidence cases for the Covid-19 epidemic 
-    in British Columbia, Canada during a period from March 28, 2020 to June 28, 2023. 
+    in Canada during a period from March 28, 2020 to June 28, 2023. 
     The \textcolor{customblue}{\textbf{blue}} curve in the top panel is the estimated piecewise
     quadratic $\calR_t$ and the gray ribbon is the corresponding 95\% confidence band. 
     The black curve in the bottom panel is the observed Covid-19 daily confirmed 
@@ -155,7 +156,7 @@ typically in a matter of seconds, even for long sequences of data.
 % iterative algorithms can be avoided. 
 % Moreover, the sparse structure of the divided difference matrix used in the trend filtering penalty allows further efficiency in computation. 
 %Temporal evolution of reproduction numbers considers the progression of reproduction numbers that occurs over time through different temporal intervals. 
-In a number of simulated experiments, we show empirically that our approach is
+In a number of simulation experiments, we show empirically that our approach is
 more accurate than existing methods at estimating the true effective reproduction numbers. 
 
 
@@ -165,7 +166,7 @@ trend filtering estimator. We explain how this method could be interpreted from
 the Bayesian perspective, connecting it to previous work in this context. We
 provide illustrative experiments comparing our estimator to \EpiEstim\ and
 \EpiLPS. We then apply our \RtEstim\ on the Covid-19 pandemic incidence in
-British Columbia and the 1918 influenza pandemic in the United States. Finally,
+British Columbia and the 1918 influenza pandemic incidence in the United States. Finally,
 we conclude with a discussion of the advantages and limitations of our approach
 and describe practical considerations for effective reproduction number
 estimation.

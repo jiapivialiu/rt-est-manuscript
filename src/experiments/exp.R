@@ -27,13 +27,13 @@ addAlgorithm(name = "rtestim1", fun = problem_solver)
 addAlgorithm(name = "rtestim3", fun = problem_solver)
 
 addExperiments(problem_design1, algo_design1, repls = 50, combine = 'crossprod')
-addExperiments(problem_design2, algo_design1, repls = 100, combine = 'crossprod')
+addExperiments(problem_design2, algo_design1, repls = 50, combine = 'crossprod')
 addExperiments(problem_design3, algo_design1, repls = 50, combine = 'crossprod')
 addExperiments(problem_design4, algo_design1, repls = 50, combine = 'crossprod')
 # rtestim exp's
 addExperiments(problem_design1, algo_design2, repls = 50, combine = 'crossprod')
-addExperiments(problem_design2, algo_design3, repls = 100, combine = 'crossprod')
-addExperiments(problem_design2, algo_design4, repls = 100, combine = 'crossprod')
+addExperiments(problem_design2, algo_design3, repls = 50, combine = 'crossprod')
+addExperiments(problem_design2, algo_design4, repls = 50, combine = 'crossprod')
 addExperiments(problem_design3, algo_design3, repls = 50, combine = 'crossprod')
 addExperiments(problem_design4, algo_design4, repls = 50, combine = 'crossprod')
 
@@ -77,4 +77,4 @@ Rt_result <- unwrap(res)
 #)
 #Rt_result <- full_join(res_no_rtestim, res_rtestim)
 
-saveRDS(Rt_result, "src/experiments/rt_exp7_results2.RDS")
+saveRDS(Rt_result, "src/experiments/rt_exp7_results_all.RDS")

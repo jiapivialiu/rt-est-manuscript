@@ -50,7 +50,7 @@ distribution of the difference between independent draws from the delay
 distribution from infection to symptom onset. See, for example,
 \citet{gostic2020practical} for a fuller discussion of the dangers of this
 approximation. Nonetheless, treating these as interchangeable is common
-\citep{cori2013new} and beyond the scope of this work. Additionally, we assume
+\citep{cori2013new} and doing otherwise is beyond the scope of this work. Additionally, we assume
 that the generation interval (and, therefore, the serial interval), is constant over time
 $t$. That is, the probability $p(i)$ depends only on the gap between primary and
 secondary infections and not on the time $t$ when the secondary infection
@@ -63,8 +63,8 @@ epidemics) and we will take it as fixed, as is common in existing studies, e.g.,
 The renewal equation in \eqref{eq:renew-equation} relates observable data
 streams (incident cases) occurring at different time points to the reproduction
 number given the serial interval. The fact that it depends only on the observed
-incidence counts makes it reasonable to estimate $\calR_t$. However, this
-relationship obscures some difficulties in data collection. Diagnostic testing
+incidence counts makes it reasonable to estimate $\calR_t$. However, 
+data collection idiosyncrasies can obscure this relationship. Diagnostic testing
 targets symptomatic individuals, omitting asymptomatic primary infections which
 can lead to future secondary infections. Testing practices, availability, and
 uptake can vary across space and time \citep{pitzer2021impact,
@@ -82,7 +82,7 @@ the reporting ratio, then it will cancel from both sides. Similar arguments mean
 that even if such a scaling varies in time, as long as it varies slowly relative
 to the set of $p_i$ that are larger than 0, \eqref{eq:renew-equation} will be a
 reasonably accurate approximation, so that $\calR_t$ can still be estimated well
-from reported incidence data. Finally, even a sudden change, say from $c_1$ for
+from reported incidence data. Finally, even a sudden change in reporting ratio, say from $c_1$ for
 $i=1,\ldots,t_1$ to $c_2$ for $i>t_1$ would only result in large errors for $t$
 in the neighbourhood of $t_1$ (where the size of this neighbourhood is again
 determined by the effective support of $\{p_i\}$). This robustness to certain
@@ -117,7 +117,7 @@ The MLE is an unbiased estimator of the true parameter $\calR_t$, but
 unfortunately has high variance: changes in $y_t$ result in proportional changes
 in $\widehat\calR_t$. To avoid this behaviour, and to match the intuition that
 $\calR_t \approx \calR_{t-1}$, we advocate enforcing smoothness of the effective
-reproduction numbers. This requirement will decrease the variance, and hopefully
+reproduction numbers. This constraint will decrease the variance, and hopefully
 lead to more accurate estimation of $\calR$, as long as the smoothness
 assumption is reasonable. Smoothness assumptions are common (see e.g.,
 \citet{parag2021improved} or \citet{gostic2020practical}), but the \emph{type}
@@ -127,7 +127,7 @@ The Kalman filter procedure of \citet{parag2021improved} would enforce in
 $\ell_2$-smoothness ($\int_0^n (\widehat{\calR}''(t))^{2}\diff t < C$ for some
 $C$), although the algorithm results in $\widehat{\calR}$ taking values over a
 discrete grid. \citet{pascal2022nonsmooth} produces piecewise-linear
-$\widehat{\calR}_t$, which turns out to closely related to a special case of our
+$\widehat{\calR}_t$, which turns out to closely relate to a special case of our
 methodology.
 %Meanwhile, the smoothed estimation can still keep the critical changing points
 %of the transmissibility for the reference to policy makers. 
@@ -148,7 +148,7 @@ changes between adjacent effective reproduction numbers. Because $\calR_t > 0$,
 we explicitly penalize the divided differences (discrete derivatives) of
 neighbouring values of $\log(\calR_t)$. To achieve this, we penalize the
 $\ell_1$ norm of the divided differences, which introduces sparsity into the
-curvature, so that the estimates have heterogeneous smoothness in different
+curvature, so that the estimates can have heterogeneous smoothness in different
 periods of time. It is a more realistic setting compared to
 homogeneous smoothness created by the squared $\ell_2$ norm. Using different
 orders of divided differences result in estimated effective reproduction numbers
@@ -214,7 +214,8 @@ smooth the final estimate should be.
 
 We can solve the Poisson trend filtering estimator over an arbitrary sequence of 
 $\lambda$ that produces different levels of smoothness in the estimated curves. 
-We consider a candidate set $\boldsymbol{\lambda} = \{\lambda_m\}_{m=1}^M$, which contains a strictly decreasing $\lambda$ sequence.% with 
+We consider a candidate set $\boldsymbol{\lambda} = \{\lambda_m\}_{m=1}^M$, 
+which is a strictly decreasing $\lambda$ sequence.% with 
 %$\lambda_M \geq \lambda_{min}$ and $\lambda_1 \leq \lambda_{max}$. 
 
 Let $D := D^{(k+1)}$ for simplicity in the remainder of this section. As
@@ -255,7 +256,7 @@ $\lambda$ are used as the initial values (warm starts) for the next smaller $\la
 By solving through the entire sequence of tuning parameters, we have a better chance to 
 achieve a better trade-off between bias and variance, and accordingly, improved
 accuracy relative to procedures examining one fixed value of $\lambda$. Note
-that for any $K$ and any $M$, we will end up estimating the model $(k+1)M$
+that for any $K$ and any $M$, we will end up estimating the model $(K+1)M$
 times rather than once.
 
 
@@ -314,11 +315,11 @@ interpretation: as a state-space model with Poisson observational noise,
 autoregressive transition equation of degree $k\geq 0$, e.g., $\theta_{t+1} =
 2\theta_t - \theta_{t-1} + \varepsilon_{t+1}$ for $k=1$, and Laplace transition
 noise $\varepsilon_{t+1}\sim \mathrm{Laplace}(0,\ 1/\lambda)$. Compared to
-\texttt{EpiFilter} \citep{parag2021improved}, another retrospective study of
-$\calR_t$, we share same observational assumptions, but our approach has a
+\texttt{EpiFilter} \citep{parag2021improved},
+ we share the same observational assumptions, but our approach has a
 different transition noise. \texttt{EpiFilter} estimates the posterior
 distribution of
 $\calR_t$, and thus it can provide credible interval estimates as well. Our
 approach produces the maximum \emph{a posteriori} estimate via an efficient
-convex optimization, omitting the need for MCMC sampling. But the associated
+convex optimization, obviating the need for MCMC sampling. But the associated
 confidence bands are created differently.
