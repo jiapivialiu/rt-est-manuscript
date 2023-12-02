@@ -141,7 +141,7 @@ values computation excludes the first week of Rt estimates for all approaches.
 ```{r KL-week-fig, echo=FALSE, fig.height=4, fig.width=6}
 cbPalette <- c("#E69F00", "#009E73", "#CC79A7", "#0072B2", "#56B4E9")
 
-Rt_result <- readRDS(here::here("src/experiments/rt_exp7_results.RDS"))
+Rt_result <- readRDS(here::here("src/experiments/rt_exp7_results_all.RDS"))
 Rt_result$Rt_case <- as.factor(Rt_result$Rt_case)
 Rt_result$dist <- as.factor(Rt_result$dist)
 Rt_result$method <- as.factor(Rt_result$method)
@@ -968,7 +968,7 @@ fig2 <- res_dat %>%
   geom_line(na.rm=TRUE) + 
   coord_cartesian(ylim = c(0, 4)) + 
   scale_colour_manual(values = cbPalette) + 
-  labs(y="", color="Rt methods", x="", title="Scenario 2: 2-segment exponential curve") + 
+  labs(y="", color="Rt methods", x="", title="Scenario 2: 2-segment exponential") + 
   theme_bw()
 
 fig3 <- res_dat %>%
@@ -1036,7 +1036,7 @@ fig_Pois_res <- ggpubr::annotate_figure(
   left = grid::textGrob("Rt estimates for Poisson incidence", 
                         rot = 90, vjust = 1, gp = grid::gpar(cex = 1)))
 
-ggsave(here::here("fig/Pois-res-plot.png"), fig_Pois_res, width = 7.81, height = 5.03)
+ggsave(here::here("fig/Pois-res-plot.png"), fig_Pois_res, width = 7.45, height = 5.38)
 ```
 
 
@@ -1094,7 +1094,7 @@ fig22 <- res_dat %>%
   geom_line(na.rm=TRUE) + 
   coord_cartesian(ylim = c(0, 4)) + 
   scale_colour_manual(values = cbPalette) + 
-  labs(y="", color="Rt methods", x="", title="Scenario 2: 2-segment exponential curve") + 
+  labs(y="", color="Rt methods", x="", title="Scenario 2: 2-segment exponential") + 
   theme_bw()
 
 fig23 <- res_dat %>%
@@ -1158,7 +1158,7 @@ fig_NB_res <- ggpubr::annotate_figure(
                         rot = 90, vjust = 1, gp = grid::gpar(cex = 1))
 )
 
-ggsave(here::here("fig/NB-res-plot.png"), fig_NB_res, width = 7.81, height = 5.03)
+ggsave(here::here("fig/NB-res-plot.png"), fig_NB_res, width = 7.45, height = 5.38)
 ```
 
 Save graphical display of estimates across all Rt scenarios for both incidence
@@ -1266,7 +1266,7 @@ save_example <- function(res_dat, palette = cbPalette){
             ncol=3, nrow=4, 
           common.legend = TRUE, legend = "bottom")
   ggplot2::ggsave(here::here("fig/plot_samples.png"), figfull, 
-                  width = 9.04, height = 10.47)
+                  width = 7.34, height = 7.18)
   print(figfull)
 }
 

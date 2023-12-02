@@ -7,7 +7,7 @@ effective reproduction numbers given observed incidence data rather than
 resulting in global smoothness. This is a nonparametric regression model which
 can be written as a convex optimization (minimization) problem. Minimizing the
 distance (averaged KL divergence per coordinate) between the estimators and
-(functions of) observations guarantees data fidelity while the  divided
+(functions of) observations guarantees data fidelity while the penalty on divided
 differences between pairs of neighbouring parameters imposes smoothness. The
 $\ell_1$-regularization results in sparsity of the divided differences, which
 leads to heterogeneous smoothness within certain periods of time. 
@@ -20,9 +20,8 @@ leads to heterogeneous smoothness within certain periods of time.
 The property of local adaptivity (heterogenous smoothness) is useful to
 automatically distinguish, for example, seasonal outbreaks from outbreaks driven
 by other factors (behavioural changes, foreign introduction, etc.). Given a
-well-chosen polynomial degree, for example,
-the growth rates can be quickly detected, alerting public health to implement
-policy changes. The effective
+well-chosen polynomial degree, the growth rates can be quickly detected, 
+potentially advising public health to implement policy changes. The effective
 reproduction numbers can be estimated retrospectively to examine the efficacy of
 such policies, whether they result in $\calR_t$ falling below 1 or the speed of
 their effects. 
@@ -36,9 +35,8 @@ the pandemic may prefer a smoother curve with less important information smoothe
 % assumptions and limitations
 Our method \RtEstim\ provides a natural way to deal with missing data, for
 example, on weekends and holidays or due to changes in reporting frequency.
-While solving the convex optimization problem, the edge lengths of the line
-graphs are adjusted, correctly penalizing the distance between irregularly
-spaced data. Computing the total
+While solving the convex optimization problem, our method can be easily 
+used to unevenly space or irregularly reported data. Computing the total
 primary infectiousness is also easily generalized to irregular reporting by
 modifying the discretization of the serial interval distribution. Additionally,
 because the $\ell_1$ penalty introduces sparsity (operating like a median
@@ -102,7 +100,7 @@ As described in the introduction section, justifying the expression for $\calR$ 
 that a relatively constant proportion of true infections is reported. However,
 if this proportion varies with time (say, due to change in surveillance
 practices and testing recommendations), the estimates may be biased over this
-window. A good example is that in early January 2021, during the height of the
+window. A good example is that in early January 2022, during the height of the
 Omicron wave, British Columbia moved from testing all symptomatic individuals to
 testing only those in at-risk groups. The result was a sudden change that would
 render $\calR_t$ estimates on either side of this time point incommensurable.
