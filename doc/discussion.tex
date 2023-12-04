@@ -141,9 +141,9 @@ first need to deconvolve deaths to infection onset before using our software.
  %In this case, we can directly apply Poisson trend filtering on graphs with minor adjustment. %A remarkable note is that the edge lengths need to be made comparable across temporal and regional connections.
 
 Besides all the advantages and limitations of the methodology discussed above, 
-our \RtEstim\ estimator can be implemented easily through a lightweight \texttt{R} 
+our \RtEstim\ estimator can be implemented easily through a lightweight \R\ 
 package \texttt{rtestim} and computed efficiently through the numerical algorithm, 
-proximal Newton method developed in \texttt{C++}, especially for large-scale data. 
-With accessible incidence cases, prespecified serial interval distribution, and
+proximal Newton method developed in \cpp, especially for large-scale data. 
+With accessible incident cases, prespecified serial interval distribution, and
 chosen polynomial degrees, \RtEstim\ is able to produce accurate estimation 
 of effective reproduction numbers and provide tuning parameter selection through a path algorithm. 
