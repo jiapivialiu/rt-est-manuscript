@@ -88,6 +88,10 @@
 
 % Use nameref to cite supporting information files (see Supporting Information section for more info)
 \usepackage{nameref,hyperref}
+%DJM: add this unless instructed otherwise:
+\hypersetup{colorlinks,linkcolor=blue,citecolor=blue,urlcolor=blue}
+
+
 
 % line numbers
 \usepackage[right]{lineno}
@@ -303,10 +307,10 @@ Daniel J. McDonald\textsuperscript{1}
 
 To understand the transmissibility and spread of infectious diseases,
 epidemiologists turn to estimates of the effective reproduction number.
-While many approaches exist, their utility may be limited by the
-challenges of surveillance data collection. Arbitrary model assumptions
-that are unverifiable with data alone and sophisticated, though
-computationally inefficient, frameworks are critical limitations for many
+While many estimation approaches exist, their utility may be limited. 
+Challenges of surveillance data collection, model assumptions
+that are unverifiable with data alone, and 
+computationally inefficient frameworks are critical limitations for many
 existing approaches. We propose a discrete spline-based approach 
 \RtEstim\ that solves a convex optimization problem --- Poisson trend filtering
 --- using the proximal Newton method. It produces a locally adaptive 
@@ -316,27 +320,27 @@ misspecifications and is computationally efficient, even for large-scale
 data. The implementation is easily accessible in a lightweight \R\ 
 package \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
 
-{\bf Keywords:} discrete splines $|$ piecewise polynomials
+% {\bf Keywords:} discrete splines $|$ piecewise polynomials $|$
+% PLOS CB doesn't use these, seemingly
 
 % Please keep the Author Summary between 150 and 200 words
 % Use first person. PLOS ONE authors please skip this step. 
 % Author Summary not valid for PLOS ONE submissions.   
 \section*{Author summary}
 
-Effective reproduction number estimation presents many challenges, for example, 
-data is usually collected from multiple sources and there are reporting delays. 
-This cause many problems, such as missing values, underreporting and lack of 
-standardization. Such data limitations hinder the accurate estimation of effective 
-reproduction number. Our motivation is to develop a model that returns accurate 
-estimation, is robust to model misspecification, and is straightforward to use 
-and computationally efficient, even for large-scale data. We propose a convex 
-optimization model with an $\ell_1$ trend filtering penalty for univariate data. 
-It involves temporal evolution of the effective reproduction number for a 
-user-selected level of curvature. We solve our model using the proximal Newton 
-method, which converges rapidly and is numerically stable. Our software, \R\
-package \RtEstim, can return the output in seconds for univariate incidence 
-sequences with hundreds of observations across a series of tuning parameters 
-using cross validation. 
+Effective reproduction number estimation presents many challenges due to data
+collection, modelling assumptions, and computational burden. Such limitations
+hinder the accurate estimation of the effective reproduction number. Our
+motivation is to develop a model that produces accurate estimates, is robust to
+model misspecification, and is straightforward to use and computationally
+efficient, even for large counts and long time periods. We propose a convex
+optimization model with an $\ell_1$ trend filtering penalty. It couples accurate
+estimation of the effective reproduction number with desired smoothness. We
+solve the optimization using the proximal Newton method, which converges rapidly
+and is numerically stable. Our software, conveniently available in the \R\
+package \RtEstim, can produce estimates in seconds for incidence sequences with
+hundreds of observations. These estimates are produced for a sequence of tuning
+parameters and can be selected using a built-in cross validation procedure. 
 
 \linenumbers
 
@@ -344,54 +348,53 @@ using cross validation.
 \section{Introduction}
 \label{sec:intro}
 
-The effective reproduction number (also called the instantaneous reproduction
-number) is a key quantity for understanding infectious disease dynamics
-including the potential size of a pandemic, the required stringency of
-prevention measures, and the efficacy of other controls. The effective
-reproduction number is defined to be the average number of secondary infections
-caused by a new primary infection that occurs at a specific time. Tracking the
-time series of this quantity is therefore useful for understanding whether or
-not future infections are likely to increase or decrease from the current state.
-Let $\calR(t)$ denote the effective reproduction number at time $t$.
-Practically, as long as $\calR(t) < 1$, infections will decline gradually,
-eventually resulting in a disease-free equilibrium, whereas when $\calR(t) > 1$,
-infections will continue to increase, resulting in endemic equilibrium. 
-While $\calR(t)$ is fundamentally a continuous time quantity, it can be related
-to data only at discrete points in time $t = 1,\ldots,n$.
-This sequence of effective reproduction numbers over time is not observable, but,
-nonetheless, is easily interpretable and retrospectively describes the course of
-an epidemic. Therefore, a number of procedures exist to estimate $\calR_t$ from
-different types of observed incidence data such as cases, deaths, or
-hospitalizations, while relying on various domain-specific assumptions.
-Importantly, accurate estimation of effective reproduction numbers relies
-heavily on the quality of the available data, and, due to the limitations of
-data collection, such as underreporting and lack of standardization,
-estimation methodologies rely on various assumptions to
-compensate. Because model assumptions may not be easily verifiable from data
-alone, it is also critical for any estimation procedure to be robust to model
-misspecification. 
+The effective reproduction number is defined to be the average number of
+secondary infections caused by a new primary infection that occurs at a specific
+time. Also called the instantaneous reproduction number, it is a key quantity
+for understanding infectious disease dynamics including the potential size of an
+outbreak and the required stringency of control measures.  Tracking the time
+series of this quantity is useful for understanding whether or not
+future infections are likely to increase or decrease from the current state. Let
+$\calR(t)$ denote the effective reproduction number at time $t$. Practically, as
+long as $\calR(t) < 1$, infections will decline gradually, eventually resulting
+in a disease-free equilibrium, whereas when $\calR(t) > 1$, infections will
+continue to increase, resulting in endemic equilibrium. While $\calR(t)$ is
+fundamentally a continuous time quantity, it can be related to data only at
+discrete points in time $t = 1,\ldots,n$. This sequence of effective
+reproduction numbers over time is not observable, but, nonetheless, is easily
+interpretable and retrospectively describes the course of an epidemic.
+Therefore, a number of procedures exist to estimate $\calR_t$ from different
+types of observed incidence data such as cases, deaths, or hospitalizations,
+while relying on various domain-specific assumptions. Importantly, accurate
+estimation of effective reproduction numbers relies heavily on the quality of
+the available data, and, due to the limitations of data collection, such as
+underreporting and lack of standardization, estimation methodologies rely on
+various assumptions to compensate. Because model assumptions may not be easily
+verifiable from data alone, it is also critical for any estimation procedure to
+be robust to model misspecification. 
 
 
 Many existing approaches for effective reproduction number estimation are
 Bayesian: they estimate the posterior distribution of $\calR_t$ conditional on
 the observations. One of the first such approaches is the software \EpiEstim\
-\citep{cori2020package}, described by \cite{cori2013new}. This method is
-prospective, in that it uses only observations available up to time $t$ in order to
-estimate $\calR_t$ for each $i = 1,\ldots, t$. An advantage of \EpiEstim\ is its
-straightforward statistical model: new incidence data follows the Poisson
-distribution conditional on past incidence combined with the conjugate gamma prior
-distribution for $\calR_t$ with fixed hyperparameters. Additionally, the serial
-interval distribution, the distribution of the period between onsets of primary 
-and secondary infections in a population, is fixed and known. For this reason, 
-\EpiEstim\ requires little domain expertise for use, and it is computationally fast.
-\cite{thompson2019improved} modified this method to distinguish imported cases from 
-local transmission and simultaneously estimate the serial interval distribution.
-\cite{nash2023estimating} further extended \EpiEstim\ by using
-``reconstructed'' daily incidence data to handle irregularly spaced observations.
-\cite{abbott2020estimating} proposed a Bayesian latent variable framework,
-\texttt{EpiNow2} \citep{EpiNow2}, which leverages incident cases, deaths or
-other available streams simultaneously along with allowing additional delay
-distributions (incubation period and onset to reporting delays) in modelling.  
+\citep{cori2020package}, described in \cite{cori2013new}. This method is
+prospective, in that it uses only observations available up to time $t$ in order
+to estimate $\calR_t$ for each $i = 1,\ldots, t$. An advantage of \EpiEstim\ is
+its straightforward statistical model: new incidence data follows the Poisson
+distribution conditional on past incidence combined with the conjugate gamma
+prior distribution for $\calR_t$ with fixed hyperparameters. Additionally, the
+serial interval distribution, the distribution of the period between onsets of
+primary and secondary infections in a population, is fixed and known. For this
+reason, \EpiEstim\ requires little domain expertise for use, and it is
+computationally fast. \cite{thompson2019improved} modified this method to
+distinguish imported cases from local transmission and simultaneously estimate
+the serial interval distribution. \cite{nash2023estimating} further extended
+\EpiEstim\ by using ``reconstructed'' daily incidence data to handle irregularly
+spaced observations. Recently, \cite{abbott2020estimating} proposed a Bayesian
+latent variable framework, \texttt{EpiNow2} \citep{EpiNow2}, which leverages
+incident cases, deaths or other available streams simultaneously along with
+allowing additional delay distributions (incubation period and onset to
+reporting delays) in modelling.  
 \cite{lison2023generative} proposed an extension that handles missing data by
 imputation followed by a truncation adjustment. These modifications are intended
 to increase accuracy at the most recent (but most uncertain) timepoints, to aid 
@@ -403,7 +406,7 @@ however, \texttt{EpiFilter} estimates $\calR_t$ retrospectively using all
 available incidence data both before and after time $t$, with the goal of being 
 more robust in low-incidence periods. \cite{gressani2022epilps} proposed a 
 Bayesian P-splines approach, \EpiLPS, that assumes negative Binomial distributed 
-incidence. \cite{trevisin2023spatially} also proposed a Bayesian model estimated 
+observations. \cite{trevisin2023spatially} also proposed a Bayesian model estimated 
 with particle filtering to incorporate spatial structures. 
 Bayesian approaches estimate the posterior distribution of the effective
 reproduction numbers and possess the advantage that credible intervals may be
@@ -415,20 +418,18 @@ compare our method to two of the more computationally efficient Bayesian models,
 
 
 There are also frequentist approaches for $\calR_t$ estimation.
-\cite{abry2020spatial} proposed regularizing the smoothness of $\calR_t$
-through penalized
-regression with second-order temporal regularization, additional spatial
-penalties, and with Poisson loss. \cite{pascal2022nonsmooth}
-extended this procedure by introducing another penalty on outliers.
-\cite{pircalabelu2023spline} proposed a spline-based model relying on the 
-assumption of exponential-family distributed incidence. 
-\cite{ho2023accounting} estimates $\calR_t$ while monitoring the time-varying
-level of overdispersion. 
+\cite{abry2020spatial} proposed regularizing the smoothness of $\calR_t$ through
+penalized regression with second-order temporal regularization, additional
+spatial penalties, and with Poisson loss. \cite{pascal2022nonsmooth} extended
+this procedure by introducing another penalty on outliers.
+\cite{pircalabelu2023spline} proposed a spline-based model relying on the
+assumption of exponential-family distributed incidence. \cite{ho2023accounting}
+estimates $\calR_t$ while monitoring the time-varying level of overdispersion.
 There are other spline-based approaches such as
-\cite{azmon2014estimation,gressani2021approximate},
-autoregressive models with random effects \citep{jin2023epimix} that are robust
-to low incidence, and generalized autoregressive moving average (GARMA)
-models \citep{hettinger2023estimating} that are robust to measurement errors in
+\cite{azmon2014estimation,gressani2021approximate}, autoregressive models with
+random effects \citep{jin2023epimix} that are robust to low incidence, and
+generalized autoregressive moving average (GARMA) models
+\citep{hettinger2023estimating} that are robust to measurement errors in
 incidence data. 
 
 
@@ -443,7 +444,8 @@ As a result, \RtEstim\ generates discrete splines, and the estimated curves (in
 logarithmic space) appear to be piecewise polynomials of an order selected by the
 user. Importantly, the estimates are locally adaptive, meaning that different
 time ranges may possess heterogeneous smoothness. Because we penalize the
-logarithm of $\calR_t$, we naturally accommodate the positivity requirement, can
+logarithm of $\calR_t$, we naturally accommodate the positivity requirement, in
+contrast to related methods, can
 handle large or small incidence measurements, and are automatically (reasonably)
 robust to outliers without additional constraints. A small illustration using
 three years of Covid-19 case data in Canada is shown in \autoref{fig:intro-fig}.
@@ -452,12 +454,12 @@ three years of Covid-19 case data in Canada is shown in \autoref{fig:intro-fig}.
   \centering
   \includegraphics[width=.9\textwidth]{fig/intro-fig-new.png}
   \caption{A demonstration of effective reproduction number estimation 
-  by \RtEstim\ and the corresponding fitted incident cases for the Covid-19 epidemic 
-  in Canada during a period from March 28, 2020 to June 28, 2023. 
-  The blue curve in the top panel is the estimated piecewise
+  by \RtEstim\ and the corresponding predicted incident cases for the Covid-19 epidemic 
+  in Canada during the period from March 28, 2020 to June 28, 2023. 
+  In the top panel, the blue curve is the estimated piecewise
   quadratic $\calR_t$ and the gray ribbon is the corresponding 95\% confidence band. 
   The black curve in the bottom panel is the observed Covid-19 daily confirmed 
-  cases, and the orange curve is the fitted incidence 
+  cases, and the orange curve is the predicted incident cases
   corresponding to the estimated $\calR_t$.}
   \label{fig:intro-fig}
 \end{figure}
@@ -472,7 +474,7 @@ estimating the true effective reproduction numbers.
 
 
 The manuscript proceeds as follows. We first introduce the methodology of
-\RtEstim\ including the usage of renewal equation and the development of Poisson
+\RtEstim\ including the renewal equation and the development of Poisson
 trend filtering estimator. We explain how this method could be interpreted from
 the Bayesian perspective, connecting it to previous work in this context. We
 provide illustrative experiments comparing our estimator to \EpiEstim\ and
