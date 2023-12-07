@@ -1,5 +1,5 @@
 ---
-title: "Supplementary details on methodology and experiments of effective reproduction number estimation with trend filtering"
+title: "Supplementary details on experiments of effective reproduction number estimation with trend filtering"
 author: "Jiaping Liu, Zhenglun Cai, Paul Gustafson, and Daniel J. McDonald"
 date: "`r Sys.Date()`"
 output: 
@@ -9,9 +9,10 @@ output:
         - "header.tex"
         - "defs.tex"
     number_sections: true
-bibliography: ptf.bib 
-link-citations: true
-csl: natbib.csl
+    fig_caption: yes
+header-includes:
+  - \usepackage{caption}
+  - \captionsetup[figure]{labelformat=empty}
 ---
 
 ```{r setup, include=FALSE}
@@ -29,96 +30,7 @@ library(lubridate)
 library(ggpubr)
 ```
 
-# Numerical optimization of the $\calR_t$ estimator
-
-Recall that the Poisson trend filtering problem is 
-$$\widehat{\calR} = \exp(\widehat{\theta}) \quad\textrm{where}\quad \widehat{\theta} = \Argmin{\theta\in\bbR^n} \eta^\top \exp(\theta) - \bfy^\top \theta + \lambda \norm{D^{(k+1)} \theta}_1. $$
-
-The proximal Newton method is a second-order algorithm solving a proximal 
-optimization iteratively followed by a line search algorithm adjusting the step 
-size at each iteration for faster convergence. The proximal Newton method for 
-Poisson trend filtering solves an approximate problem iteratively --- specifically, 
-it takes a second-order Taylor expansion of the Poisson loss, which results in 
-a proximal optimization, i.e., trend filtering with squared $\ell_2$ loss, with 
-dynamic weights during iteration, and solves it iteratively until convergence 
-to the objective. 
-
-
-Let $g(\theta)= \eta^\top \exp(\theta)-\mathbf{y}^\top \theta$ be the Poisson loss and
-$h(\theta) = \lambda \Vert D^{(k+1)} \theta\Vert_1$ be the regularization. 
-At iterate $j+1$, consider the following approximation of
-$g(\theta)$ using the second-order Taylor expansion around $\theta^j$, 
-$$g(\theta) = g(\theta^j) + (\theta - \theta^j)^{\top} \nabla^{(1)}_{\theta}
-g(\theta^j) + \frac{1}{2} (\theta - \theta^j)^{\top} \nabla^{(2)}_{\theta}
-g(\theta^j) (\theta - \theta^j), $$ where $\nabla^{(1)}_{\theta} g(\theta^j) =
-\fr{n} \eta^\top \exp(\theta^j) - y \in \mathbb{R}^n$ is the gradient of $g(\theta)$
-evaluated at $\theta^j$, and $\nabla^{(2)}_{\theta} g(\theta^j) = \fr{n}\diag
-\lr{\eta \circ \exp(\theta^j)} \in \bbR^{n\times n}$ is the Hessian matrix of
-$g(\theta)$ evaluated at $\theta^j$ and $\circ$ means elementwise product.
-
-
-Define the proximal operator as $\mathrm{prox}_{W,D} (\bfx) :=
-\Argmin{\bfz\in\bbR^n} \fr{2n} \norm{\bfz-\bfx}_W^2 + \lambda \norm{D\theta}_1$,
-where $\norm{\mathbf{a}}_{W}^2 := \mathbf{a}^{\top} {W} \mathbf{a}$. The
-proximal optimization problem at iterate $j+1$ given $\theta^j$ becomes
-\begin{equation} \label{eq:prox-gauss}
-    \begin{split}
-        \theta^{j_+} :&= \Argmin{\theta\in\bbR^n} (\theta - \theta^j)^{\top} 
-        \nabla^{(1)}_{\theta} g(\theta^j) + \fr{2} (\theta - \theta^j)^{\top} 
-        \nabla^{(2)}_{\theta} g(\theta^j) (\theta - \theta^j) + h(\theta), \\
-        &= \Argmin{\theta\in\bbR^n} \fr{2n} \norm{\theta - \mathbf{c}^{j}}_{W^j}^2 
-        + \lambda \norm{D^{(k+1)}\theta}_1, \\
-        &= \mathrm{prox}_{W^j,D^{(k+1)}} (\mathbf{c}^{j}),
-    \end{split}
-\end{equation}
-where $W^j := \diag \lr{\eta\circ\exp(\theta^j)}$ is the weighted (Hessian)
-matrix multiplied by $n$ and $$\mathbf{c}^j := \theta^j - n \lr{W^{j}}^{-1}
-\nabla^{(1)}_{\theta} g(\theta^j) = \bfy \circ \eta^{-1} \circ \exp(-\theta^j) -
-\boldsymbol{1} + \theta^j \circ \eta^{-1}.$$
-This is just univariate Gaussian trend filtering with weights $W^t$ 
-[@tibshirani2014adaptive]. 
-
-
-We solve the trend filtering problem in \eqref{eq:prox-gauss} using the
-specialized ADMM, proposed by [@ramdas2016fast], with the primal $\theta$
-step solved in closed-form and the auxiliary step solved by the dynamic
-programming algorithm for fused lasso proposed by [@johnson2013dynamic]. Let
-the auxiliary variable $\bfz:= D^{(k)}\theta$. The scaled augmented Lagrangian
-is $$\mathcal{L}_{\lambda, \rho}(\theta, \bfz, \mathbf{u}) = \fr{2n}
-\norm{\theta - \mathbf{c}^{j}}_{W^j}^2 + \lambda \norm{D^{(1)}\bfz}_1 +
-\frac{\rho}{2} \norm{D^{(k)}\theta - \bfz + \mathbf{u}}^2 - \frac{\rho}{2}
-\norm{\mathbf{u}}^2, $$ where $\rho$ is a scaled dual parameter and $\mathbf{u}$
-is the dual variable. At the $(j+1)\th$ Newton step, the specialized ADMM
-solves the following subproblems, at ADMM iteration $l+1$: 
-\begin{equation}
-  \begin{split}
-    \theta^{l+1} &:= \Argmin{\theta} \fr{2n} \norm{\theta - \mathbf{c}^{l}}_{W^j}^2 + 
-    \frac{\rho}{2} \norm{D^{(k+1)} \theta - \bfz^l + \mathbf{u}^l}_2^2, \\
-    \bfz^{l+1} &:= \Argmin{\bfz} \frac{\lambda}{\rho} \norm{D^{(1)} \bfz}_1 +
-    \fr{2} \norm{D^{(k+1)} \theta^{l+1} - \bfz + \mathbf{u}^l}_2^2, \\
-    \mathbf{u}^{l+1} &\leftarrow \mathbf{u}^l + D^{(k+1)} \theta^{l+1} - \bfz^{l+1}.
-  \end{split}
-\end{equation}
-
-Finally, the step size $\gamma^{j+1} \in (0,1]$ at iterate $j+1$ is adjusted 
-by a backtracking line search algorithm to solve for $\theta^{j+1}$, i.e.,   
-$$\theta^{j+1} \leftarrow \theta^j + \gamma^{j+1} (\theta^{j_+} - \theta^j).$$ 
-The proximal Newton algorithm iterates until convergence of the objective.
-
-For $k=0$, the trend filtering penalty is equivalent to fused LASSO. In this case, we use Johnson's dynamic programming algorithm [@johnson2013dynamic], which solves effective reproduction number of our model exactly and in linear time. 
-
-# Experimental design
-
-## Compute $\lambda_{max}$
-
-Let $\alpha := D \theta$, and then $\theta = D^{\dagger} \alpha$, where 
-$D^{\dagger} D = I_{n}$. 
-The PTF objective to be minimized can be written correspondingly as 
-$$\mathcal{L}_{\lambda}(\alpha) := \eta^\top \exp\lr{D^{\dagger} \alpha} - \bfy^\top D^{\dagger} \alpha + \lambda \norm{\alpha}_1.$$ 
-Solve the following problem $\lambda_{max} := \sup_{\alpha\neq \boldsymbol{0}} \lambda$ through solving $\sup_{\alpha} \frac{\partial \mathcal{L}_{\lambda}(\alpha)}{\pm \partial \alpha_i} = \sup_{\alpha_i} \lr{D^{\dagger}}^{\top}\lr{ e^{D^{\dagger} \alpha} \eta - y} = \max_{i} {\lvert \lr{D^{\dagger}}^{\top} \lr{\eta - y}\rvert}_i$ as $D^{\dagger} \alpha \to \boldsymbol{0}$ for $i=1,\cdots, n$. 
-
-
-## Cross validation of RtEstim in simulation 
+# Supplementary details on experimental settings of RtEstim for Section 3.1
 
 We run 10-fold cross validation (CV) to choose the best tuning parameter
 from the candidate set of size $50$, i.e., $\boldsymbol{\lambda} = \{\lambda_1,
@@ -126,135 +38,203 @@ from the candidate set of size $50$, i.e., $\boldsymbol{\lambda} = \{\lambda_1,
 first and last entries) into ten folds evenly and randomly, and build models on 
 each sample set by leaving a fold out across all hyperparameters. We select the tuning parameter that gives the lowest averaged ***deviance*** between the estimated reproduction numbers and the observed samples averaged over all folds. 
 
-## Supplementary results of experiments
+# Supplementary results of experiments for Fig 3 in Section 3.2
 
-The full KL divergence values for Poisson and negative 
-Binomial incidence without excluding outliers are shown in the following figures. Both y-axes are in logarithmic scales for a better visualization, since there 
-are extreme values. 
-The baseline KL values is the rolling average of 7 past days of the true Rt 
-values for comparison of weekly sliding windows, and 30 past days for monthly 
-windows. 
+The full KL divergence values for Poisson and negative Binomial incidence 
+without excluding the outliers are shown in Fig 9 and Fig 10 respectively. 
+Both y-axes are displayed on a logarithmic scale for a better visualization, 
+since a few values are much larger than others. 
 
-Compare EpiLPS, RtEstim and EpiEstim with ***weekly*** sliding windows. KL 
-values computation excludes the first week of Rt estimates for all approaches. 
+Comparing among Rt estimations by EpiLPS, RtEstim and EpiEstim with ***weekly***
+sliding windows, KL values computation excludes the first week of Rt estimates 
+for all approaches. The outliers are mainly EpiLPS and EpiEstim Rt estimations 
+in Scenario 2, which is generally an easy problem except for the changepoint at
+where the two segments are discontinuous. Since EpiEstim produces a continuous Rt 
+curve, the changepoint can be difficult to recover and make estimation less accurate.
 
-```{r KL-week-fig, echo=FALSE, fig.height=4, fig.width=6}
-cbPalette <- c("#E69F00", "#009E73", "#CC79A7", "#0072B2", "#56B4E9")
-
-Rt_result <- readRDS(here::here("src/experiments/rt_exp7_results_all.RDS"))
+```{r load-simulation-results, include=FALSE}
+cbPalette <- c(
+  "#E69F00", "#F0E442", "#009E73", "#CC79A7", "#0072B2", "#56B4E9"
+)
+Rt_result <- readRDS(here::here("dat/rt_exp_results.RDS"))
 Rt_result$Rt_case <- as.factor(Rt_result$Rt_case)
 Rt_result$dist <- as.factor(Rt_result$dist)
 Rt_result$method <- as.factor(Rt_result$method)
+n <- dim(Rt_result)[1]
+Rt_result <- Rt_result %>%
+  select(method, Rt_case, dist, runtime, Rt_kl, Rt_kl_month) %>%
+  mutate(method = fct_recode(method,
+    "EpiEstim (weekly)" = "EpiEstim(week)",
+    "EpiEstim (monthly)" = "EpiEstim(month)",
+    "RtEstim (k=0)" = "RtEstim(k=0)",
+    "RtEstim (k=1)" = "RtEstim(k=1)",
+    "RtEstim (k=3)" = "RtEstim(k=3)"
+  )) %>%
+  mutate(method = fct_relevel(
+    method, "EpiEstim (weekly)", "EpiEstim (monthly)",
+    "EpiLPS", "RtEstim (k=0)", "RtEstim (k=1)",
+    "RtEstim (k=3)"
+  )) %>%
+  mutate(dist = fct_recode(dist,
+    "Poisson" = "poisson",
+    "Negative Binomial" = "NB"
+  )) %>%
+  mutate(dist = fct_relevel(dist, "Poisson", "Negative Binomial")) %>%
+  mutate(Rt_case = fct_recode(Rt_case,
+    "Scenario 1" = "1",
+    "Scenario 2" = "2",
+    "Scenario 3" = "3",
+    "Scenario 4" = "4"
+  )) %>%
+  mutate(Rt_kl = Rt_kl * n, Rt_kl_month = Rt_kl_month * n)
+```
 
+```{r display-KL-weekly-full-res, echo=FALSE, fig.height=5.5, fig.width=6.2, fig.cap = "Fig 10. KL divergence for methods with weekly sliding windows. Y-axis is on a logarithmic scale."}
 fig_kl_full_week <- Rt_result %>%
-  filter(method != "EpiEstim(month)") |>
-  select(Rt_case, dist, method, Rt_kl) |>
+  filter(method != "EpiEstim (monthly)") |>
   group_by(Rt_case, dist, method) |>
-  mutate(Rt_case = fct_recode(Rt_case, "Scenario 1" = '1',
-                              "Scenario 2" = '2',
-                              "Scenario 3" = '3',
-                              "Scenario 4" = '4')) %>%
-  mutate(dist = fct_recode(dist, "Poisson" = "poisson",
-                           "Negative Binomial" = "NB")) %>% 
-  mutate(dist = fct_relevel(dist, "Poisson", "Negative Binomial")) %>% 
-  mutate(method = fct_recode(method, 
-                             "EpiEstim (weekly window)" = "EpiEstim(week)",
-                             "RtEstim (k=0)" = "RtEstim(k=0)", 
-                             "RtEstim (k=1)" = "RtEstim(k=1)", 
-                             "RtEstim (k=3)" = "RtEstim(k=3)")) %>% 
-  #mutate(Rt_kl = purrr::map_dbl(Rt_kl, ~ remove_outliers(.x))) %>%
-  ggplot(aes(x=method, y = Rt_kl*300)) +
-  geom_boxplot(aes(col = method)) + 
-  facet_grid(dist ~ Rt_case, scales="free") +
-  scale_y_log10() + 
-  scale_colour_manual(values = cbPalette) + 
-  #coord_cartesian(ylim = c(0, .04)) + #remove a outlier of EpiLPS >.5*0.001
-  labs(x="Method", y = "KL divergence") +
-  theme_bw() + 
-  theme(axis.text.x = element_blank(), legend.position="bottom") +
+  ggplot(aes(x = method, y = Rt_kl)) + # sum up KL per coordinate
+  geom_boxplot(aes(col = method)) +
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  scale_y_log10() +
+  scale_colour_manual(values = cbPalette[-2]) +
+  labs(x = "Method", y = "KL divergence") +
+  theme_bw() +
+  theme(axis.text.x = element_blank(), legend.position = "bottom") +
   guides(color = guide_legend(title = NULL))
-fig_kl_full_week
+print(fig_kl_full_week)
 ```
 
-Compare EpiLPS, RtEstim and EpiEstim with ***monthly*** sliding windows. KL 
-values computation excludes the first month of Rt estimates for all approaches. 
+# Experimental results of methods using monthly sliding windows for Section 3.1
 
-```{r KL-month-fig, echo=FALSE, fig.height=4, fig.width=6}
+Comparing across Rt estimations by EpiLPS, RtEstim and EpiEstim with ***monthly***
+sliding windows, KL divergece values computation excludes the first month of Rt
+estimates for all approaches. 
+
+The relative performance of EpiEstim with monthly sliding windows, in general, 
+is not as good as its weekly sliding window based on the relative positions of 
+its boxes and the counterparts of the other methods, except for the Scenario 2 
+with negative Binomial incidence. A reason is that EpiEstim with longer sliding 
+windows assume similarity of neighboring Rt across longer periods, and thus,
+is smoother and less accurate compared to the one with shorter sliding windows. 
+
+```{r display-KL-monthly-full-res, echo=FALSE, fig.height=5.5, fig.width=6.2, fig.cap = "Fig 11. KL divergence for methods with monthly sliding windows. Y-axis is on a logarithmic scale."}
 fig_kl_full_month <- Rt_result %>%
-  filter(method != "EpiEstim(week)") |>
-  select(Rt_case, dist, method, Rt_kl_month) |>
+  filter(method != "EpiEstim (weekly)") |>
+  mutate(method = fct_relevel(
+    method, "EpiEstim (monthly)",
+    "EpiLPS", "RtEstim (k=0)", "RtEstim (k=1)",
+    "RtEstim (k=3)"
+  )) %>%
   group_by(Rt_case, dist, method) |>
-  mutate(Rt_case = fct_recode(Rt_case, "Scenario 1" = '1',
-                              "Scenario 2" = '2',
-                              "Scenario 3" = '3',
-                              "Scenario 4" = '4')) %>%
-  mutate(dist = fct_recode(dist, "Poisson" = "poisson",
-                           "Negative Binomial" = "NB")) %>% 
-  mutate(dist = fct_relevel(dist, "Poisson", "Negative Binomial")) %>% 
-  mutate(method = fct_recode(method, 
-                             "EpiEstim (monthly window)" = "EpiEstim(month)",
-                             "RtEstim (k=0)" = "RtEstim(k=0)", 
-                             "RtEstim (k=1)" = "RtEstim(k=1)", 
-                             "RtEstim (k=3)" = "RtEstim(k=3)")) %>% 
-  #mutate(Rt_kl = purrr::map_dbl(Rt_kl, ~ remove_outliers(.x))) %>%
-  ggplot(aes(x=method, y = Rt_kl_month*300)) +
-  stat_boxplot(aes(col = method)) + 
-  facet_grid(dist ~ Rt_case, scales="free") +
-  scale_y_log10() + 
-  scale_colour_manual(values = cbPalette) + 
-  #coord_cartesian(ylim = c(0, .04)) + #remove a outlier of EpiLPS >.5*0.001
-  labs(x="Method", y = "KL divergence") +
-  theme_bw() + 
-  theme(axis.text.x = element_blank(), legend.position="bottom") +
+  ggplot(aes(x = method, y = Rt_kl_month)) + # sum up KL per coordinate
+  stat_boxplot(aes(col = method)) +
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  scale_y_log10() +
+  scale_colour_manual(values = cbPalette[-1]) +
+  labs(x = "Method", y = "KL divergence") +
+  theme_bw() +
+  theme(axis.text.x = element_blank(), legend.position = "bottom") +
   guides(color = guide_legend(title = NULL))
-fig_kl_full_month
+print(fig_kl_full_month)
 ```
 
+# Time comparisons of methods for Section 3.2
 
-## Synthetic effective reproduction numbers and Poisson incidence examples
+EpiEstim with both weekly and monthly sliding windows are very fast and converge 
+in less than 0.1 seconds. Piecewise constant RtEstim (with k=0) estimates can be
+generated within 0.1 seconds as well. EpiLPS is slightly slower, but still very fast and within 1 second for all experiments. Piecewise linear and cubic RtEstim
+(with k=1 and 3 respectively) are slower, but mostly within 10 seconds. 
 
-Overall, we argue our estimator is accurate, robust in model misspecification 
-and computationally efficient. We can do a series of tests for each property. 
-We may consider the following curvature of efficient reproduction numbers, and 
-test the accuracy of our estimators compared to EpiEstim and EpiLPS.
+It is remarkable that our RtEstim computes 50 lambda values with 10-fold CV for each experiment, which results in 500 times of modelling per experiment. The running times are no more than 10 seconds for most of the experiments, which means the running time for each time of modelling is very fast, and on average can be less than 0.02 seconds. The other two methods only run once for a fixed set of hyperparameters for each experiment. 
 
-We may consider arbitrary reproduction numbers in a few scenarios: 
-a) piecewise-constant epidemics with a drop at a certain time point to measure 
-the effect of control measures, b) exponentially rising and falling epidemics 
-with a change point, c) piecewise-constant with multiple segments to measure 
-the initially controlled and resurged and the suppressed epidemics, d) periodic 
-waves.
+```{r display-simulation-time-comparison, echo = FALSE, fig.height = 7, fig.width = 6.6, fig.cap = "Fig 12. Time comparisons of methods (excluding one outlier of `RtEstim (k=1)` in Scenario 2 with negative Binomial incidence). Y-axis is on a logarithmic scale."}
+runtime_fig <- Rt_result %>%
+  filter(runtime <= 80 * 1e6) %>%
+  group_by(dist, Rt_case, method) %>%
+  ggplot(aes(x = Rt_case, y = runtime / 1e6)) +
+  geom_boxplot(aes(col = method)) +
+  facet_wrap(vars(dist)) +
+  scale_colour_manual(values = cbPalette) +
+  scale_y_log10() +
+  labs(y = "Running time in seconds", x = "Rt scenarios") +
+  labs(color = "Methods") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+print(runtime_fig)
+```
 
-We may simulate the epidemics (with length T=300) 10 times for each scenario, 
-estimate Rt, and compute the averaged KL divergence.
+<!-- The following R chunks are used for reproduce figures in the main manuscript. -->
 
-```{r evenly-spaced-Rt-functions, echo=FALSE}
-# General settings: 
-N1 = 2 # first incidence data
-len = 300 # number of evenly spaced time points
+```{r Fig1-display-cancovid-example, eval=FALSE, include=FALSE}
 library(rtestim)
-# Get Poisson incidence cases: 
-get_pois_incidence <- function(N1, Rt, gamma_pars = c(2.5, 2.5)){
+cancovid <- cancovid[-1:-65, ] # drop the beginning period
+n <- nrow(cancovid)
+
+# plot fitted Rt with confidence band
+cv_mod <- cv_estimate_rt(
+  x = cancovid$date, cancovid$incident_cases, korder = 2, nfold = 10,
+  maxiter = 1e7L, nsol = 50, error_measure = "deviance",
+  lambda_min_ratio = 1e-6, init = configure_rt_admm(tol = 1e-6)
+)
+rt_ci_covid <- confband(cv_mod, "lambda.1se") # get 95% confidence band
+fig_rt_fit <- rt_ci_covid %>%
+  ggplot(aes(x = cancovid$date)) +
+  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), fill = "gray", alpha = 0.5) +
+  geom_line(aes(y = Rt), col = "#0072B2", lwd = 1) +
+  scale_x_date(date_breaks = "8 months", date_labels = "%Y-%m-%d") +
+  geom_hline(yintercept = 1, linetype = "dotted") +
+  labs(x = "Date", y = "Piecewise quadratic Rt with 95% CIs") +
+  theme_bw()
+
+# plot fitted incidence
+mod_best <- estimate_rt(
+  x = cancovid$date, cancovid$incident_cases, korder = 2, maxiter = 1e7L,
+  lambda = cv_mod$lambda.1se
+)
+incidence_fit <- mod_best$weighted_past_counts * rt_ci_covid$Rt
+inc_dat <- data.table(cancovid, incidence_fit = incidence_fit)
+fig_inc_fit <- inc_dat %>%
+  ggplot(aes(x = date)) +
+  geom_line(aes(y = incident_cases / 10000)) +
+  geom_line(aes(y = incidence_fit / 10000), col = "#D55E00", lwd = 1) +
+  scale_x_date(date_breaks = "8 months", date_labels = "%Y-%m-%d") +
+  labs(x = "Date", y = "Fitted incidence (per 10,000)") +
+  theme_bw()
+
+CANCovid_fig <- ggarrange(
+  fig_rt_fit, fig_inc_fit,
+  ncol = 1, common.legend = TRUE, legend = "bottom"
+)
+print(CANCovid_fig)
+```
+
+```{r Fig2-generate-poisson-examples, eval = FALSE, include = FALSE}
+# General settings:
+N1 <- 2 # first incidence data
+len <- 300 # number of evenly spaced time points
+library(rtestim)
+# Get Poisson incidence cases:
+get_pois_incidence <- function(N1, Rt, gamma_pars = c(2.5, 2.5)) {
   len <- length(Rt)
   incidence <- numeric(len) # N_1:n
   poisson_count <- numeric(len) # y_1:n
   incidence[1] <- N1
-  
+
   poisson_count[1] <- rpois(1, N1)
-  if(poisson_count[1] == 0) poisson_count[1]=1
-  for(t in 2:len){
-    pi <- discretize_gamma(1:(t-1), gamma_pars[1], gamma_pars[2])
-    incidence[t] <- Rt[t] * sum(rev(pi) * poisson_count[1:(t-1)])
+  if (poisson_count[1] == 0) poisson_count[1] <- 1
+  for (t in 2:len) {
+    pi <- discretize_gamma(1:(t - 1), gamma_pars[1], gamma_pars[2])
+    incidence[t] <- Rt[t] * sum(rev(pi) * poisson_count[1:(t - 1)])
     poisson_count[t] <- rpois(1, incidence[t])
   }
-  
+
   return(poisson_count)
 }
-# Display the synthetic data: 
-library(ggplot2)
-display_dat <- function(counts, Rt){
+# Display the synthetic data:
+display_dat <- function(counts, Rt) {
   len <- length(counts)
-  if(length(counts) != length(Rt)) cli::cli_abort("Data lengths do not match.")
+  if (length(counts) != length(Rt)) cli::cli_abort("Data lengths do not match.")
   dat <- data.frame(time = 1:len, count = counts, Rt = Rt)
   fig1 <- dat %>%
     ggplot(aes(y = Rt, x = time)) +
@@ -264,58 +244,55 @@ display_dat <- function(counts, Rt){
   fig2 <- dat %>%
     ggplot(aes(y = count, x = time)) +
     geom_line() +
-    #scale_y_log10() + # axis of incidence in log scale
-    ylab("Poisson incidence data") + #(in log scale) 
+    # scale_y_log10() + # axis of incidence in log scale
+    ylab("Poisson incidence data") + # (in log scale)
     theme_bw()
   print(fig2)
 }
 # Check data quality:
-check_dat <- function(incidence, Rt){
-  if(min(Rt) < 0) {cli::cli_abort("`Rt` must be non-negative.")}
-  if(min(incidence) < 0) {cli::cli_abort("`incidence` cases must be nonnegative.")}
-  if(max(incidence) > 1e4L) {cli::cli_alert_warning("`incidence` cases are too large.")}
-  if(sum(incidence == 0) > 30) {cli::cli_warn("`incidence` data has more than 10% 0s.")}
+check_dat <- function(incidence, Rt) {
+  if (min(Rt) < 0) {
+    cli::cli_abort("`Rt` must be non-negative.")
+  }
+  if (min(incidence) < 0) {
+    cli::cli_abort("`incidence` cases must be nonnegative.")
+  }
+  if (max(incidence) > 1e4L) {
+    cli::cli_alert_warning("`incidence` cases are too large.")
+  }
+  if (sum(incidence == 0) > 30) {
+    cli::cli_warn("`incidence` data has more than 10% 0s.")
+  }
 }
-```
 
-```{r Rt-Pois-case1, echo=FALSE, fig.width=3, fig.height=3}
-# Scenario 1: two-stage piecewise constant with one dropping point (similar as in EpiFilter)
-Rt1 <- c(rep(2, 70), rep(0.8, len-70)) # extend first segment from 50 to 70
-# to avoid too many 0s in the tail
-gamma_pars1 <- c(3, 3) # serial interval distribution parameters
 seed <- 420
+# Scenario 1: piecewise constant with one dropping point
+Rt1 <- c(rep(2, 70), rep(0.8, len - 70))
+gamma_pars1 <- c(3, 3) # serial interval distribution parameters
 set.seed(seed)
 incidence1 <- get_pois_incidence(N1, Rt1, gamma_pars1)
-display_dat(incidence1, Rt1)
-#check_dat(incidence1, Rt1)
-```
+# display_dat(incidence1, Rt1)
+# check_dat(incidence1, Rt1)
 
-```{r Rt-Pois-case2, echo=FALSE, fig.width=3, fig.height=3}
-# Scenario 2: two-stage exponential growth and decay (similar as in EpiFilter)
+# Scenario 2: piecewise exponential
 rate <- c(.015, -.005)
 Rt2 <- numeric(len)
 knot <- 50
-Rt2[1:knot] <- exp(rate[1] * (1:knot)) 
-Rt2[(knot+1):len] <- exp((rate[2]) * ((knot+1):len))* Rt2[knot]
+Rt2[1:knot] <- exp(rate[1] * (1:knot))
+Rt2[(knot + 1):len] <- exp((rate[2]) * ((knot + 1):len)) * Rt2[knot]
 gamma_pars2 <- c(2.5, 2.5) # serial interval distribution parameters
 set.seed(seed)
 incidence2 <- get_pois_incidence(N1, Rt2, gamma_pars2)
-display_dat(incidence2, Rt2)
-#check_dat(incidence2, Rt2)
-```
 
-```{r Rt-Pois-case3, echo=FALSE, fig.width=3, fig.height=3}
-# Scenario 3: multi-stage piecewise constant (similar as in EpiFilter)
-Rt3 <- c(seq(2.5, 2, length.out = 60), seq(0.8, 0.6, length.out = 50), 
-         seq(1.7, 2, length.out = 40), seq(0.9, 0.5, length.out = 150))
+# Scenario 3: multi-stage piecewise linear
+Rt3 <- c(
+  seq(2.5, 2, length.out = 60), seq(0.8, 0.6, length.out = 50),
+  seq(1.7, 2, length.out = 40), seq(0.9, 0.5, length.out = 150)
+)
 gamma_pars3 <- c(3.5, 3.5) # serial interval distribution parameters
 set.seed(seed)
 incidence3 <- get_pois_incidence(N1, Rt3, gamma_pars3)
-display_dat(incidence3, Rt3) 
-#check_dat(incidence3, Rt3)
-```
 
-```{r Rt-Pois-case4, echo=FALSE, fig.width=3, fig.height=3}
 # Scenario 4: multi-stage with exponential-sinusoidal growth and decay
 x <- seq(0, 10, length.out = len)
 Rt4 <- numeric(len)
@@ -325,552 +302,330 @@ components <- list(
   list(freq = 1.0, amp = 3)
 )
 for (component in components) {
-  Rt4 <- Rt4 + 0.2 * (component$amp * sin(pi * component$freq * x / 1.2) + 
-                        component$amp)
+  Rt4 <- Rt4 + 0.2 * (component$amp * sin(pi * component$freq * x / 1.2) +
+    component$amp)
 }
 gamma_pars4 <- c(3.5, 3.5) # serial interval distribution parameters
 set.seed(seed)
 incidence4 <- get_pois_incidence(N1, Rt4, gamma_pars4)
-display_dat(incidence4, Rt4)
-#check_dat(incidence4, Rt4)
 ```
 
-### Serial interval distributions 
-
-Parameters of the serial interval distribution, i.e., shapes and scale/rates 
-of Gamma distribution, can significantly influence the peak values of incidence 
-and the smoothness of incidence curves. Here is a comparison of the densities of 
-Gamma distribution with shape 2.5 and scale 2.5 and Gamma distribution with 
-shape 5 and scale 5.
-```{r Serial-Interval-density, eval=FALSE, include=FALSE}
-par(mfrow = c(1, 3))
-plot(dgamma(1:50, 2.5, scale = 2.5), type="l", ylab="", xlab="", 
-     main="Gamma(2.5, scale=2.5)")
-  
-plot(dgamma(1:50, 3, scale = 3), type="l", ylab="", xlab="", 
-     main="Gamma(3, scale=3)")
-
-plot(dgamma(1:50, 3.5, scale = 3.5), type="l", ylab="", xlab="", 
-     main="Gamma(3.5, scale=3.5)")
-par(mfrow = c(1, 1))
-```
-
-### Rt estimates for Poisson incidence using RtEstim
-
-Fit our poisson trend filtering using `RtEstim`. See an example of the first
-scenario. We first see an demonstration of estimates using 50 hyperparameters, 
-and use cross validation to choose the "best" hyperparameter with the lowest 
-score. The last plot of this scenario displays the Rt estimates using the chosen
-hyperparameter. 
-
-```{r Rt-Pois-RtEstim-case1, echo=FALSE, fig.width=3.5, fig.height=3}
-rtestim_mod1 <- estimate_rt(incidence1, korder = 0, nsol = 50, 
-                            dist_gamma = gamma_pars1)
-sum(rtestim_mod1$convergence == FALSE) == 0
-plot(rtestim_mod1)
-
-# hyperparameter tuning using cross validation: 
-cv_mod1 <- cv_estimate_rt(incidence1, korder = 0, nfold = 10, nsol = 50, 
-                          dist_gamma = gamma_pars1, maxiter=1e7L, 
-                          error_measure = "deviance")
-plot(cv_mod1)
-
-rtestim_tuned_mod1 <- cv_mod1$full_fit$Rt[, which.min(cv_mod1$cv_scores)]
-rt_ci1 <- confband(cv_mod1, "lambda.min") # get 95% confidence band
-rt_ci1 %>%
-  ggplot(aes(x = 1:length(incidence1), y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_line() +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Time", y = "RtEstim Rt with 95% CIs") + 
-  theme_bw()
-```
-
-The Rt estimates for the other three scenarios are given in the following figures.
-
-```{r Rt-Pois-RtEstim, echo=FALSE, fig.width=3.5, fig.height=3}
-rtestim_mod2 <- estimate_rt(incidence2, korder=3, nsol=50, maxiter=1e7L, 
-                            dist_gamma = gamma_pars2)
-sum(rtestim_mod2$convergence == FALSE) == 0
-plot(rtestim_mod2)
-cv_mod2 <- cv_estimate_rt(incidence2, korder=3, nfold=10, nsol=50, maxiter=1e7L, 
-                          dist_gamma = gamma_pars2, error_measure = "deviance")
-plot(cv_mod2)
-rtestim_tuned_mod2 <- cv_mod2$full_fit$Rt[, which.min(cv_mod2$cv_scores)]
-rt_ci2 <- confband(cv_mod2, "lambda.min") # get 95% confidence band
-rt_ci2 %>%
-  ggplot(aes(x = 1:length(incidence2), y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_line() +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Time", y = "RtEstim Rt with 95% CIs") + 
-  theme_bw()
-
-rtestim_mod22 <- estimate_rt(incidence2, korder=1, nsol=50, maxiter=1e7L, 
-                            dist_gamma = gamma_pars2)
-sum(rtestim_mod22$convergence == FALSE) == 0
-plot(rtestim_mod22)
-cv_mod22 <- cv_estimate_rt(incidence2, korder=1, nfold=10, nsol=50, maxiter=1e7L, 
-                          dist_gamma = gamma_pars2, error_measure = "deviance")
-plot(cv_mod22)
-rtestim_tuned_mod22 <- cv_mod22$full_fit$Rt[, which.min(cv_mod22$cv_scores)]
-rt_ci22 <- confband(cv_mod22, "lambda.min") # get 95% confidence band
-rt_ci22 %>%
-  ggplot(aes(x = 1:length(incidence2), y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_line() +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Time", y = "RtEstim Rt with 95% CIs") + 
-  theme_bw()
-
-rtestim_mod3 <- estimate_rt(incidence3, korder=1, nsol=50, maxiter=1e7L, 
-                            dist_gamma = gamma_pars3)
-sum(rtestim_mod3$convergence == FALSE) == 0
-plot(rtestim_mod3)
-cv_mod3 <- cv_estimate_rt(incidence3, korder=1, nfold=10, nsol=50, maxiter=1e7L, 
-                          dist_gamma = gamma_pars3, error_measure = "deviance")
-plot(cv_mod3)
-rtestim_tuned_mod3 <- cv_mod3$full_fit$Rt[, which.min(cv_mod3$cv_scores)]
-rt_ci3 <- confband(cv_mod3, "lambda.min") # get 95% confidence band
-rt_ci3 %>%
-  ggplot(aes(x = 1:length(incidence2), y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_line() +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Time", y = "RtEstim Rt with 95% CIs") + 
-  theme_bw()
-
-rtestim_mod4 <- estimate_rt(incidence4, korder=3, nsol=50, maxiter=1e7L, 
-                            dist_gamma = gamma_pars4)
-sum(rtestim_mod4$convergence == FALSE) == 0 # check the convergence
-plot(rtestim_mod4)
-cv_mod4 <- cv_estimate_rt(incidence4, korder=3, nfold=10, nsol=50, maxiter=1e7L, 
-                          dist_gamma = gamma_pars4, error_measure = "deviance")
-plot(cv_mod4)
-rtestim_tuned_mod4 <- cv_mod4$full_fit$Rt[, which.min(cv_mod4$cv_scores)]
-rt_ci4 <- confband(cv_mod4, "lambda.min") # get 95% confidence band
-rt_ci4 %>%
-  ggplot(aes(x = 1:length(incidence2), y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_line() +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Time", y = "RtEstim Rt with 95% CIs") + 
-  theme_bw()
-```
-
-### Rt estimates for Poisson incidence using EpiEstim
-
-Fit EpiEstim with weekly sliding windows using "true" serial interval.
-
-```{r EpiEstim-Pois-week, echo=FALSE, fig.height=3, fig.width=3.5, message=FALSE, warning=FALSE}
-library(EpiEstim)
-method <- "non_parametric_si"
-# Get "true" serial interval: get gamma probabilities with length 12; the 1st component is 0
-Dmax1 <- floor(stats::qgamma(0.9999, 3, scale = 3)); Dmax1 < 250
-prob_gamma1 <- discretize_gamma(1:Dmax1, shape = 3, scale = 3)
-
-Dmax2 <- floor(stats::qgamma(0.9999, 2.5, scale = 2.5)); Dmax2 < 250
-prob_gamma2 <- discretize_gamma(1:Dmax2, shape = 2.5, scale = 2.5)
-
-Dmax3 <- floor(stats::qgamma(0.9999, 3.5, scale = 3.5)); Dmax3 < 250
-prob_gamma3 <- discretize_gamma(1:Dmax3, shape = 3.5, scale = 3.5)
-prob_gamma4 <- prob_gamma3 # set up for EpiLPS
-
-# weekly sliding windows
-t_week_start <- seq(2, len - 6) # starting at 2 as conditional on the past observations
-t_week_end <- t_week_start + 6
-            
-config_week1 <- make_config(list(si_distr = c(0, prob_gamma1),
-                                 t_start = t_week_start,
-                                 t_end = t_week_end)) 
-config_week2 <- make_config(list(si_distr = c(0, prob_gamma2),
-                                 t_start = t_week_start,
-                                 t_end = t_week_end)) 
-config_week3 <- make_config(list(si_distr = c(0, prob_gamma3),
-                                 t_start = t_week_start,
-                                 t_end = t_week_end)) 
-config_week4 <- config_week3
-
-mod_epiEstim_week1 <- EpiEstim::estimate_R(incid = incidence1, 
-                                      config = config_week1, 
-                                      method = method)
-plot(mod_epiEstim_week1, "R") + 
-  labs(y="EpiEstim Rt with weekly window and 95% CIs", title="") +
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epiEstim_week2 <- EpiEstim::estimate_R(incid = incidence2, 
-                                      config = config_week2, 
-                                      method = method)
-plot(mod_epiEstim_week2, "R") + 
-  labs(y="EpiEstim Rt with weekly window and 95% CIs", title="") +
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epiEstim_week3 <- EpiEstim::estimate_R(incid = incidence3, 
-                                      config = config_week3, 
-                                      method = method)
-plot(mod_epiEstim_week3, "R") + 
-  labs(y="EpiEstim Rt with weekly window and 95% CIs", title="") +
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epiEstim_week4 <- EpiEstim::estimate_R(incid = incidence4, 
-                                      config = config_week4, 
-                                      method = method)
-plot(mod_epiEstim_week4, "R") + 
-  labs(y="EpiEstim Rt with weekly window and 95% CIs", title="") +
-  theme_bw() + 
-  theme(legend.position = "none")
-```
-
-Fit EpiEstim with monthly sliding windows using "true" serial interval.
-
-```{r EpiEstim-Pois-month, echo=FALSE, fig.height=3, fig.width=3.5, message=FALSE, warning=FALSE}
-# monthly sliding window
-t_month_start <- seq(2, len - 29) # starting at 2 as conditional on the past observations
-t_month_end <- t_month_start + 29
-config_month1 <- make_config(list(si_distr = c(0, prob_gamma1),
-                                  t_start = t_month_start,
-                                  t_end = t_month_end)) 
-config_month2 <- make_config(list(si_distr = c(0, prob_gamma2),
-                                  t_start = t_month_start,
-                                  t_end = t_month_end)) 
-config_month3 <- make_config(list(si_distr = c(0, prob_gamma3), 
-                                  t_start = t_month_start,
-                                  t_end = t_month_end)) 
-config_month4 <- config_month3
-
-mod_epiEstim_month1 <- EpiEstim::estimate_R(incid = incidence1, 
-                                            config = config_month1, 
-                                            method = method)
-plot(mod_epiEstim_month1, "R") + 
-  labs(y="EpiEstim Rt with monthly window and 95% CIs", title="") +
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epiEstim_month2 <- EpiEstim::estimate_R(incid = incidence2, 
-                                            config = config_month2, 
-                                            method = method)
-plot(mod_epiEstim_month2, "R") + 
-  labs(y="EpiEstim Rt with monthly window and 95% CIs", title="") +
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epiEstim_month3 <- EpiEstim::estimate_R(incid = incidence3, 
-                                            config = config_month3, 
-                                            method = method)
-plot(mod_epiEstim_month3, "R") + 
-  labs(y="EpiEstim Rt with monthly window and 95% CIs", title="") +
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epiEstim_month4 <- EpiEstim::estimate_R(incid = incidence4, 
-                                            config = config_month4, 
-                                            method = method)
-plot(mod_epiEstim_month4, "R") + 
-  labs(y="EpiEstim Rt with monthly window and 95% CIs", title="") +
-  theme_bw() + 
-  theme(legend.position = "none")
-```
-
-### Rt estimates for Poisson incidence using EpiLPS
-
-Fit EpiLPS using "true" serial interval.
-
-```{r Rt-Pois-EpiLPS, echo=FALSE, fig.width=3.5, fig.height=3}
-library(EpiLPS)
-#shape <- 3
-#scale <- 3
-#si1 <- Idist(mean = shape * scale, sd = sqrt(shape * scale^2), dist = #"gamma")$pvec[1:Dmax1]
-#si1 <- si1 / sum(si1)
-#si2 <- Idist(mean = 2.5^2, sd = sqrt(2.5^3), dist = "gamma")$pvec[1:Dmax2]
-#si2 <- si2 / sum(si2)
-#si3 <- Idist(mean = 3.5^2, sd = sqrt(3.5^3), dist = "gamma")$pvec[1:Dmax3]
-#si3 <- si3 / sum(si3)
-#si4 <- si3
-
-mod_epilst_pois1 <- estimR(incidence = incidence1, si = prob_gamma1)
-plot(mod_epilst_pois1) + 
-  labs(y="EpiLPS Rt with 95% CIs", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epilst_pois2 <- estimR(incidence = incidence2, si = prob_gamma2)
-plot(mod_epilst_pois2) + 
-  labs(y="EpiLPS Rt with 95% CIs", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epilst_pois3 <- estimR(incidence = incidence3, si = prob_gamma3)
-plot(mod_epilst_pois3) + 
-  labs(y="EpiLPS Rt with 95% CIs", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epilst_pois4 <- estimR(incidence = incidence4, si = prob_gamma4)
-plot(mod_epilst_pois4) + 
-  labs(y="EpiLPS Rt with 95% CIs", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-```
-
-## Synthetic effective reproduction numbers and negative Binomial incidence examples
-
-```{r NB-samples, echo=FALSE, fig.width=3.5, fig.height=3}
-get_nb_incidence <- function(N1, Rt, gamma_pars = c(2.5, 2.5)){
+```{r Fig2-generate-NB-examples, eval = FALSE, include = FALSE}
+get_nb_incidence <- function(N1, Rt, gamma_pars = c(2.5, 2.5)) {
   len <- length(Rt)
   incidence <- numeric(len) # N_1:n
   NB_count <- numeric(len) # y_1:n
   incidence[1] <- N1
-  size = 5
-  
-  NB_count[1] <- rnbinom(1, mu=N1, size=size)
-  if(NB_count[1] == 0) NB_count[1] = 1
-  for(t in 2:len){
-    pi <- discretize_gamma(1:(t-1), gamma_pars[1], gamma_pars[2])
-    incidence[t] <- Rt[t] * sum(rev(pi) * NB_count[1:(t-1)])
-    NB_count[t] <- rnbinom(1, mu = incidence[t], size=size)
+  size <- 5
+
+  NB_count[1] <- rnbinom(1, mu = N1, size = size)
+  if (NB_count[1] == 0) NB_count[1] <- 1
+  for (t in 2:len) {
+    pi <- discretize_gamma(1:(t - 1), gamma_pars[1], gamma_pars[2])
+    incidence[t] <- Rt[t] * sum(rev(pi) * NB_count[1:(t - 1)])
+    NB_count[t] <- rnbinom(1, mu = incidence[t], size = size)
   }
-  
+
   return(NB_count)
 }
-
-# case 1
+# scenario 1
 seed <- 525
 set.seed(seed)
 nb_incidence1 <- get_nb_incidence(N1, Rt1, gamma_pars1)
-display_dat(nb_incidence1, Rt1)
-check_dat(nb_incidence1, Rt1)
-
-# case 2
+# scenario 2
 set.seed(seed)
 nb_incidence2 <- get_nb_incidence(N1, Rt2, gamma_pars2)
-display_dat(nb_incidence2, Rt2)
-check_dat(nb_incidence2, Rt2)
-
-# case 3
+# scenario 3
 set.seed(seed)
 nb_incidence3 <- get_nb_incidence(N1, Rt3, gamma_pars3)
-display_dat(nb_incidence3, Rt3)
-check_dat(nb_incidence3, Rt3)
-
-# case 4
+# scenario 4
 set.seed(seed)
 nb_incidence4 <- get_nb_incidence(N1, Rt4, gamma_pars4)
-display_dat(nb_incidence4, Rt4)
-check_dat(nb_incidence4, Rt4)
 ```
 
-### Rt estimates for negative Binomial incidence using RtEstim 
-
-Estimate Rt using our `RtEstim` with the same settings as for Poisson incidence.
-
-```{r Rt-NB-RtEstim, echo=FALSE, fig.width=3.5, fig.height=3}
-mod_nb1 <- estimate_rt(nb_incidence1, korder=0, nsol=50, dist_gamma = c(3, 3))
-plot(mod_nb1)
-cv_mod_nb1 <- cv_estimate_rt(nb_incidence1, korder=0, nfold=10, nsol=50, 
-                             dist_gamma = c(3, 3), error_measure = "deviance")
-plot(cv_mod_nb1)
-rtestim_tuned_mod_nb1 <- cv_mod_nb1$full_fit$Rt[ ,which.min(cv_mod_nb1$cv_scores)]
-rt_ci_nb1 <- confband(cv_mod_nb1, "lambda.min") # get 95% confidence band
-rt_ci_nb1 %>%
-  ggplot(aes(x = 1:length(nb_incidence1), y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_line() +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Time", y = "RtEstim Rt") + 
-  theme_bw()
-
-mod_nb2 <- estimate_rt(nb_incidence2, korder=3, nsol=50, dist_gamma = c(2.5, 2.5))
-plot(mod_nb2)
-cv_mod_nb2 <- cv_estimate_rt(nb_incidence2, korder=3, nfold=10, nsol=50, 
-                             dist_gamma = c(2.5, 2.5), error_measure = "deviance")
-plot(cv_mod_nb2)
-rtestim_tuned_mod_nb2 <- cv_mod_nb2$full_fit$Rt[ ,which.min(cv_mod_nb2$cv_scores)]
-rt_ci_nb2 <- confband(cv_mod_nb2, "lambda.min") # get 95% confidence band
-rt_ci_nb2 %>%
-  ggplot(aes(x = 1:length(nb_incidence2), y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_line() +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Time", y = "RtEstim Rt") + 
-  theme_bw()
-
-mod_nb22 <- estimate_rt(nb_incidence2, korder=1, nsol=50, dist_gamma = c(2.5, 2.5))
-plot(mod_nb22)
-cv_mod_nb22 <- cv_estimate_rt(nb_incidence2, korder=1, nfold=10, nsol=50, 
-                             dist_gamma = c(2.5, 2.5), error_measure = "deviance")
-plot(cv_mod_nb22)
-rtestim_tuned_mod_nb22 <- cv_mod_nb22$full_fit$Rt[ ,which.min(cv_mod_nb22$cv_scores)]
-rt_ci_nb22 <- confband(cv_mod_nb22, "lambda.min") # get 95% confidence band
-rt_ci_nb22 %>%
-  ggplot(aes(x = 1:length(nb_incidence2), y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_line() +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Time", y = "RtEstim Rt") + 
-  theme_bw()
-
-mod_nb3 <- estimate_rt(nb_incidence3, korder=1, nsol=50, dist_gamma = c(3.5, 3.5))
-plot(mod_nb3)
-cv_mod_nb3 <- cv_estimate_rt(nb_incidence3, korder=1, nfold=10, nsol=100, 
-                             dist_gamma = c(3.5, 3.5), error_measure = "deviance")
-plot(cv_mod_nb3)
-rtestim_tuned_mod_nb3 <- cv_mod_nb3$full_fit$Rt[ ,which.min(cv_mod_nb3$cv_scores)]
-rt_ci_nb3 <- confband(cv_mod_nb3, "lambda.min") # get 95% confidence band
-rt_ci_nb3 %>%
-  ggplot(aes(x = 1:length(nb_incidence3), y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_line() +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Time", y = "RtEstim Rt") + 
-  theme_bw()
-
-mod_nb4 <- estimate_rt(nb_incidence4, korder=3, nsol=50, dist_gamma = c(3.5, 3.5))
-plot(mod_nb4)
-cv_mod_nb4 <- cv_estimate_rt(nb_incidence4, korder=3, nfold=10, nsol=50, 
-                             dist_gamma = c(3.5, 3.5), error_measure = "deviance")
-plot(cv_mod_nb4)
-rtestim_tuned_mod_nb4 <- cv_mod_nb4$full_fit$Rt[ ,which.min(cv_mod_nb4$cv_scores)]
-rt_ci_nb4 <- confband(cv_mod_nb4, "lambda.min") # get 95% confidence band
-rt_ci_nb4 %>%
-  ggplot(aes(x = 1:length(nb_incidence4), y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_line() +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Time", y = "RtEstim Rt") + 
-  theme_bw()
-```
-
-### Rt estimates for negative Binomial incidence using EpiEstim 
-
-Estimate Rt  for negative Binomial incidence using `EpiEstim` with weekly sliding windows.
-
-```{r Rt-NB-EpiEstim-week, echo=FALSE, fig.height=3, fig.width=3.5, message=FALSE, warning=FALSE}
-# weekly sliding window EpiEstim
-mod_epi_nb_week1 <- EpiEstim::estimate_R(incid = nb_incidence1, 
-                                         config = config_week1, 
-                                         method = method)
-plot(mod_epi_nb_week1, "R") + 
-  labs(y="EpiEstim Rt with weekly sliding window", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epi_nb_week2 <- EpiEstim::estimate_R(incid = nb_incidence2, 
-                                         config = config_week2, 
-                                         method = method)
-plot(mod_epi_nb_week2, "R") + 
-  labs(y="EpiEstim Rt with weekly sliding window", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epi_nb_week3 <- EpiEstim::estimate_R(incid = nb_incidence3, 
-                                         config = config_week3, 
-                                         method = method)
-plot(mod_epi_nb_week3, "R") + 
-  labs(y="EpiEstim Rt with weekly sliding window", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epi_nb_week4 <- EpiEstim::estimate_R(incid = nb_incidence4, 
-                                         config = config_week4, 
-                                         method = method)
-plot(mod_epi_nb_week4, "R") + 
-  labs(y="EpiEstim Rt with weekly sliding window", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-```
-
-Estimate Rt for negative Binomial incidence using `EpiEstim` with monthly sliding windows.
-
-```{r Rt-NB-EpiEstim-month, echo=FALSE, fig.height=3, fig.width=3.5, message=FALSE, warning=FALSE}
-# monthly sliding window EpiEstim
-mod_epi_nb_month1 <- EpiEstim::estimate_R(incid = nb_incidence1, 
-                                         config = config_month1, 
-                                         method = method)
-plot(mod_epi_nb_month1, "R") + 
-  labs(y="EpiEstim Rt with monthly sliding window", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epi_nb_month2 <- EpiEstim::estimate_R(incid = nb_incidence2, 
-                                         config = config_month2, 
-                                         method = method)
-plot(mod_epi_nb_month2, "R") + 
-  labs(y="EpiEstim Rt with monthly sliding window", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epi_nb_month3 <- EpiEstim::estimate_R(incid = nb_incidence3, 
-                                         config = config_month3, 
-                                         method = method)
-plot(mod_epi_nb_month3, "R") + 
-  labs(y="EpiEstim Rt with monthly sliding window", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epi_nb_month4 <- EpiEstim::estimate_R(incid = nb_incidence4, 
-                                         config = config_month4, 
-                                         method = method)
-plot(mod_epi_nb_month4, "R") + 
-  labs(y="EpiEstim Rt with monthly sliding window", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-```
-
-### Rt estimates for negative Binomial incidence using EpiLPS  
-
-Estimate Rt using `EpiLPS` using the true serial intervals.
-
-```{r Rt-NB-EpiLPS, echo=FALSE, fig.height=3, fig.width=3.5}
-mod_epilst_nb1 <- estimR(incidence = nb_incidence1, si = prob_gamma1)
-plot(mod_epilst_nb1) + 
-  labs(y="EpiLPS Rt", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epilst_nb2 <- estimR(incidence = nb_incidence2, si = prob_gamma2)
-plot(mod_epilst_nb2) + 
-  labs(y="EpiLPS Rt", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epilst_nb3 <- estimR(incidence = nb_incidence3, si = prob_gamma3)
-plot(mod_epilst_nb3) + 
-  labs(y="EpiLPS Rt", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-mod_epilst_nb4 <- estimR(incidence = nb_incidence4, si = prob_gamma4)
-plot(mod_epilst_nb4) + 
-  labs(y="EpiLPS Rt", title="") + 
-  theme_bw() + 
-  theme(legend.position = "none")
-```
-
-## Display and save results for synthetic examples 
-
-Create a results table to save all Rt and incidence samples, and Rt estimates
-using three methods. Save the results table.
-
-```{r Rt-results, echo=FALSE}
-res_dat <- data.table(
+```{r Fig2-display-examples, eval = FALSE, include = FALSE}
+sample_dat <- data.table(
   time = 1:len, Rt1 = Rt1, Rt2 = Rt2, Rt3 = Rt3, Rt4 = Rt4,
   Pois_count1 = incidence1, Pois_count2 = incidence2,
   Pois_count3 = incidence3, Pois_count4 = incidence4,
   NB_count1 = nb_incidence1, NB_count2 = nb_incidence2,
-  NB_count3 = nb_incidence3, NB_count4 = nb_incidence4,
+  NB_count3 = nb_incidence3, NB_count4 = nb_incidence4
+)
+
+display_example <- function(res_dat) {
+  len <- dim(res_dat)[1]
+  fig1 <- res_dat %>%
+    ggplot(aes(y = Rt1, x = time)) +
+    geom_line() +
+    labs(y = "Scenario 1", title = "Rt", x = "") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_bw()
+  fig2 <- res_dat %>%
+    ggplot(aes(y = Pois_count1, x = time)) +
+    geom_line() +
+    labs(title = "Poisson incidence", y = " ", x = "") +
+    coord_cartesian(ylim = c(0, 2500)) +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_bw()
+  fig3 <- res_dat %>%
+    ggplot(aes(y = NB_count1, x = time)) +
+    geom_line() +
+    labs(title = "NB incidence", y = " ", x = "") +
+    coord_cartesian(ylim = c(0, 2500)) +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_bw()
+
+  fig21 <- res_dat %>%
+    ggplot(aes(y = Rt2, x = time)) +
+    geom_line() +
+    labs(y = "Scenario 2", x = "") +
+    theme_bw()
+  fig22 <- res_dat %>%
+    ggplot(aes(y = Pois_count2, x = time)) +
+    geom_line() +
+    coord_cartesian(ylim = c(0, 3000)) +
+    labs(y = " ", x = "") +
+    theme_bw()
+  fig23 <- res_dat %>%
+    ggplot(aes(y = NB_count2, x = time)) +
+    geom_line() +
+    coord_cartesian(ylim = c(0, 3000)) +
+    labs(y = " ", x = "") +
+    theme_bw()
+
+  fig31 <- res_dat %>%
+    ggplot(aes(y = Rt3, x = time)) +
+    geom_line() +
+    labs(y = "Scenario 3", x = "") +
+    theme_bw()
+  fig32 <- res_dat %>%
+    ggplot(aes(y = Pois_count3, x = time)) +
+    geom_line() +
+    coord_cartesian(ylim = c(0, 1500)) +
+    labs(y = " ", x = "") +
+    theme_bw()
+  fig33 <- res_dat %>%
+    ggplot(aes(y = NB_count3, x = time)) +
+    geom_line() +
+    coord_cartesian(ylim = c(0, 1500)) +
+    labs(y = " ", x = "") + # (in log scale)
+    theme_bw()
+
+  fig41 <- res_dat %>%
+    ggplot(aes(y = Rt4, x = time)) +
+    geom_line() +
+    labs(y = "Scenario 4") +
+    theme_bw()
+  fig42 <- res_dat %>%
+    ggplot(aes(y = Pois_count4, x = time)) +
+    geom_line() +
+    coord_cartesian(ylim = c(0, 4000)) +
+    labs(y = " ") +
+    theme_bw()
+  fig43 <- res_dat %>%
+    ggplot(aes(y = NB_count4, x = time)) +
+    geom_line() +
+    coord_cartesian(ylim = c(0, 4000)) +
+    labs(y = " ") +
+    theme_bw()
+
+  figfull <- ggpubr::ggarrange(fig1, fig2, fig3,
+    fig21, fig22, fig23,
+    fig31, fig32, fig33,
+    fig41, fig42, fig43,
+    ncol = 3, nrow = 4,
+    common.legend = TRUE, legend = "bottom"
+  )
+  print(figfull)
+}
+
+display_example(sample_dat)
+```
+
+```{r Fig3-display-simulation-results, eval = FALSE, include = FALSE}
+# exclude the extremely large KL values
+Rt_result_no_outliers <- Rt_result |>
+  filter(method != "EpiEstim (monthly)") |>
+  select(Rt_case, dist, method, Rt_kl) |>
+  group_by(Rt_case, dist, method) |>
+  mutate(big_out = Rt_kl > fivenum(Rt_kl, na.rm = TRUE)[4] +
+    1.5 * IQR(Rt_kl, na.rm = TRUE)) |>
+  filter(!big_out) |>
+  select(!big_out)
+Rt_result_no_outliers$Rt_case <- as.factor(Rt_result_no_outliers$Rt_case)
+Rt_result_no_outliers$dist <- as.factor(Rt_result_no_outliers$dist)
+Rt_result_no_outliers$method <- as.factor(Rt_result_no_outliers$method)
+
+KL_fig_no_outlier <- Rt_result_no_outliers %>%
+  ggplot(aes(x = method, y = Rt_kl * 300)) + # sum up KL per coordinate s
+  geom_boxplot(aes(col = method)) +
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-1]) +
+  labs(x = "Method", y = "KL divergence") +
+  theme_bw() +
+  theme(axis.text.x = element_blank(), legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL))
+print(KL_fig_no_outlier)
+```
+
+```{r Fig4-display-Rt-for-Poisson-incidence, eval = FALSE, include = FALSE}
+## Rt estimates for Poisson incidence by all models
+## Commands used to visualize fitted Rt are commented.
+
+## RtEstim
+# Scenario 1 by RtEstim (k=0)
+cv_mod1 <- cv_estimate_rt(
+  incidence1,
+  korder = 0, nfold = 10, nsol = 50, dist_gamma = gamma_pars1,
+  maxiter = 1e7L, error_measure = "deviance"
+)
+# plot(cv_mod1)
+rtestim_tuned_mod1 <- cv_mod1$full_fit$Rt[, which.min(cv_mod1$cv_scores)]
+# rt_ci1 <- confband(cv_mod1, "lambda.min") # get 95% confidence band
+# rt_ci1 %>%
+#  ggplot(aes(x = 1:length(incidence1), y = Rt)) +
+#  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`),
+#              fill = "gray", alpha = 0.5) +
+#  geom_line() +
+#  geom_hline(yintercept = 1, linetype = "dotted") +
+#  labs(x="Time", y = "RtEstim Rt with 95% CIs") +
+#  theme_bw()
+# Scenario 2 by RtEstim (k=3)
+cv_mod2 <- cv_estimate_rt(
+  incidence2,
+  korder = 3, nfold = 10, nsol = 50, maxiter = 1e7L,
+  dist_gamma = gamma_pars2, error_measure = "deviance"
+)
+rtestim_tuned_mod2 <- cv_mod2$full_fit$Rt[, which.min(cv_mod2$cv_scores)]
+# Scenario 2 by RtEstim (k=1)
+cv_mod22 <- cv_estimate_rt(
+  incidence2,
+  korder = 1, nfold = 10, nsol = 50, maxiter = 1e7L,
+  dist_gamma = gamma_pars2, error_measure = "deviance"
+)
+rtestim_tuned_mod22 <- cv_mod22$full_fit$Rt[, which.min(cv_mod22$cv_scores)]
+# Scenario 3 by RtEstim (k=1)
+cv_mod3 <- cv_estimate_rt(
+  incidence3,
+  korder = 1, nfold = 10, nsol = 50, maxiter = 1e7L,
+  dist_gamma = gamma_pars3, error_measure = "deviance"
+)
+rtestim_tuned_mod3 <- cv_mod3$full_fit$Rt[, which.min(cv_mod3$cv_scores)]
+# Scenario 4 by RtEstim (k=3)
+cv_mod4 <- cv_estimate_rt(
+  incidence4,
+  korder = 3, nfold = 10, nsol = 50, maxiter = 1e7L,
+  dist_gamma = gamma_pars4, error_measure = "deviance"
+)
+rtestim_tuned_mod4 <- cv_mod4$full_fit$Rt[, which.min(cv_mod4$cv_scores)]
+
+## SI for EpiEstim and EpiLPS
+method <- "non_parametric_si"
+Dmax1 <- floor(stats::qgamma(0.9999, 3, scale = 3))
+prob_gamma1 <- discretize_gamma(1:Dmax1, shape = 3, scale = 3)
+Dmax2 <- floor(stats::qgamma(0.9999, 2.5, scale = 2.5))
+prob_gamma2 <- discretize_gamma(1:Dmax2, shape = 2.5, scale = 2.5)
+Dmax3 <- floor(stats::qgamma(0.9999, 3.5, scale = 3.5))
+prob_gamma3 <- discretize_gamma(1:Dmax3, shape = 3.5, scale = 3.5)
+prob_gamma4 <- prob_gamma3
+
+## EpiEstim
+# configuration for weekly sliding windows
+t_week_start <- seq(2, len - 6)
+t_week_end <- t_week_start + 6
+config_week1 <- make_config(list(
+  si_distr = c(0, prob_gamma1),
+  t_start = t_week_start,
+  t_end = t_week_end
+))
+config_week2 <- make_config(list(
+  si_distr = c(0, prob_gamma2),
+  t_start = t_week_start,
+  t_end = t_week_end
+))
+config_week3 <- make_config(list(
+  si_distr = c(0, prob_gamma3),
+  t_start = t_week_start,
+  t_end = t_week_end
+))
+config_week4 <- config_week3
+# Rt estimates
+mod_epiEstim_week1 <- EpiEstim::estimate_R(
+  incid = incidence1,
+  config = config_week1,
+  method = method
+)
+# plot(mod_epiEstim_week1, "R") +
+#  labs(y="EpiEstim Rt with weekly window and 95% CIs", title="") +
+#  theme_bw() +
+#  theme(legend.position = "none")
+mod_epiEstim_week2 <- EpiEstim::estimate_R(
+  incid = incidence2,
+  config = config_week2,
+  method = method
+)
+mod_epiEstim_week3 <- EpiEstim::estimate_R(
+  incid = incidence3,
+  config = config_week3,
+  method = method
+)
+mod_epiEstim_week4 <- EpiEstim::estimate_R(
+  incid = incidence4,
+  config = config_week4,
+  method = method
+)
+# configuration for monthly sliding window
+t_month_start <- seq(2, len - 29)
+t_month_end <- t_month_start + 29
+config_month1 <- make_config(list(
+  si_distr = c(0, prob_gamma1),
+  t_start = t_month_start,
+  t_end = t_month_end
+))
+config_month2 <- make_config(list(
+  si_distr = c(0, prob_gamma2),
+  t_start = t_month_start,
+  t_end = t_month_end
+))
+config_month3 <- make_config(list(
+  si_distr = c(0, prob_gamma3),
+  t_start = t_month_start,
+  t_end = t_month_end
+))
+config_month4 <- config_month3
+# Rt estimates
+mod_epiEstim_month1 <- EpiEstim::estimate_R(
+  incid = incidence1,
+  config = config_month1,
+  method = method
+)
+mod_epiEstim_month2 <- EpiEstim::estimate_R(
+  incid = incidence2,
+  config = config_month2,
+  method = method
+)
+mod_epiEstim_month3 <- EpiEstim::estimate_R(
+  incid = incidence3,
+  config = config_month3,
+  method = method
+)
+mod_epiEstim_month4 <- EpiEstim::estimate_R(
+  incid = incidence4,
+  config = config_month4,
+  method = method
+)
+
+## EpiLPS
+mod_epilst_pois1 <- estimR(incidence = incidence1, si = prob_gamma1)
+# plot(mod_epilst_pois1) +
+#  labs(y="EpiLPS Rt with 95% CIs", title="") +
+#  theme_bw() +
+#  theme(legend.position = "none")
+mod_epilst_pois2 <- estimR(incidence = incidence2, si = prob_gamma2)
+mod_epilst_pois3 <- estimR(incidence = incidence3, si = prob_gamma3)
+mod_epilst_pois4 <- estimR(incidence = incidence4, si = prob_gamma4)
+
+res_dat <- data.table(sample_dat,
   Pois_Epi_week1 = c(rep(NA, 7), mod_epiEstim_week1$R$`Mean(R)`),
   Pois_Epi_week2 = c(rep(NA, 7), mod_epiEstim_week2$R$`Mean(R)`),
   Pois_Epi_week3 = c(rep(NA, 7), mod_epiEstim_week3$R$`Mean(R)`),
@@ -887,8 +642,215 @@ res_dat <- data.table(
   Pois_EpiLPS1 = c(rep(NA, 7), mod_epilst_pois1$RLPS$R[-1:-7]),
   Pois_EpiLPS2 = c(rep(NA, 7), mod_epilst_pois2$RLPS$R[-1:-7]),
   Pois_EpiLPS3 = c(rep(NA, 7), mod_epilst_pois3$RLPS$R[-1:-7]),
-  Pois_EpiLPS4 = c(rep(NA, 7), mod_epilst_pois4$RLPS$R[-1:-7]),
-  
+  Pois_EpiLPS4 = c(rep(NA, 7), mod_epilst_pois4$RLPS$R[-1:-7])
+)
+
+cbPalette2 <- c("#999999", cbPalette[-2])
+fig1 <- res_dat %>%
+  select(
+    time, Rt1, Pois_Epi_week1, Pois_Rtestim1, Pois_Rtestim2, Pois_Rtestim22,
+    Pois_EpiLPS1
+  ) %>%
+  mutate(Pois_Rtestim2 = Pois_Rtestim2 * 1e4L, Pois_Rtestim22 = Pois_Rtestim22 * 1e4L) %>%
+  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
+  mutate(Rt_type = fct_recode(Rt_type,
+    "True Rt" = "Rt1",
+    "RtEstim (k=0)" = "Pois_Rtestim1",
+    "RtEstim (k=3)" = "Pois_Rtestim2",
+    "RtEstim (k=1)" = "Pois_Rtestim22",
+    "EpiEstim" = "Pois_Epi_week1",
+    "EpiLPS" = "Pois_EpiLPS1"
+  )) %>%
+  mutate(Rt_type = fct_relevel(
+    Rt_type, "True Rt",
+    "EpiEstim",
+    "EpiLPS",
+    "RtEstim (k=0)",
+    "RtEstim (k=1)",
+    "RtEstim (k=3)"
+  )) %>%
+  group_by(Rt_type) %>%
+  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
+  geom_line(na.rm = TRUE) +
+  coord_cartesian(ylim = c(0, 6)) +
+  scale_colour_manual(values = cbPalette2) +
+  labs(y = "", color = "Rt methods", x = "", title = "Scenario 1: piecewise constant") +
+  theme_bw()
+
+fig2 <- res_dat %>%
+  select(
+    time, Rt2, Pois_Epi_week2, Pois_Rtestim2, Pois_Rtestim22, Pois_Rtestim1,
+    Pois_EpiLPS2
+  ) %>%
+  mutate(Pois_Rtestim1 = Pois_Rtestim1 * 1e4L) %>%
+  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
+  mutate(Rt_type = fct_recode(Rt_type,
+    "True Rt" = "Rt2",
+    "RtEstim (k=3)" = "Pois_Rtestim2",
+    "RtEstim (k=1)" = "Pois_Rtestim22",
+    "RtEstim (k=0)" = "Pois_Rtestim1",
+    "EpiEstim" = "Pois_Epi_week2",
+    "EpiLPS" = "Pois_EpiLPS2"
+  )) %>%
+  mutate(Rt_type = fct_relevel(
+    Rt_type, "True Rt",
+    "EpiEstim",
+    "EpiLPS",
+    "RtEstim (k=0)",
+    "RtEstim (k=1)",
+    "RtEstim (k=3)"
+  )) %>%
+  group_by(Rt_type) %>%
+  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
+  geom_line(na.rm = TRUE) +
+  coord_cartesian(ylim = c(0, 4)) +
+  scale_colour_manual(values = cbPalette2) +
+  labs(y = "", color = "Rt methods", x = "", title = "Scenario 2: piecewise exponential") +
+  theme_bw()
+
+fig3 <- res_dat %>%
+  select(
+    time, Rt3, Pois_Epi_week3, Pois_Rtestim3, Pois_Rtestim2, Pois_Rtestim1,
+    Pois_EpiLPS3
+  ) %>%
+  mutate(Pois_Rtestim1 = Pois_Rtestim1 * 1e4L, Pois_Rtestim2 = Pois_Rtestim2 * 1e4L) %>%
+  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
+  mutate(Rt_type = fct_recode(Rt_type,
+    "True Rt" = "Rt3",
+    "RtEstim (k=1)" = "Pois_Rtestim3",
+    "RtEstim (k=0)" = "Pois_Rtestim1",
+    "RtEstim (k=3)" = "Pois_Rtestim2",
+    "EpiEstim" = "Pois_Epi_week3",
+    "EpiLPS" = "Pois_EpiLPS3"
+  )) %>%
+  mutate(Rt_type = fct_relevel(
+    Rt_type, "True Rt",
+    "EpiEstim",
+    "EpiLPS",
+    "RtEstim (k=0)",
+    "RtEstim (k=1)",
+    "RtEstim (k=3)"
+  )) %>%
+  group_by(Rt_type) %>%
+  # filter(Rt_type != "EpiLPS") %>%
+  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
+  geom_line(na.rm = TRUE) +
+  coord_cartesian(ylim = c(0, 9)) +
+  scale_colour_manual(values = cbPalette2) +
+  labs(y = "", color = "Rt methods", x = "", title = "Scenario 3: piecewise linear") +
+  theme_bw()
+
+fig4 <- res_dat %>%
+  select(
+    time, Rt4, Pois_Epi_week4, Pois_Rtestim4, Pois_Rtestim1, Pois_Rtestim3,
+    Pois_EpiLPS4
+  ) %>%
+  mutate(Pois_Rtestim1 = Pois_Rtestim1 * 1e4L, Pois_Rtestim3 = Pois_Rtestim3 * 1e4L) %>%
+  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
+  mutate(Rt_type = fct_recode(Rt_type,
+    "True Rt" = "Rt4",
+    "RtEstim (k=3)" = "Pois_Rtestim4",
+    "RtEstim (k=0)" = "Pois_Rtestim1",
+    "RtEstim (k=1)" = "Pois_Rtestim3",
+    "EpiEstim" = "Pois_Epi_week4",
+    "EpiLPS" = "Pois_EpiLPS4"
+  )) %>%
+  mutate(Rt_type = fct_relevel(
+    Rt_type, "True Rt",
+    "EpiEstim",
+    "EpiLPS",
+    "RtEstim (k=0)",
+    "RtEstim (k=1)",
+    "RtEstim (k=3)"
+  )) %>%
+  group_by(Rt_type) %>%
+  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
+  geom_line(na.rm = TRUE) +
+  coord_cartesian(ylim = c(0, 8)) +
+  scale_colour_manual(values = cbPalette2) +
+  labs(y = "", color = "Rt methods", x = "", title = "Scenario 4: periodic") +
+  theme_bw()
+
+fig_Pois_res <- ggpubr::ggarrange(
+  fig1, fig2, fig3, fig4,
+  ncol = 2, nrow = 2,
+  common.legend = TRUE, legend = "bottom",
+  font.label = list(size = 14)
+)
+fig_Pois_res <- ggpubr::annotate_figure(
+  fig_Pois_res,
+  left = grid::textGrob("Rt estimates for Poisson incidence",
+    rot = 90, vjust = 1, gp = grid::gpar(cex = 1)
+  )
+)
+print(fig_Pois_res)
+```
+
+```{r Fig5-display-Rt-for-NB-incidence, eval = FALSE, include = FALSE}
+## RtEstim
+cv_mod_nb1 <- cv_estimate_rt(
+  nb_incidence1,
+  korder = 0, nfold = 10, nsol = 50, dist_gamma = c(3, 3),
+  error_measure = "deviance"
+)
+rtestim_tuned_mod_nb1 <- cv_mod_nb1$full_fit$Rt[, which.min(cv_mod_nb1$cv_scores)]
+cv_mod_nb2 <- cv_estimate_rt(
+  nb_incidence2,
+  korder = 3, nfold = 10, nsol = 50, dist_gamma = c(2.5, 2.5),
+  error_measure = "deviance"
+)
+rtestim_tuned_mod_nb2 <- cv_mod_nb2$full_fit$Rt[, which.min(cv_mod_nb2$cv_scores)]
+cv_mod_nb22 <- cv_estimate_rt(
+  nb_incidence2,
+  korder = 1, nfold = 10, nsol = 50, dist_gamma = c(2.5, 2.5),
+  error_measure = "deviance"
+)
+rtestim_tuned_mod_nb22 <- cv_mod_nb22$full_fit$Rt[, which.min(cv_mod_nb22$cv_scores)]
+cv_mod_nb3 <- cv_estimate_rt(
+  nb_incidence3,
+  korder = 1, nfold = 10, nsol = 100, dist_gamma = c(3.5, 3.5),
+  error_measure = "deviance"
+)
+rtestim_tuned_mod_nb3 <- cv_mod_nb3$full_fit$Rt[, which.min(cv_mod_nb3$cv_scores)]
+cv_mod_nb4 <- cv_estimate_rt(
+  nb_incidence4,
+  korder = 3, nfold = 10, nsol = 50, dist_gamma = c(3.5, 3.5),
+  error_measure = "deviance"
+)
+rtestim_tuned_mod_nb4 <- cv_mod_nb4$full_fit$Rt[, which.min(cv_mod_nb4$cv_scores)]
+## EpiEstim (weekly window)
+mod_epi_nb_week1 <- EpiEstim::estimate_R(
+  incid = nb_incidence1, config = config_week1, method = method
+)
+mod_epi_nb_week2 <- EpiEstim::estimate_R(
+  incid = nb_incidence2, config = config_week2, method = method
+)
+mod_epi_nb_week3 <- EpiEstim::estimate_R(
+  incid = nb_incidence3, config = config_week3, method = method
+)
+mod_epi_nb_week4 <- EpiEstim::estimate_R(
+  incid = nb_incidence4, config = config_week4, method = method
+)
+## EpiEstim (monthly window)
+mod_epi_nb_month1 <- EpiEstim::estimate_R(
+  incid = nb_incidence1, config = config_month1, method = method
+)
+mod_epi_nb_month2 <- EpiEstim::estimate_R(
+  incid = nb_incidence2, config = config_month2, method = method
+)
+mod_epi_nb_month3 <- EpiEstim::estimate_R(
+  incid = nb_incidence3, config = config_month3, method = method
+)
+mod_epi_nb_month4 <- EpiEstim::estimate_R(
+  incid = nb_incidence4, config = config_month4, method = method
+)
+## EpiLPS
+mod_epilst_nb1 <- estimR(incidence = nb_incidence1, si = prob_gamma1)
+mod_epilst_nb2 <- estimR(incidence = nb_incidence2, si = prob_gamma2)
+mod_epilst_nb3 <- estimR(incidence = nb_incidence3, si = prob_gamma3)
+mod_epilst_nb4 <- estimR(incidence = nb_incidence4, si = prob_gamma4)
+
+res_dat <- data.table(res_dat,
   NB_Epi_week1 = c(rep(NA, 7), mod_epi_nb_week1$R$`Mean(R)`),
   NB_Epi_week2 = c(rep(NA, 7), mod_epi_nb_week2$R$`Mean(R)`),
   NB_Epi_week3 = c(rep(NA, 7), mod_epi_nb_week3$R$`Mean(R)`),
@@ -902,556 +864,298 @@ res_dat <- data.table(
   NB_Rtestim22 = rtestim_tuned_mod_nb22,
   NB_Rtestim3 = rtestim_tuned_mod_nb3,
   NB_Rtestim4 = rtestim_tuned_mod_nb4,
-  NB_EpiLPS1 = c(rep(NA, 7), mod_epilst_nb1$RLPS$R[-1:-7]), 
+  NB_EpiLPS1 = c(rep(NA, 7), mod_epilst_nb1$RLPS$R[-1:-7]),
   NB_EpiLPS2 = c(rep(NA, 7), mod_epilst_nb2$RLPS$R[-1:-7]),
   NB_EpiLPS3 = c(rep(NA, 7), mod_epilst_nb3$RLPS$R[-1:-7]),
   NB_EpiLPS4 = c(rep(NA, 7), mod_epilst_nb4$RLPS$R[-1:-7])
 )
 
-# save Rt, incidence and estimates
-saveRDS(res_dat, here::here("dat/def_examples.RDS"))
-```
-
-
-
-```{r Pois-res-display, include=FALSE}
-#Display results of Poisson incidence. 
-cbPalette <- c("#999999", "#E69F00", "#009E73", 
-               "#CC79A7", "#0072B2", "#56B4E9", 
-               "#D55E00", "#F0E442")
-fig1 <- res_dat %>%
-  select(time, Rt1, Pois_Epi_week1, Pois_Rtestim1, Pois_Rtestim2, Pois_Rtestim22, Pois_EpiLPS1) %>%
-  mutate(Pois_Rtestim2 = Pois_Rtestim2*1e4L, Pois_Rtestim22 = Pois_Rtestim22*1e4L) %>%
-  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type, "True Rt" = "Rt1",
-                              "RtEstim (k=0)" = "Pois_Rtestim1", 
-                              "RtEstim (k=3)" = "Pois_Rtestim2", 
-                              "RtEstim (k=1)" = "Pois_Rtestim22", 
-                              "EpiEstim" = "Pois_Epi_week1",
-                              "EpiLPS" = "Pois_EpiLPS1"
-                              )) %>%
-  mutate(Rt_type = fct_relevel(Rt_type, "True Rt",
-                              "EpiEstim",
-                              "EpiLPS",
-                              "RtEstim (k=0)",
-                              "RtEstim (k=1)",
-                              "RtEstim (k=3)"
-                              )) %>% 
-  group_by(Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col=Rt_type)) + 
-  geom_line(na.rm=TRUE) + 
-  coord_cartesian(ylim = c(0, 6)) + 
-  scale_colour_manual(values = cbPalette) + 
-  labs(y="", color = "Rt methods", x="", title="Scenario 1: 2-segment constant line") + 
-  theme_bw()
-
-fig2 <- res_dat %>%
-  select(time, Rt2, Pois_Epi_week2, Pois_Rtestim2, Pois_Rtestim22, Pois_Rtestim1, Pois_EpiLPS2) %>%
-  mutate(Pois_Rtestim1 = Pois_Rtestim1*1e4L) %>%
-  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type, "True Rt" = "Rt2",
-                              "RtEstim (k=3)" = "Pois_Rtestim2", 
-                              "RtEstim (k=1)" = "Pois_Rtestim22", 
-                              "RtEstim (k=0)" = "Pois_Rtestim1", 
-                              "EpiEstim" = "Pois_Epi_week2",
-                              "EpiLPS" = "Pois_EpiLPS2"
-                              )) %>%
-  mutate(Rt_type = fct_relevel(Rt_type, "True Rt",
-                              "EpiEstim",
-                              "EpiLPS",
-                              "RtEstim (k=0)",
-                              "RtEstim (k=1)",
-                              "RtEstim (k=3)"
-                              )) %>% 
-  group_by(Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col=Rt_type)) + 
-  geom_line(na.rm=TRUE) + 
-  coord_cartesian(ylim = c(0, 4)) + 
-  scale_colour_manual(values = cbPalette) + 
-  labs(y="", color="Rt methods", x="", title="Scenario 2: 2-segment exponential") + 
-  theme_bw()
-
-fig3 <- res_dat %>%
-  select(time, Rt3, Pois_Epi_week3, Pois_Rtestim3, Pois_Rtestim2, Pois_Rtestim1, Pois_EpiLPS3) %>%
-  mutate(Pois_Rtestim1 = Pois_Rtestim1*1e4L, Pois_Rtestim2 = Pois_Rtestim2*1e4L) %>%
-  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type, "True Rt" = "Rt3",
-                              "RtEstim (k=1)" = "Pois_Rtestim3", 
-                              "RtEstim (k=0)" = "Pois_Rtestim1", 
-                              "RtEstim (k=3)" = "Pois_Rtestim2", 
-                              "EpiEstim" = "Pois_Epi_week3",
-                              "EpiLPS" = "Pois_EpiLPS3"
-                              )) %>%
-  mutate(Rt_type = fct_relevel(Rt_type, "True Rt" ,
-                              "EpiEstim",
-                              "EpiLPS",
-                              "RtEstim (k=0)",
-                              "RtEstim (k=1)",
-                              "RtEstim (k=3)"
-                              )) %>% 
-  group_by(Rt_type) %>%
-  #filter(Rt_type != "EpiLPS") %>%
-  ggplot(aes(x = time, y = Rt_value, col=Rt_type)) + 
-  geom_line(na.rm=TRUE) + 
-  coord_cartesian(ylim = c(0, 9)) + 
-  scale_colour_manual(values = cbPalette) + 
-  labs(y="", color="Rt methods", x="", title="Scenario 3: 4-segment linear line") + 
-  theme_bw()
-
-fig4 <- res_dat %>%
-  select(time, Rt4, Pois_Epi_week4, Pois_Rtestim4, Pois_Rtestim1, Pois_Rtestim3, Pois_EpiLPS4) %>%
-  mutate(Pois_Rtestim1 = Pois_Rtestim1*1e4L, Pois_Rtestim3 = Pois_Rtestim3*1e4L) %>%
-  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type, "True Rt" = "Rt4",
-                              "RtEstim (k=3)" = "Pois_Rtestim4",
-                              "RtEstim (k=0)" = "Pois_Rtestim1", 
-                              "RtEstim (k=1)" = "Pois_Rtestim3", 
-                              "EpiEstim" = "Pois_Epi_week4",
-                              "EpiLPS" = "Pois_EpiLPS4"
-                              )) %>%
-  mutate(Rt_type = fct_relevel(Rt_type, "True Rt" ,
-                              "EpiEstim",
-                              "EpiLPS",
-                              "RtEstim (k=0)",
-                              "RtEstim (k=1)",
-                              "RtEstim (k=3)"
-                              )) %>% 
-  group_by(Rt_type) %>%
-  #filter(Rt_type != "EpiLPS") %>%
-  ggplot(aes(x = time, y = Rt_value, col=Rt_type)) + 
-  geom_line(na.rm=TRUE) + 
-  coord_cartesian(ylim = c(0, 8)) + 
-  scale_colour_manual(values = cbPalette) + 
-  labs(y="", color="Rt methods", x="", title="Scenario 4: periodic curve") + 
-  theme_bw()
-
-library(ggpubr)
-fig_Pois_res <- ggpubr::ggarrange(
-  fig1, fig2, fig3, fig4, ncol=2, nrow=2, 
-  common.legend = TRUE, legend = "bottom",
-  font.label = list(size = 14)
-) 
-fig_Pois_res <- ggpubr::annotate_figure(
-  fig_Pois_res, 
-  left = grid::textGrob("Rt estimates for Poisson incidence", 
-                        rot = 90, vjust = 1, gp = grid::gpar(cex = 1)))
-
-ggsave(here::here("fig/Pois-res-plot.png"), fig_Pois_res, width = 7.45, height = 5.38)
-```
-
-
-
-```{r NB-res-display, include=FALSE}
-#Display results of negative Binomial incidence.
 fig21 <- res_dat %>%
   select(time, Rt1, NB_Epi_week1, NB_Rtestim1, NB_Rtestim2, NB_Rtestim22, NB_EpiLPS1) %>%
-  mutate(NB_Rtestim2 = NB_Rtestim2*1e4L, NB_Rtestim22 = NB_Rtestim22*1e4L) %>%
-  
+  mutate(NB_Rtestim2 = NB_Rtestim2 * 1e4L, NB_Rtestim22 = NB_Rtestim22 * 1e4L) %>%
   pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type, 
-                              "EpiEstim" = "NB_Epi_week1",
-                              "EpiLPS" = "NB_EpiLPS1",
-                              "True Rt" = "Rt1",
-                              "RtEstim (k=0)" = "NB_Rtestim1", 
-                              "RtEstim (k=3)" = "NB_Rtestim2", 
-                              "RtEstim (k=1)" = "NB_Rtestim22", 
-                              )) %>%
-  mutate(Rt_type = fct_relevel(Rt_type, "True Rt",
-                              "EpiEstim",
-                              "EpiLPS",
-                              "RtEstim (k=0)", 
-                              "RtEstim (k=1)",
-                              "RtEstim (k=3)"
-                              )) %>% 
+  mutate(Rt_type = fct_recode(Rt_type,
+    "EpiEstim" = "NB_Epi_week1",
+    "EpiLPS" = "NB_EpiLPS1",
+    "True Rt" = "Rt1",
+    "RtEstim (k=0)" = "NB_Rtestim1",
+    "RtEstim (k=3)" = "NB_Rtestim2",
+    "RtEstim (k=1)" = "NB_Rtestim22",
+  )) %>%
+  mutate(Rt_type = fct_relevel(
+    Rt_type, "True Rt",
+    "EpiEstim",
+    "EpiLPS",
+    "RtEstim (k=0)",
+    "RtEstim (k=1)",
+    "RtEstim (k=3)"
+  )) %>%
   group_by(Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col=Rt_type)) + 
-  geom_line(na.rm=TRUE) + 
-  coord_cartesian(ylim = c(0, 6)) + 
-  scale_colour_manual(values = cbPalette) + 
-  labs(y="", color="Rt methods", x="", title="Scenario 1: 2-segment constant line") + 
+  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
+  geom_line(na.rm = TRUE) +
+  coord_cartesian(ylim = c(0, 6)) +
+  scale_colour_manual(values = cbPalette2) +
+  labs(y = "", color = "Rt methods", x = "", title = "Scenario 1: piecewise constant") +
   theme_bw()
 
 fig22 <- res_dat %>%
   select(time, Rt2, NB_Epi_week2, NB_Rtestim2, NB_Rtestim22, NB_Rtestim1, NB_EpiLPS2) %>%
-  mutate(NB_Rtestim1 = NB_Rtestim1*1e4L) %>%
+  mutate(NB_Rtestim1 = NB_Rtestim1 * 1e4L) %>%
   pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
   mutate(Rt_type = fct_recode(Rt_type,
-                              "EpiEstim" = "NB_Epi_week2", 
-                              "RtEstim (k=3)" = "NB_Rtestim2", 
-                              "RtEstim (k=1)" = "NB_Rtestim22", 
-                              "RtEstim (k=0)" = "NB_Rtestim1", 
-                              "EpiLPS" = "NB_EpiLPS2",
-                              "True Rt" = "Rt2")) %>%
-  mutate(Rt_type = fct_relevel(Rt_type, "True Rt" ,
-                              "EpiEstim",
-                              "EpiLPS",
-                              "RtEstim (k=0)", 
-                              "RtEstim (k=1)",
-                              "RtEstim (k=3)"
-                              )) %>% 
+    "EpiEstim" = "NB_Epi_week2",
+    "RtEstim (k=3)" = "NB_Rtestim2",
+    "RtEstim (k=1)" = "NB_Rtestim22",
+    "RtEstim (k=0)" = "NB_Rtestim1",
+    "EpiLPS" = "NB_EpiLPS2",
+    "True Rt" = "Rt2"
+  )) %>%
+  mutate(Rt_type = fct_relevel(
+    Rt_type, "True Rt",
+    "EpiEstim",
+    "EpiLPS",
+    "RtEstim (k=0)",
+    "RtEstim (k=1)",
+    "RtEstim (k=3)"
+  )) %>%
   group_by(Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col=Rt_type)) + 
-  geom_line(na.rm=TRUE) + 
-  coord_cartesian(ylim = c(0, 4)) + 
-  scale_colour_manual(values = cbPalette) + 
-  labs(y="", color="Rt methods", x="", title="Scenario 2: 2-segment exponential") + 
+  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
+  geom_line(na.rm = TRUE) +
+  coord_cartesian(ylim = c(0, 4)) +
+  scale_colour_manual(values = cbPalette2) +
+  labs(y = "", color = "Rt methods", x = "", title = "Scenario 2: piecewise exponential") +
   theme_bw()
 
 fig23 <- res_dat %>%
   select(time, Rt3, NB_Epi_week3, NB_Rtestim3, NB_Rtestim2, NB_Rtestim1, NB_EpiLPS3) %>%
-  mutate(NB_Rtestim1 = NB_Rtestim1*1e4L, NB_Rtestim2 = NB_Rtestim2*1e4L) %>%
+  mutate(NB_Rtestim1 = NB_Rtestim1 * 1e4L, NB_Rtestim2 = NB_Rtestim2 * 1e4L) %>%
   pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type, 
-                              "EpiEstim" = "NB_Epi_week3",
-                              "RtEstim (k=1)" = "NB_Rtestim3", 
-                              "RtEstim (k=0)" = "NB_Rtestim1", 
-                              "RtEstim (k=3)" = "NB_Rtestim2", 
-                              "EpiLPS" = "NB_EpiLPS3",
-                              "True Rt" = "Rt3")) %>%
-  mutate(Rt_type = fct_relevel(Rt_type, "True Rt" ,
-                              "EpiEstim",
-                              "EpiLPS",
-                              "RtEstim (k=0)", 
-                              "RtEstim (k=1)",
-                              "RtEstim (k=3)"
-                              )) %>% 
+  mutate(Rt_type = fct_recode(Rt_type,
+    "EpiEstim" = "NB_Epi_week3",
+    "RtEstim (k=1)" = "NB_Rtestim3",
+    "RtEstim (k=0)" = "NB_Rtestim1",
+    "RtEstim (k=3)" = "NB_Rtestim2",
+    "EpiLPS" = "NB_EpiLPS3",
+    "True Rt" = "Rt3"
+  )) %>%
+  mutate(Rt_type = fct_relevel(
+    Rt_type, "True Rt",
+    "EpiEstim",
+    "EpiLPS",
+    "RtEstim (k=0)",
+    "RtEstim (k=1)",
+    "RtEstim (k=3)"
+  )) %>%
   group_by(Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col=Rt_type)) + 
-  geom_line(na.rm=TRUE) + 
-  coord_cartesian(ylim = c(0, 9)) + 
-  scale_colour_manual(values = cbPalette) + 
-  labs(y="", color="Rt methods", x="", title="Scenario 3: 4-segment linear line") + 
+  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
+  geom_line(na.rm = TRUE) +
+  coord_cartesian(ylim = c(0, 9)) +
+  scale_colour_manual(values = cbPalette2) +
+  labs(y = "", color = "Rt methods", x = "", title = "Scenario 3: piecewise linear") +
   theme_bw()
 
 fig24 <- res_dat %>%
   select(time, Rt4, NB_Epi_week4, NB_Rtestim4, NB_Rtestim3, NB_Rtestim1, NB_EpiLPS4) %>%
-  mutate(NB_Rtestim1 = NB_Rtestim1*1e4L, NB_Rtestim3 = NB_Rtestim3*1e4L) %>%
+  mutate(NB_Rtestim1 = NB_Rtestim1 * 1e4L, NB_Rtestim3 = NB_Rtestim3 * 1e4L) %>%
   pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type, 
-                              "EpiEstim" = "NB_Epi_week4",
-                              "RtEstim (k=3)" = "NB_Rtestim4",
-                              "RtEstim (k=0)" = "NB_Rtestim1", 
-                              "RtEstim (k=1)" = "NB_Rtestim3", 
-                              "EpiLPS" = "NB_EpiLPS4",
-                              "True Rt" = "Rt4")) %>%
-  mutate(Rt_type = fct_relevel(Rt_type, "True Rt" ,
-                              "EpiEstim",
-                              "EpiLPS",
-                              "RtEstim (k=0)", 
-                              "RtEstim (k=1)",
-                              "RtEstim (k=3)"
-                              )) %>% 
+  mutate(Rt_type = fct_recode(Rt_type,
+    "EpiEstim" = "NB_Epi_week4",
+    "RtEstim (k=3)" = "NB_Rtestim4",
+    "RtEstim (k=0)" = "NB_Rtestim1",
+    "RtEstim (k=1)" = "NB_Rtestim3",
+    "EpiLPS" = "NB_EpiLPS4",
+    "True Rt" = "Rt4"
+  )) %>%
+  mutate(Rt_type = fct_relevel(
+    Rt_type, "True Rt",
+    "EpiEstim",
+    "EpiLPS",
+    "RtEstim (k=0)",
+    "RtEstim (k=1)",
+    "RtEstim (k=3)"
+  )) %>%
   group_by(Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col=Rt_type)) + 
-  geom_line(na.rm=TRUE) + 
-  coord_cartesian(ylim = c(0, 8)) + 
-  scale_colour_manual(values = cbPalette) + 
-  labs(y="", color="Rt methods", x="", title="Scenario 4: periodic curve") + 
+  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
+  geom_line(na.rm = TRUE) +
+  coord_cartesian(ylim = c(0, 8)) +
+  scale_colour_manual(values = cbPalette2) +
+  labs(y = "", color = "Rt methods", x = "", title = "Scenario 4: periodic") +
   theme_bw()
 
-fig_NB_res <- ggpubr::ggarrange(fig21, fig22, fig23, fig24, ncol=2, nrow=2, 
-          common.legend = TRUE, legend = "bottom",
-          font.label = list(size = 14))
-fig_NB_res <- ggpubr::annotate_figure(
-  fig_NB_res, 
-  left = grid::textGrob("Rt estimates for negative Binomial incidence", 
-                        rot = 90, vjust = 1, gp = grid::gpar(cex = 1))
+fig_NB_res <- ggpubr::ggarrange(fig21, fig22, fig23, fig24,
+  ncol = 2, nrow = 2,
+  common.legend = TRUE, legend = "bottom",
+  font.label = list(size = 14)
 )
-
-ggsave(here::here("fig/NB-res-plot.png"), fig_NB_res, width = 7.45, height = 5.38)
+fig_NB_res <- ggpubr::annotate_figure(
+  fig_NB_res,
+  left = grid::textGrob("Rt estimates for negative Binomial incidence",
+    rot = 90, vjust = 1, gp = grid::gpar(cex = 1)
+  )
+)
+print(fig_NB_res)
 ```
 
-Save graphical display of estimates across all Rt scenarios for both incidence
-distributional assumptions. 
-```{r save-res-plot, include=FALSE}
-fig_res <- ggarrange(fig1, fig21,
-          fig2, fig22,
-          fig3, fig23,
-          fig4, fig24, ncol=2, nrow=4, 
-          common.legend = TRUE, legend = "bottom")
-fig_res
-ggsave(here::here("fig/res-plot.png"), fig_res, width = 9.77, height = 10.39)
-```
-
-Save graphical display of all Rt and incidence samples across both incidence 
-distributional assumptions. 
-
-```{r save-example-plot, echo=FALSE, fig.height=7}
-cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", 
-               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
-save_example <- function(res_dat, palette = cbPalette){
-  len <- dim(res_dat)[1]
-  fig1 <- res_dat %>%
-    ggplot(aes(y = Rt1, x = time)) +
-    geom_line() +
-    labs(y = "Scenario 1", title = "Rt", x="") + #2-segment constant line
-    theme(plot.title = element_text(hjust = 0.5)) + 
-    theme_bw()
-  fig2 <- res_dat %>%
-    ggplot(aes(y = Pois_count1, x = time)) +
-    geom_line() +
-    #scale_y_log10() + # axis of incidence in log scale
-    labs(title = "Poisson incidence", y=" ", x="") + #(in log scale) 
-    coord_cartesian(ylim = c(0, 2500)) +
-    theme(plot.title = element_text(hjust = 0.5)) + 
-    theme_bw()
-  fig3 <- res_dat %>%
-    ggplot(aes(y = NB_count1, x = time)) +
-    geom_line() +
-    #scale_y_log10() + # axis of incidence in log scale
-    labs(title = "NB incidence", y=" ", x="") + #(in log scale) 
-    coord_cartesian(ylim = c(0, 2500)) +
-    theme(plot.title = element_text(hjust = 0.5)) + 
-    theme_bw()
-  
-  fig21 <- res_dat %>%
-    ggplot(aes(y = Rt2, x = time)) +
-    geom_line() +
-    labs(y = "Scenario 2", x="") + #2-segment exponential curve
-    theme_bw()
-  fig22 <- res_dat %>%
-    ggplot(aes(y = Pois_count2, x = time)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 3000)) +
-    labs(y=" ", x="") +  #(in log scale) 
-    theme_bw()
-  fig23 <- res_dat %>%
-    ggplot(aes(y = NB_count2, x = time)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 3000)) +
-    labs(y=" ", x="") +  #(in log scale) 
-    theme_bw()
-  
-  fig31 <- res_dat %>%
-    ggplot(aes(y = Rt3, x = time)) +
-    geom_line() +
-    labs(y = "Scenario 3", x="") + #4-segment linear line
-    theme_bw()
-  fig32 <- res_dat %>%
-    ggplot(aes(y = Pois_count3, x = time)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 1500)) +
-    labs(y =" ", x="") +  #(in log scale) 
-    theme_bw()
-  fig33 <- res_dat %>%
-    ggplot(aes(y = NB_count3, x = time)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 1500)) +
-    labs(y =" ", x="") +  #(in log scale) 
-    theme_bw()
-
-  fig41 <- res_dat %>%
-    ggplot(aes(y = Rt4, x = time)) +
-    geom_line() +
-    labs(y = "Scenario 4") + #periodic curve
-    theme_bw()
-  fig42 <- res_dat %>%
-    ggplot(aes(y = Pois_count4, x = time)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 4000)) +
-    labs(y=" ") +  #(in log scale) 
-    theme_bw()
-  fig43 <- res_dat %>%
-    ggplot(aes(y = NB_count4, x = time)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 4000)) +
-    labs(y=" ") +  #(in log scale) 
-    theme_bw()
-  
-  figfull <- ggpubr::ggarrange(fig1, fig2, fig3, 
-            fig21, fig22, fig23,
-            fig31, fig32, fig33,
-            fig41, fig42, fig43,
-            ncol=3, nrow=4, 
-          common.legend = TRUE, legend = "bottom")
-  ggplot2::ggsave(here::here("fig/plot_samples.png"), figfull, 
-                  width = 7.34, height = 7.18)
-  print(figfull)
-}
-
-#head(res_dat)
-save_example(res_dat)
-```
-
-
-
-# Real case applications 
-
-## Covid-19 Canada
-
-Get latest Covid-19 incidence data in Canada. 
-
-```{r Covid-data, echo=FALSE}
+```{r Fig6-display-covid-BC-incidence, eval=FALSE, include=FALSE}
+# Get covid-19 incidence in BC
 library(CanCovidData)
 dat <- get_british_columbia_case_data() %>%
-  rename(HA = `Health Authority`, Date = `Reported Date`,
-         Age = `Age group`) %>%
+  rename(HA = `Health Authority`, Date = `Reported Date`, Age = `Age group`) %>%
   filter(Date >= ymd("2020-03-01"))
-
-cases <- dat %>%
-  count(Date, name = "Cases")
-
-time_diff <- difftime(cases$Date, min(cases$Date), units = "days")
-natural_numbers <- as.numeric(time_diff) + 1
-
-covid_cases <- data.table(cases, x = natural_numbers)
-covid_dat <- covid_cases %>%
-  ggplot(aes(x=Date)) + 
-  geom_line(aes(y=Cases), col="black") + 
-  labs(x="Date", y='Covid-19 daily confirmed case counts in BC') +
-  scale_x_date(date_breaks = "6 month") + 
-  theme_bw() + 
-  theme(plot.title = element_text(hjust = 0.5),
-        axis.title = element_text(hjust = 0.5),
-        panel.spacing = unit(0.8, "lines"),
-        text = element_text(size = 12))
-ggsave(here::here("fig/covid_dat.png"), covid_dat, width = 6.67, height = 4.06)
-covid_dat
-
-n <- length(covid_cases$Cases)
+cases <- dat %>% count(Date, name = "Cases")
+Covid_case <- cases %>%
+  ggplot(aes(x = Date)) +
+  geom_line(aes(y = Cases), col = "black") +
+  labs(x = "Date", y = "Covid-19 daily confirmed case counts in BC") +
+  scale_x_date(date_breaks = "6 month") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.title = element_text(hjust = 0.5),
+    panel.spacing = unit(0.8, "lines"),
+    text = element_text(size = 12)
+  )
+print(Covid_case)
 ```
 
-Estimate Rt using `RtEstim`.
-
-```{r covid-Rt-est, echo=FALSE, fig.height=7}
-# rtestim
-mod_rt_covid <- estimate_rt(x=cases$Date, covid_cases$Cases, korder = 1, nsol = 50,
-                            maxiter=1e7L)
-covid_fig1 <- plot(mod_rt_covid) + 
-  labs(y="Piecewise linear Rt", x="Date") +
+```{r Fig7-display-covid-BC-Rt-est, eval=FALSE, include=FALSE}
+## estimate Rt using RtEstim
+# k=1
+mod_rt_covid <- estimate_rt(
+  x = cases$Date, cases$Cases, korder = 1, nsol = 50,
+  maxiter = 1e7L
+)
+covid_fig1 <- plot(mod_rt_covid) +
+  labs(y = "Piecewise linear Rt", x = "Date") +
   scale_x_date(date_breaks = "12 months", date_labels = "%Y-%m-%d")
-cv_mod_covid <- cv_estimate_rt(x=cases$Date, covid_cases$Cases, korder = 1, nfold = 10, 
-                               maxiter=1e7L, nsol = 50)
-mod_rtestim_covid <- cv_mod_covid$full_fit$Rt[ ,which.min(cv_mod_covid$cv_scores)]
+cv_mod_covid <- cv_estimate_rt(
+  x = cases$Date, cases$Cases, korder = 1, nfold = 10,
+  maxiter = 1e7L, nsol = 50
+)
+mod_rtestim_covid <- cv_mod_covid$full_fit$Rt[, which.min(cv_mod_covid$cv_scores)]
 rt_ci_covid <- confband(cv_mod_covid, "lambda.min") # get 95% confidence band
 covid_fig_cv1 <- rt_ci_covid %>%
-  ggplot(aes(x = covid_cases$Date)) +
+  ggplot(aes(x = cases$Date)) +
   geom_line(aes(y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
+  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`),
+    fill = "gray", alpha = 0.5
+  ) +
+  geom_hline(yintercept = 1, linetype = "dotted") +
   scale_x_date(date_breaks = "12 months", date_labels = "%Y-%m-%d") +
-  labs(x="Date", y = "") + 
+  labs(x = "Date", y = "") +
   theme_bw()
 
 # k=2
-mod_rt_covid <- estimate_rt(x=cases$Date, covid_cases$Cases, korder = 2, nsol = 50,
-                            maxiter=1e7L)
-covid_fig2 <- plot(mod_rt_covid) + 
-  labs(y="Piecewise quadratic Rt", x="Date") +
+mod_rt_covid <- estimate_rt(
+  x = cases$Date, cases$Cases, korder = 2, nsol = 50,
+  maxiter = 1e7L
+)
+covid_fig2 <- plot(mod_rt_covid) +
+  labs(y = "Piecewise quadratic Rt", x = "Date") +
   scale_x_date(date_breaks = "12 months", date_labels = "%Y-%m-%d")
-cv_mod_covid <- cv_estimate_rt(x=cases$Date, covid_cases$Cases, korder = 2, nfold = 10, 
-                               maxiter=1e7L, nsol = 50)
-mod_rtestim_covid <- cv_mod_covid$full_fit$Rt[ ,which.min(cv_mod_covid$cv_scores)]
+cv_mod_covid <- cv_estimate_rt(
+  x = cases$Date, cases$Cases, korder = 2, nfold = 10,
+  maxiter = 1e7L, nsol = 50
+)
+mod_rtestim_covid <- cv_mod_covid$full_fit$Rt[, which.min(cv_mod_covid$cv_scores)]
 rt_ci_covid <- confband(cv_mod_covid, "lambda.min") # get 95% confidence band
 covid_fig_cv2 <- rt_ci_covid %>%
-  ggplot(aes(x = covid_cases$Date)) +
+  ggplot(aes(x = cases$Date)) +
   geom_line(aes(y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
+  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`),
+    fill = "gray", alpha = 0.5
+  ) +
+  geom_hline(yintercept = 1, linetype = "dotted") +
   scale_x_date(date_breaks = "12 months", date_labels = "%Y-%m-%d") +
-  labs(x="Date", y = "") + 
+  labs(x = "Date", y = "") +
   theme_bw()
 
 # k=3
-mod_rt_covid <- estimate_rt(x=cases$Date, covid_cases$Cases, korder = 3, nsol = 50,
-                            maxiter=1e7L)
-covid_fig3 <- plot(mod_rt_covid) + 
-  labs(y="Piecewise cubic Rt", x="Date") +
+mod_rt_covid <- estimate_rt(
+  x = cases$Date, cases$Cases, korder = 3, nsol = 50,
+  maxiter = 1e7L
+)
+covid_fig3 <- plot(mod_rt_covid) +
+  labs(y = "Piecewise cubic Rt", x = "Date") +
   scale_x_date(date_breaks = "12 months", date_labels = "%Y-%m-%d")
-cv_mod_covid <- cv_estimate_rt(x=cases$Date, covid_cases$Cases, korder = 3, nfold = 10, 
-                               maxiter=1e7L, nsol = 50)
-mod_rtestim_covid <- cv_mod_covid$full_fit$Rt[ ,which.min(cv_mod_covid$cv_scores)]
+cv_mod_covid <- cv_estimate_rt(
+  x = cases$Date, cases$Cases, korder = 3, nfold = 10,
+  maxiter = 1e7L, nsol = 50
+)
+mod_rtestim_covid <- cv_mod_covid$full_fit$Rt[, which.min(cv_mod_covid$cv_scores)]
 rt_ci_covid <- confband(cv_mod_covid, "lambda.min") # get 95% confidence band
 covid_fig_cv3 <- rt_ci_covid %>%
-  ggplot(aes(x = covid_cases$Date)) +
+  ggplot(aes(x = cases$Date)) +
   geom_line(aes(y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "gray", alpha = 0.5) +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
+  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`),
+    fill = "gray", alpha = 0.5
+  ) +
+  geom_hline(yintercept = 1, linetype = "dotted") +
   scale_x_date(date_breaks = "12 months", date_labels = "%Y-%m-%d") +
-  labs(x="Date", y = "") + 
+  labs(x = "Date", y = "") +
   theme_bw()
 
-covid_all <- ggarrange(covid_fig1, covid_fig_cv1, covid_fig2, covid_fig_cv2, 
-          covid_fig3, covid_fig_cv3, ncol=2, nrow=3, 
-          common.legend = TRUE, legend = "bottom")
-covid_all
-ggsave(here::here("fig/covid_full_res.png"), covid_all, width = 6.91, height = 6.17)
+Covid_BC_Rt <- ggarrange(
+  covid_fig1, covid_fig_cv1, covid_fig2, covid_fig_cv2, covid_fig3, covid_fig_cv3,
+  ncol = 2, nrow = 3, common.legend = TRUE, legend = "bottom"
+)
+print(Covid_BC_Rt)
 ```
 
-## 1918 H1N1 influenza in the USA
-
-Obtain 1918 H1N1 influenza data in Baltimore, Maryland from `EpiEtim` package.
-
-```{r influenza-data, echo=FALSE}
-# grab the flu data from EpiEstim package
+```{r Fig8-display-influenza1918-data, eval=FALSE, include=FALSE}
+# get the flu data from `EpiEstim` package
 data("Flu1918")
 n <- length(Flu1918$incidence)
 flu_dat <- data.frame(Flu_incidence = Flu1918$incidence, Time = 1:n)
-flu_fig <- flu_dat %>%
-  ggplot(aes(y=Flu_incidence, x=Time)) + 
+Flu_case <- flu_dat %>%
+  ggplot(aes(y = Flu_incidence, x = Time)) +
   geom_line() +
-  labs(x="Day", y="1918 Influenza daily incidencs in ") +
+  labs(x = "Day", y = "1918 Influenza daily incidencs in ") +
   theme_bw()
-ggsave(here::here("fig/flu_dat.png"), flu_fig, width = 5.18, height = 3.34)
-flu_fig
+print(Flu_case)
 ```
 
-```{r influenza-Rt-est, echo=FALSE, fig.height=7}
+```{r Fig9-display-influenza1918-Rt-est, eval=FALSE, include=FALSE}
 mod_rt <- estimate_rt(Flu1918$incidence, korder = 3, nsol = 50)
-fig_flu3 <- plot(mod_rt) + labs(y = "Piecewise cubic Rt", x="Day")
-cv_mod_flu <- cv_estimate_rt(Flu1918$incidence, korder = 3, 
-                             nfold = 10, nsol = 50)
-mod_rtestim_flu <- cv_mod_flu$full_fit$Rt[ ,which.min(cv_mod_flu$cv_scores)]
-
+fig_flu3 <- plot(mod_rt) + labs(y = "Piecewise cubic Rt", x = "Day")
+cv_mod_flu <- cv_estimate_rt(Flu1918$incidence, korder = 3, nfold = 10, nsol = 50)
 rt_ci_flu <- confband(cv_mod_flu, "lambda.1se") # get 95% confidence band
 fig_flu_cv3 <- rt_ci_flu %>%
   ggplot(aes(x = 1:n, y = Rt)) +
   geom_line() +
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), fill = "gray", alpha = 0.5) +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Day", y="") + 
+  geom_hline(yintercept = 1, linetype = "dotted") +
+  labs(x = "Day", y = "") +
   theme_bw()
 
 # k=2
 mod_rt <- estimate_rt(Flu1918$incidence, korder = 2, nsol = 50)
-fig_flu2 <- plot(mod_rt) + labs(y = "Piecewise quadratic Rt", x="Day")
-cv_mod_flu <- cv_estimate_rt(Flu1918$incidence, korder = 2, 
-                             nfold = 10, nsol = 50)
-mod_rtestim_flu <- cv_mod_flu$full_fit$Rt[ ,which.min(cv_mod_flu$cv_scores)]
-
+fig_flu2 <- plot(mod_rt) + labs(y = "Piecewise quadratic Rt", x = "Day")
+cv_mod_flu <- cv_estimate_rt(Flu1918$incidence, korder = 2, nfold = 10, nsol = 50)
 rt_ci_flu <- confband(cv_mod_flu, "lambda.1se") # get 95% confidence band
 fig_flu_cv2 <- rt_ci_flu %>%
   ggplot(aes(x = 1:n, y = Rt)) +
   geom_line() +
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), fill = "gray", alpha = 0.5) +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Day", y="") + 
+  geom_hline(yintercept = 1, linetype = "dotted") +
+  labs(x = "Day", y = "") +
   theme_bw()
 
 mod_rt <- estimate_rt(Flu1918$incidence, korder = 1, nsol = 50)
-fig_flu1 <- plot(mod_rt) + labs(y = "Piecewise linear Rt", x="Day")
-cv_mod_flu <- cv_estimate_rt(Flu1918$incidence, korder = 1, 
-                             nfold = 10, nsol = 50)
-mod_rtestim_flu <- cv_mod_flu$full_fit$Rt[ ,which.min(cv_mod_flu$cv_scores)]
-
+fig_flu1 <- plot(mod_rt) + labs(y = "Piecewise linear Rt", x = "Day")
+cv_mod_flu <- cv_estimate_rt(Flu1918$incidence, korder = 1, nfold = 10, nsol = 50)
 rt_ci_flu <- confband(cv_mod_flu, "lambda.1se") # get 95% confidence band
 fig_flu_cv1 <- rt_ci_flu %>%
   ggplot(aes(x = 1:n, y = Rt)) +
   geom_line() +
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), fill = "gray", alpha = 0.5) +
-  geom_hline(yintercept = 1, linetype = "dotted") + 
-  labs(x="Day", y="") + 
+  geom_hline(yintercept = 1, linetype = "dotted") +
+  labs(x = "Day", y = "") +
   theme_bw()
 
-flu_all <- ggarrange(fig_flu1, fig_flu_cv1, fig_flu2, fig_flu_cv2, 
-          fig_flu3, fig_flu_cv3, ncol=2, nrow=3, 
-          common.legend = TRUE, legend = "bottom")
-flu_all
-ggsave(here::here("fig/flu_full_res.png"), flu_all, width = 6.91, height = 6.17)
+Flu_Rt <- ggarrange(
+  fig_flu1, fig_flu_cv1, fig_flu2, fig_flu_cv2, fig_flu3, fig_flu_cv3,
+  ncol = 2, nrow = 3, common.legend = TRUE, legend = "bottom"
+)
+print(Flu_Rt)
 ```
-
-# References
