@@ -246,7 +246,7 @@
 \renewcommand{\figureautorefname}{Fig}
 %\renewcommand{\sectionautorefname}{Section}
 %% END reference structures
-
+\usepackage[final]{pdfpages}
 
 \begin{document}
 \vspace*{0.2in}
@@ -1450,5 +1450,7 @@ xxx
   \newblock Emerging Infectious Diseases. 2006;17(1):69--79.
   
 \end{thebibliography}
+
+\includepdf[pages=-]{src/supp.pdf}
 
 \end{document}
