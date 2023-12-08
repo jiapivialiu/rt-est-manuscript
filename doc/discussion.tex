@@ -1,6 +1,5 @@
 \section{Discussion}
 
-% advantages
 The \RtEstim\ methodology provides a locally adaptive estimator using Poisson
 trend filtering on univariate data. It captures the heterogeneous smoothness of
 effective reproduction numbers given observed incidence data rather than
@@ -10,12 +9,8 @@ distance (averaged KL divergence per coordinate) between the estimators and
 (functions of) observations guarantees data fidelity while the penalty on divided
 differences between pairs of neighbouring parameters imposes smoothness. The
 $\ell_1$-regularization results in sparsity of the divided differences, which
-leads to heterogeneous smoothness within certain periods of time. 
-% The homogeneous smoothness within a time period can be either performed by a
-% constant reproduction number, or a constant rate of changes, or a constant
-% graphical curvature depending on the prescribed degree ($k=0,1,2$
-% respectively).
-%The estimator is uniquely defined due to its strict convexity. 
+leads to heterogeneous smoothness across time. 
+
 
 The property of local adaptivity (heterogenous smoothness) is useful to
 automatically distinguish, for example, seasonal outbreaks from outbreaks driven
@@ -24,19 +19,17 @@ well-chosen polynomial degree, the growth rates can be quickly detected,
 potentially advising public health to implement policy changes. The effective
 reproduction numbers can be estimated retrospectively to examine the efficacy of
 such policies, whether they result in $\calR_t$ falling below 1 or the speed of
-their effects. 
-%
-The smoothness of $\calR_t$ curves (including the polynomial degrees and tuning parameters) 
-should be chosen based on the purpose of the study in practice, e.g., epidemic 
-forecasting may require a more wiggly curve that contains more fluctuation 
-information, while retrospective studies that solely target on understanding of 
-the pandemic may prefer a smoother curve with less important information smoothed out. 
+their effects. The smoothness of $\calR_t$ curves (including the polynomial 
+degrees and tuning parameters) should be chosen based on the purpose of the 
+study in practice, e.g., epidemic forecasting may require less smoothness
+while retrospective studies that 
+solely target understanding of the pandemic may prefer a smoother estimate. 
 
-% assumptions and limitations
+
 Our method \RtEstim\ provides a natural way to deal with missing data, for
 example, on weekends and holidays or due to changes in reporting frequency.
 While solving the convex optimization problem, our method can be easily 
-used to unevenly space or irregularly reported data. Computing the total
+handle uneven spacing or irregular reporting. Computing the total
 primary infectiousness is also easily generalized to irregular reporting by
 modifying the discretization of the serial interval distribution. Additionally,
 because the $\ell_1$ penalty introduces sparsity (operating like a median
@@ -44,106 +37,48 @@ rather than a mean), this procedure is relatively insensitive to outliers
 compared to $\ell_2$ regularization.
 
 
-% most generally about Rt
-% can vary significantly due to different assumptions; how to choose among all methods? how to choose the hyperparameters in an individual model? 
-% should it be more smooth or more wiggly? 
-% may depend on the purposes: interpret information (smoother?) or forecasting (more wiggly/joggled?) 
-%Hence, mathematical modelling requires the domain expertise for specific infectious diseases dynamics to set the assumptions. % varying along with local sociobehavioral and environmental circumstances.
-
-% about retrospective v.s. real-time?
-
-% an existing approach to model R_0
-% A group of epidemiological models are compartmental models. They establish the
-% epidemic transmission process by creating compartments with labels and
-% connecting them by directed edges. A simple compartmental model -- for
-% example, \textit{Susceptible-Infectious-Susceptible} (SIS) model -- divides
-% the population ($N$) into two compartments for susceptible cases ($S$) and
-% infectious cases ($I$) respectively and connects them in serial as $S\to I\to
-% S$. It only focuses on susceptible individuals. Each directed edge corresponds
-% to a ratio of transmission (say, $\alpha,\beta$ respectively). In such models,
-% reproduction numbers are defined as functions of the estimated transmission
-% parameters and the numbers of compartments or population, e.g.,
-% $\hat{\calR}_0=\hat{\beta} N/\hat{\alpha}$ in the SIS models
-% \cite{brauer2019mathematical}, as by-products. Compartmental models usually
-% solve ordinary differential equations (ODE) systems for transmission numbers
-% (e.g., $\alpha,\beta$ in the SIS model). A disadvantage of such parametric
-% models is that they are less flexible than nonparametric models and the number
-% of parameters to be estimated grows along with the increase of compartments in
-% practice, which results in a growing computational complexity. Since the
-% epidemic mechanism depends highly on the contexts, e.g., if a latency period
-% exists or not, such models are lack of generalizability. Moreover, data of
-% high quality are not always available for all compartments especially when
-% there is a pandemic outbreak that results in a sudden shortage of resources in
-% collecting daily new infections. %the sensitivity to low-quality data and the
-% complex computation
-%To overcome these limitations of compartmental models, there is an alternative branch of approaches estimating reproduction numbers directly without expressing them as functions of other transmission parameters. 
-
-% other obstacles of Rt estimation in \cite{gostic2020practical}
-%such as the difference between generation time and serial interval (given constant incubation time), right consored estimates? ... 
-% cite other papers exploring approaches to solve these problems.
-
-% limitation
 There are a number of limitations that may influence the quality of
-$\calR_t$ estimation.
-While our model is
-generic for incidence data, rather than tailored to any specific disease,
-it does assume that the generation interval is short relative to the
-period of data collection. More specialized methodologies would be required for
-diseases with long incubation periods such as HIV or Hepatitis. 
+$\calR_t$ estimation. While our model is generic for incidence data, 
+rather than tailored to any specific disease, it does assume that the 
+generation interval is short relative to the period of data collection. 
+More specialized methodologies would be required for diseases with long 
+incubation periods such as HIV or Hepatitis. 
 Our approach, does not explicitly model imported cases, nor distinguish between
 subpopulations that may have different mixing behaviour. 
-% NB alternatives 
-While the Poisson distribution is common, it does not handle overdispersion
+While the Poisson assumption is common, it does not handle overdispersion
 (observation variance larger than the mean). The negative binomial distribution
 is a good alternative, but more difficult to estimate in this context.
-As described in the introduction section, justifying the expression for $\calR$ assumes
-that a relatively constant proportion of true infections is reported. However,
-if this proportion varies with time (say, due to change in surveillance
-practices and testing recommendations), the estimates may be biased over this
-window. A good example is that in early January 2022, during the height of the
+As described in \autoref{sec:intro}, the expression for $\calR$ 
+assumes that a relatively constant proportion of true infections is reported. 
+However, if this proportion varies with time (say, due to changes in surveillance
+practices or testing recommendations), the estimates may be biased over this
+window. A good example is in early January 2022, during the height of the
 Omicron wave, British Columbia moved from testing all symptomatic individuals to
 testing only those in at-risk groups. The result was a sudden change that would
 render $\calR_t$ estimates on either side of this time point incommensurable.
 
+
 As currently implemented, \RtEstim\ uses a fixed serial interval throughout the
 period of study, but as factors such as population immunity vary, the serial
 interval may vary as well \citep{nash2023estimating}.  
-Another issue relates to the equating serial and generation intervals (also
-mentioned above). The serial interval distribution is generally
-wider than that of the generation interval, because the serial interval
-involves the convolution of two distributions, and is unlikely to actually
-follow a named distribution like Gamma, though it may be reasonably well
-approximated by one. Our implementation allows for an arbitrary distribution to
-be used, but requires the user to specify the discretization explicitly,
-requiring more nuanced knowledge than is typically available.
-% delay distributions
-% A future adjustment on our model is to consider the delay distributions. We
-% approximate the generation time (period from primary infection to secondary
-% infection) using serial interval (period from primary onset to secondary
-% onset) directly without measuring the uncertainty of the report delays. As a
-% further adjustment, we may add another step from infection trajectory to
-% reported case counts to measure the distribution of incubation period (period
-% from infection to onset) and the report delay (period from onset to case
-% report). Besides this, instead of assuming a fixed distribution, a more
-% realistic setting may be to use time-varying parameters of these
-% distributions. 
-% using other data?
-Pushing this analysis further, to accommodate other types of incidence data
-(hospitalizations or deaths), a modified generation interval distribution would be
-necessary, and further assumptions would be required as well. Or else, one would
-first need to deconvolve deaths to infection onset before using our software.
+Another issue relates to equating serial and generation intervals (also
+mentioned above). The serial interval distribution is generally wider than that
+of the generation interval, because the serial interval involves the convolution
+of two distributions, and is unlikely to actually follow a named distribution
+like Gamma, though it may be reasonably well approximated by one. Our
+implementation allows for an arbitrary distribution to be used, but requires the
+user to specify the discretization explicitly, requiring more nuanced knowledge
+than is typically available. Pushing this analysis further, to accommodate other
+types of incidence data (hospitalizations or deaths), a modified generation
+interval distribution would be necessary, and further assumptions would be
+required as well. Or else, one would first need to deconvolve deaths to
+infection onset before using our software.
 
 
-% how about regional evolution?
-%A limitation is that it only takes the temporal evolution within a single region into account, and fails to consider the spatial connection or spatial-temporal evolution among regions. 
- %A potential future work is to extend the proposed model to analyze spatio-temporal transmission data. Such data has the inherit graphical structure such that temporal evolution within a region can be connected by lines (as time series) and spatial connection (of cross-sectional data) can be constructed by graphs where each pair of neighboring regions is linked by an edge. Moreover, the spatio-temporal evolution, i.e., the effects of previous infectious data of one region on current infections of neighboring regions, can be measured, for example, by linking the node of region $a$ at time $t-1$ to another node of region $b$ at time $t$. 
-%Through this way, different orders of spatial and temporal evolutions can be manually manipulated. 
- %In this case, we can directly apply Poisson trend filtering on graphs with minor adjustment. %A remarkable note is that the edge lengths need to be made comparable across temporal and regional connections.
-
-Besides all the advantages and limitations of the methodology discussed above, 
-our \RtEstim\ estimator can be implemented easily through a lightweight \R\ 
-package \texttt{rtestim} and computed efficiently through the numerical algorithm, 
-proximal Newton method developed in \cpp, especially for large-scale data. 
-With accessible incident cases, prespecified serial interval distribution, and
-chosen polynomial degrees, \RtEstim\ is able to produce accurate estimation 
-of effective reproduction numbers and provide tuning parameter selection through a path algorithm. 
+Nonetheless, our \RtEstim\ estimator can be implemented easily through a
+lightweight \R\ package \texttt{rtestim} and computed efficiently using the
+included proximal Newton method solver coded in \cpp, especially for large-scale
+data. Given available incident case data, prespecified serial interval
+distribution, and a choice of degree $k$, \RtEstim\ is able to produce
+accurate estimates of effective reproduction number and provide efficient
+tuning parameter selection via cross validation. 

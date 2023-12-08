@@ -35,20 +35,17 @@ British Columbia}
 \begin{abstract}
   To understand the transmissibility and spread of infectious diseases,
   epidemiologists turn to estimates of the effective reproduction number.
-  While many approaches exist, their utility may be limited by the
-  challenges of surveillance data collection. Arbitrary model assumptions
-  that are unverifiable with data alone and sophisticated, though
-  computationally inefficient, frameworks
-  are critical limitations for many
+  While many estimation approaches exist, their utility may be limited. 
+  Challenges of surveillance data collection, model assumptions
+  that are unverifiable with data alone, and 
+  computationally inefficient frameworks are critical limitations for many
   existing approaches. We propose a discrete spline-based approach 
-  \RtEstim\ that solves a convex optimization problem --- Poisson trend filtering
-  --- using the proximal Newton method. 
-  It produces a locally adaptive estimator for effective reproduction number 
-  estimation with heterogeneous smoothness. 
-  \RtEstim\ remains accurate even under some process misspecifications and
-  is computationally efficient, even for large-scale data. The 
-  implementation is easily accessible in a lightweight \texttt{R} package
-  \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
+  \RtEstim\ that solves a convex optimization problem---Poisson trend filtering---using the proximal Newton method. It produces a locally   adaptive 
+  estimator for effective reproduction number estimation with heterogeneous 
+  smoothness. \RtEstim\ remains accurate even under some process 
+  misspecifications and is computationally efficient, even for large-scale 
+  data. The implementation is easily accessible in a lightweight \R\ 
+  package \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
 
   {\bf Keywords:} discrete splines $|$ piecewise polynomials
 \end{abstract}
