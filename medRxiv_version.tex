@@ -15,6 +15,7 @@
 \usepackage[margin=2.5cm,nohead]{geometry}
 \usepackage{authblk}
 \newcommand{\email}[1]{\href{mailto:#1}{#1}}
+\usepackage[final]{pdfpages}
 
 \title{RtEstim: Effective reproduction number estimation with trend filtering}
 
@@ -77,5 +78,7 @@ British Columbia}
 
 %\appendix
 %\titleformat{\chapter}{\normalfont\huge\bfseries}{Appendix \thechapter}{1em}{}
+
+\includepdf[pages=-]{src/supp.pdf}
 
 \end{document}
