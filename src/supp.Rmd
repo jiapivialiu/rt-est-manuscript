@@ -656,18 +656,12 @@ res_dat <- data.table(sample_dat,
 )
 
 cbPalette2 <- c("#999999", cbPalette[-2])
-fig1 <- res_dat %>%
-  select(
-    time, Rt1, Pois_Epi_week1, Pois_Rtestim1, Pois_Rtestim2, Pois_Rtestim22,
-    Pois_EpiLPS1
-  ) %>%
-  mutate(Pois_Rtestim2 = Pois_Rtestim2 * 1e4L, Pois_Rtestim22 = Pois_Rtestim22 * 1e4L) %>%
+res_dat1 <- res_dat %>%
+  select(time, Rt1, Pois_Epi_week1, Pois_Rtestim1, Pois_EpiLPS1) %>%
   pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
   mutate(Rt_type = fct_recode(Rt_type,
     "True Rt" = "Rt1",
     "RtEstim (k=0)" = "Pois_Rtestim1",
-    "RtEstim (k=3)" = "Pois_Rtestim2",
-    "RtEstim (k=1)" = "Pois_Rtestim22",
     "EpiEstim" = "Pois_Epi_week1",
     "EpiLPS" = "Pois_EpiLPS1"
   )) %>%
@@ -675,30 +669,18 @@ fig1 <- res_dat %>%
     Rt_type, "True Rt",
     "EpiEstim",
     "EpiLPS",
-    "RtEstim (k=0)",
-    "RtEstim (k=1)",
-    "RtEstim (k=3)"
+    "RtEstim (k=0)"
   )) %>%
-  group_by(Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
-  geom_line(na.rm = TRUE) +
-  coord_cartesian(ylim = c(0, 6)) +
-  scale_colour_manual(values = cbPalette2) +
-  labs(y = "", color = "Rt methods", x = "", title = "Scenario 1: piecewise constant") +
-  theme_bw()
-
-fig2 <- res_dat %>%
+  mutate(Rt_case = 1)
+res_dat2 <- res_dat %>%
   select(
-    time, Rt2, Pois_Epi_week2, Pois_Rtestim2, Pois_Rtestim22, Pois_Rtestim1,
-    Pois_EpiLPS2
+    time, Rt2, Pois_Epi_week2, Pois_Rtestim2, Pois_Rtestim22, Pois_EpiLPS2
   ) %>%
-  mutate(Pois_Rtestim1 = Pois_Rtestim1 * 1e4L) %>%
   pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
   mutate(Rt_type = fct_recode(Rt_type,
     "True Rt" = "Rt2",
     "RtEstim (k=3)" = "Pois_Rtestim2",
     "RtEstim (k=1)" = "Pois_Rtestim22",
-    "RtEstim (k=0)" = "Pois_Rtestim1",
     "EpiEstim" = "Pois_Epi_week2",
     "EpiLPS" = "Pois_EpiLPS2"
   )) %>%
@@ -706,30 +688,18 @@ fig2 <- res_dat %>%
     Rt_type, "True Rt",
     "EpiEstim",
     "EpiLPS",
-    "RtEstim (k=0)",
     "RtEstim (k=1)",
     "RtEstim (k=3)"
   )) %>%
-  group_by(Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
-  geom_line(na.rm = TRUE) +
-  coord_cartesian(ylim = c(0, 4)) +
-  scale_colour_manual(values = cbPalette2) +
-  labs(y = "", color = "Rt methods", x = "", title = "Scenario 2: piecewise exponential") +
-  theme_bw()
-
-fig3 <- res_dat %>%
+  mutate(Rt_case = 2)
+res_dat3 <- res_dat %>%
   select(
-    time, Rt3, Pois_Epi_week3, Pois_Rtestim3, Pois_Rtestim2, Pois_Rtestim1,
-    Pois_EpiLPS3
+    time, Rt3, Pois_Epi_week3, Pois_Rtestim3, Pois_EpiLPS3
   ) %>%
-  mutate(Pois_Rtestim1 = Pois_Rtestim1 * 1e4L, Pois_Rtestim2 = Pois_Rtestim2 * 1e4L) %>%
   pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
   mutate(Rt_type = fct_recode(Rt_type,
     "True Rt" = "Rt3",
     "RtEstim (k=1)" = "Pois_Rtestim3",
-    "RtEstim (k=0)" = "Pois_Rtestim1",
-    "RtEstim (k=3)" = "Pois_Rtestim2",
     "EpiEstim" = "Pois_Epi_week3",
     "EpiLPS" = "Pois_EpiLPS3"
   )) %>%
@@ -737,31 +707,17 @@ fig3 <- res_dat %>%
     Rt_type, "True Rt",
     "EpiEstim",
     "EpiLPS",
-    "RtEstim (k=0)",
-    "RtEstim (k=1)",
-    "RtEstim (k=3)"
+    "RtEstim (k=1)"
   )) %>%
-  group_by(Rt_type) %>%
-  # filter(Rt_type != "EpiLPS") %>%
-  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
-  geom_line(na.rm = TRUE) +
-  coord_cartesian(ylim = c(0, 9)) +
-  scale_colour_manual(values = cbPalette2) +
-  labs(y = "", color = "Rt methods", x = "", title = "Scenario 3: piecewise linear") +
-  theme_bw()
-
-fig4 <- res_dat %>%
+  mutate(Rt_case = 3)
+res_dat4 <- res_dat %>%
   select(
-    time, Rt4, Pois_Epi_week4, Pois_Rtestim4, Pois_Rtestim1, Pois_Rtestim3,
-    Pois_EpiLPS4
+    time, Rt4, Pois_Epi_week4, Pois_Rtestim4, Pois_EpiLPS4
   ) %>%
-  mutate(Pois_Rtestim1 = Pois_Rtestim1 * 1e4L, Pois_Rtestim3 = Pois_Rtestim3 * 1e4L) %>%
   pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
   mutate(Rt_type = fct_recode(Rt_type,
     "True Rt" = "Rt4",
     "RtEstim (k=3)" = "Pois_Rtestim4",
-    "RtEstim (k=0)" = "Pois_Rtestim1",
-    "RtEstim (k=1)" = "Pois_Rtestim3",
     "EpiEstim" = "Pois_Epi_week4",
     "EpiLPS" = "Pois_EpiLPS4"
   )) %>%
@@ -769,30 +725,29 @@ fig4 <- res_dat %>%
     Rt_type, "True Rt",
     "EpiEstim",
     "EpiLPS",
-    "RtEstim (k=0)",
-    "RtEstim (k=1)",
     "RtEstim (k=3)"
   )) %>%
-  group_by(Rt_type) %>%
+  mutate(Rt_case = 4)
+
+res_dat_long <- rbind(res_dat1, res_dat2, res_dat3, res_dat4)
+res_dat_long$Rt_case = as.factor(res_dat_long$Rt_case)
+res_dat_long$Rt_type = as.factor(res_dat_long$Rt_type)
+
+fig_Pois_res <- res_dat_long %>% 
+  mutate(Rt_case = fct_recode(Rt_case,
+    "Scenario 1: piecewise constant" = "1",
+    "Scenario 2: piecewise exponential" = "2",
+    "Scenario 3: piecewise linear" = "3",
+    "Scenario 4: periodic" = "4"
+  )) %>%
+  group_by(Rt_case, Rt_type) %>%
   ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
   geom_line(na.rm = TRUE) +
-  coord_cartesian(ylim = c(0, 8)) +
+  facet_wrap(~ Rt_case, scales = "free_y") + 
   scale_colour_manual(values = cbPalette2) +
-  labs(y = "", color = "Rt methods", x = "", title = "Scenario 4: periodic") +
-  theme_bw()
-
-fig_Pois_res <- ggpubr::ggarrange(
-  fig1, fig2, fig3, fig4,
-  ncol = 2, nrow = 2,
-  common.legend = TRUE, legend = "bottom",
-  font.label = list(size = 14)
-)
-fig_Pois_res <- ggpubr::annotate_figure(
-  fig_Pois_res,
-  left = grid::textGrob("Rt estimates for Poisson incidence",
-    rot = 90, vjust = 1, gp = grid::gpar(cex = 1)
-  )
-)
+  labs(y = "Rt estimates for Poisson incidence", color = "", x = "", title = "") +
+  theme_bw() +
+  theme(legend.position = "bottom") 
 print(fig_Pois_res)
 ```
 
@@ -880,43 +835,30 @@ res_dat <- data.table(res_dat,
   NB_EpiLPS4 = c(rep(NA, 7), mod_epilst_nb4$RLPS$R[-1:-7])
 )
 
-fig21 <- res_dat %>%
-  select(time, Rt1, NB_Epi_week1, NB_Rtestim1, NB_Rtestim2, NB_Rtestim22, NB_EpiLPS1) %>%
-  mutate(NB_Rtestim2 = NB_Rtestim2 * 1e4L, NB_Rtestim22 = NB_Rtestim22 * 1e4L) %>%
+res_dat_n1 <- res_dat %>%
+  select(time, Rt1, NB_Epi_week1, NB_Rtestim1, NB_EpiLPS1) %>%
   pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
   mutate(Rt_type = fct_recode(Rt_type,
     "EpiEstim" = "NB_Epi_week1",
     "EpiLPS" = "NB_EpiLPS1",
     "True Rt" = "Rt1",
-    "RtEstim (k=0)" = "NB_Rtestim1",
-    "RtEstim (k=3)" = "NB_Rtestim2",
-    "RtEstim (k=1)" = "NB_Rtestim22",
+    "RtEstim (k=0)" = "NB_Rtestim1"
   )) %>%
   mutate(Rt_type = fct_relevel(
     Rt_type, "True Rt",
     "EpiEstim",
     "EpiLPS",
-    "RtEstim (k=0)",
-    "RtEstim (k=1)",
-    "RtEstim (k=3)"
+    "RtEstim (k=0)"
   )) %>%
-  group_by(Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
-  geom_line(na.rm = TRUE) +
-  coord_cartesian(ylim = c(0, 6)) +
-  scale_colour_manual(values = cbPalette2) +
-  labs(y = "", color = "Rt methods", x = "", title = "Scenario 1: piecewise constant") +
-  theme_bw()
+  mutate(Rt_case = 1)
 
-fig22 <- res_dat %>%
-  select(time, Rt2, NB_Epi_week2, NB_Rtestim2, NB_Rtestim22, NB_Rtestim1, NB_EpiLPS2) %>%
-  mutate(NB_Rtestim1 = NB_Rtestim1 * 1e4L) %>%
+res_dat_n2 <- res_dat %>%
+  select(time, Rt2, NB_Epi_week2, NB_Rtestim2, NB_Rtestim22, NB_EpiLPS2) %>%
   pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
   mutate(Rt_type = fct_recode(Rt_type,
     "EpiEstim" = "NB_Epi_week2",
     "RtEstim (k=3)" = "NB_Rtestim2",
     "RtEstim (k=1)" = "NB_Rtestim22",
-    "RtEstim (k=0)" = "NB_Rtestim1",
     "EpiLPS" = "NB_EpiLPS2",
     "True Rt" = "Rt2"
   )) %>%
@@ -924,27 +866,17 @@ fig22 <- res_dat %>%
     Rt_type, "True Rt",
     "EpiEstim",
     "EpiLPS",
-    "RtEstim (k=0)",
     "RtEstim (k=1)",
     "RtEstim (k=3)"
   )) %>%
-  group_by(Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
-  geom_line(na.rm = TRUE) +
-  coord_cartesian(ylim = c(0, 4)) +
-  scale_colour_manual(values = cbPalette2) +
-  labs(y = "", color = "Rt methods", x = "", title = "Scenario 2: piecewise exponential") +
-  theme_bw()
+  mutate(Rt_case = 2)
 
-fig23 <- res_dat %>%
-  select(time, Rt3, NB_Epi_week3, NB_Rtestim3, NB_Rtestim2, NB_Rtestim1, NB_EpiLPS3) %>%
-  mutate(NB_Rtestim1 = NB_Rtestim1 * 1e4L, NB_Rtestim2 = NB_Rtestim2 * 1e4L) %>%
+res_dat_n3 <- res_dat %>%
+  select(time, Rt3, NB_Epi_week3, NB_Rtestim3, NB_EpiLPS3) %>%
   pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
   mutate(Rt_type = fct_recode(Rt_type,
     "EpiEstim" = "NB_Epi_week3",
     "RtEstim (k=1)" = "NB_Rtestim3",
-    "RtEstim (k=0)" = "NB_Rtestim1",
-    "RtEstim (k=3)" = "NB_Rtestim2",
     "EpiLPS" = "NB_EpiLPS3",
     "True Rt" = "Rt3"
   )) %>%
@@ -952,27 +884,16 @@ fig23 <- res_dat %>%
     Rt_type, "True Rt",
     "EpiEstim",
     "EpiLPS",
-    "RtEstim (k=0)",
-    "RtEstim (k=1)",
-    "RtEstim (k=3)"
+    "RtEstim (k=1)"
   )) %>%
-  group_by(Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
-  geom_line(na.rm = TRUE) +
-  coord_cartesian(ylim = c(0, 9)) +
-  scale_colour_manual(values = cbPalette2) +
-  labs(y = "", color = "Rt methods", x = "", title = "Scenario 3: piecewise linear") +
-  theme_bw()
+  mutate(Rt_case = 3)
 
-fig24 <- res_dat %>%
-  select(time, Rt4, NB_Epi_week4, NB_Rtestim4, NB_Rtestim3, NB_Rtestim1, NB_EpiLPS4) %>%
-  mutate(NB_Rtestim1 = NB_Rtestim1 * 1e4L, NB_Rtestim3 = NB_Rtestim3 * 1e4L) %>%
+res_dat_n4 <- res_dat %>%
+  select(time, Rt4, NB_Epi_week4, NB_Rtestim4, NB_EpiLPS4) %>%
   pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
   mutate(Rt_type = fct_recode(Rt_type,
     "EpiEstim" = "NB_Epi_week4",
     "RtEstim (k=3)" = "NB_Rtestim4",
-    "RtEstim (k=0)" = "NB_Rtestim1",
-    "RtEstim (k=1)" = "NB_Rtestim3",
     "EpiLPS" = "NB_EpiLPS4",
     "True Rt" = "Rt4"
   )) %>%
@@ -980,29 +901,29 @@ fig24 <- res_dat %>%
     Rt_type, "True Rt",
     "EpiEstim",
     "EpiLPS",
-    "RtEstim (k=0)",
-    "RtEstim (k=1)",
     "RtEstim (k=3)"
   )) %>%
-  group_by(Rt_type) %>%
+  mutate(Rt_case = 4)
+
+res_dat_nb_long <- rbind(res_dat_n1, res_dat_n2, res_dat_n3, res_dat_n4)
+res_dat_nb_long$Rt_case <- as.factor(res_dat_nb_long$Rt_case)
+res_dat_nb_long$Rt_type <- as.factor(res_dat_nb_long$Rt_type)
+
+fig_NB_res <- res_dat_nb_long %>%
+  mutate(Rt_case = fct_recode(Rt_case,
+    "Scenario 1: piecewise constant" = "1",
+    "Scenario 2: piecewise exponential" = "2",
+    "Scenario 3: piecewise linear" = "3",
+    "Scenario 4: periodic" = "4"
+  )) %>%
+  group_by(Rt_case, Rt_type) %>%
   ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
   geom_line(na.rm = TRUE) +
-  coord_cartesian(ylim = c(0, 8)) +
+  facet_wrap(~ Rt_case, scales = "free_y") + 
   scale_colour_manual(values = cbPalette2) +
-  labs(y = "", color = "Rt methods", x = "", title = "Scenario 4: periodic") +
-  theme_bw()
-
-fig_NB_res <- ggpubr::ggarrange(fig21, fig22, fig23, fig24,
-  ncol = 2, nrow = 2,
-  common.legend = TRUE, legend = "bottom",
-  font.label = list(size = 14)
-)
-fig_NB_res <- ggpubr::annotate_figure(
-  fig_NB_res,
-  left = grid::textGrob("Rt estimates for negative Binomial incidence",
-    rot = 90, vjust = 1, gp = grid::gpar(cex = 1)
-  )
-)
+  labs(y = "Rt estimates for negative Binomial incidence", color = "", x = "", title = "") +
+  theme_bw() +
+  theme(legend.position = "bottom") 
 print(fig_NB_res)
 ```
 
@@ -1016,8 +937,8 @@ cases <- dat %>% count(Date, name = "Cases")
 Covid_case <- cases %>%
   ggplot(aes(x = Date)) +
   geom_line(aes(y = Cases), col = "black") +
-  labs(x = "Date", y = "Covid-19 daily confirmed case counts in BC") +
-  scale_x_date(date_breaks = "6 month") +
+  labs(x = "Month", y = "Covid-19 daily confirmed case counts in BC") +
+  scale_x_date(date_breaks = "6 months", date_labels = "%Y-%m") +
   theme_bw() +
   theme(
     plot.title = element_text(hjust = 0.5),
@@ -1031,83 +952,117 @@ print(Covid_case)
 ```{r Fig7-display-covid-BC-Rt-est, eval=FALSE, include=FALSE}
 ## estimate Rt using RtEstim
 # k=1
-mod_rt_covid <- estimate_rt(
+mod_rt_covid1 <- estimate_rt(
   x = cases$Date, cases$Cases, korder = 1, nsol = 50,
   maxiter = 1e7L
 )
-covid_fig1 <- plot(mod_rt_covid) +
-  labs(y = "Piecewise linear Rt", x = "Date") +
-  scale_x_date(date_breaks = "12 months", date_labels = "%Y-%m-%d")
-cv_mod_covid <- cv_estimate_rt(
+cv_mod_covid1 <- cv_estimate_rt(
   x = cases$Date, cases$Cases, korder = 1, nfold = 10,
   maxiter = 1e7L, nsol = 50
 )
-mod_rtestim_covid <- cv_mod_covid$full_fit$Rt[, which.min(cv_mod_covid$cv_scores)]
-rt_ci_covid <- confband(cv_mod_covid, "lambda.min") # get 95% confidence band
-covid_fig_cv1 <- rt_ci_covid %>%
-  ggplot(aes(x = cases$Date)) +
-  geom_line(aes(y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`),
-    fill = "gray", alpha = 0.5
-  ) +
-  geom_hline(yintercept = 1, linetype = "dotted") +
-  scale_x_date(date_breaks = "12 months", date_labels = "%Y-%m-%d") +
-  labs(x = "Date", y = "") +
-  theme_bw()
+mod_rtestim_covid1 <- cv_mod_covid1$full_fit$Rt[, which.min(cv_mod_covid1$cv_scores)]
+rt_ci_covid1 <- confband(cv_mod_covid1, "lambda.min") # get 95% confidence band
 
 # k=2
-mod_rt_covid <- estimate_rt(
+mod_rt_covid2 <- estimate_rt(
   x = cases$Date, cases$Cases, korder = 2, nsol = 50,
   maxiter = 1e7L
 )
-covid_fig2 <- plot(mod_rt_covid) +
-  labs(y = "Piecewise quadratic Rt", x = "Date") +
-  scale_x_date(date_breaks = "12 months", date_labels = "%Y-%m-%d")
-cv_mod_covid <- cv_estimate_rt(
+cv_mod_covid2 <- cv_estimate_rt(
   x = cases$Date, cases$Cases, korder = 2, nfold = 10,
   maxiter = 1e7L, nsol = 50
 )
-mod_rtestim_covid <- cv_mod_covid$full_fit$Rt[, which.min(cv_mod_covid$cv_scores)]
-rt_ci_covid <- confband(cv_mod_covid, "lambda.min") # get 95% confidence band
-covid_fig_cv2 <- rt_ci_covid %>%
-  ggplot(aes(x = cases$Date)) +
-  geom_line(aes(y = Rt)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`),
-    fill = "gray", alpha = 0.5
-  ) +
-  geom_hline(yintercept = 1, linetype = "dotted") +
-  scale_x_date(date_breaks = "12 months", date_labels = "%Y-%m-%d") +
-  labs(x = "Date", y = "") +
-  theme_bw()
+mod_rtestim_covid2 <- cv_mod_covid2$full_fit$Rt[, which.min(cv_mod_covid2$cv_scores)]
+rt_ci_covid2 <- confband(cv_mod_covid2, "lambda.min") # get 95% confidence band
 
 # k=3
-mod_rt_covid <- estimate_rt(
+mod_rt_covid3 <- estimate_rt(
   x = cases$Date, cases$Cases, korder = 3, nsol = 50,
   maxiter = 1e7L
 )
-covid_fig3 <- plot(mod_rt_covid) +
-  labs(y = "Piecewise cubic Rt", x = "Date") +
-  scale_x_date(date_breaks = "12 months", date_labels = "%Y-%m-%d")
-cv_mod_covid <- cv_estimate_rt(
+cv_mod_covid3 <- cv_estimate_rt(
   x = cases$Date, cases$Cases, korder = 3, nfold = 10,
   maxiter = 1e7L, nsol = 50
 )
-mod_rtestim_covid <- cv_mod_covid$full_fit$Rt[, which.min(cv_mod_covid$cv_scores)]
-rt_ci_covid <- confband(cv_mod_covid, "lambda.min") # get 95% confidence band
-covid_fig_cv3 <- rt_ci_covid %>%
-  ggplot(aes(x = cases$Date)) +
+mod_rtestim_covid3 <- cv_mod_covid3$full_fit$Rt[, which.min(cv_mod_covid3$cv_scores)]
+rt_ci_covid3 <- confband(cv_mod_covid3, "lambda.min") # get 95% confidence band
+
+# Rt values with a candidate set
+n <- length(mod_rt_covid3$observed_counts)
+k <- length(mod_rt_covid3$lambda)
+df3 <- data.frame(
+    Rt = c(mod_rt_covid3$Rt),
+    lambda = rep(mod_rt_covid3$lambda, each = n),
+    Time = rep(mod_rt_covid3$x, k),
+    degree = 3
+)
+df2 <- data.frame(
+    Rt = c(mod_rt_covid2$Rt),
+    lambda = rep(mod_rt_covid2$lambda, each = n),
+    Time = rep(mod_rt_covid2$x, k),
+    degree = 2
+)
+df1 <- data.frame(
+    Rt = c(mod_rt_covid1$Rt),
+    lambda = rep(mod_rt_covid1$lambda, each = n),
+    Time = rep(mod_rt_covid1$x, k),
+    degree = 1
+)
+df_covid_Rt<- rbind(df1, df2, df3)
+df_covid_Rt$degree <- as.factor(df_covid_Rt$degree)
+
+fig_covid_Rt <- df_covid_Rt %>%
+  mutate(degree = fct_recode(degree,
+    "Piecewise linear Rt" = "1",
+    "Piecewise quadratic Rt" = "2",
+    "Piecewise cubic Rt" = "3"
+  )) %>%
+  group_by(degree, lambda) %>%
+  ggplot(aes(Time, Rt, colour = lambda, group = lambda)) +
+  geom_line() +
+  facet_wrap(~ degree, scales = "free_y", ncol = 1) + 
+  labs(y ="Rt estimates for Covid-19 pandemic in BC", x = "Year", color = "\u03BB") +
+  scale_colour_viridis_c(trans = "log10") +
+  guides(color = guide_colorbar(barwidth = 10, barheight = 1)) +
+  scale_x_date(date_breaks = "12 months", date_labels = "%Y") +
+  geom_hline(yintercept = 1) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+  
+# CV-chosen Rt with CB
+rt_ci_covid3 <- as.data.table(rt_ci_covid3) %>% 
+  mutate(degree = 3, lambda = cv_mod_covid3$lambda.min) %>% 
+  mutate(Date = cases$Date) 
+rt_ci_covid2 <- as.data.table(rt_ci_covid2) %>% 
+  mutate(degree = 2, lambda = cv_mod_covid2$lambda.min) %>% 
+  mutate(Date = cases$Date) 
+rt_ci_covid1 <- as.data.table(rt_ci_covid1) %>% 
+  mutate(degree = 1, lambda = cv_mod_covid1$lambda.min) %>% 
+  mutate(Date = cases$Date) 
+df_covid_ci <- rbind(rt_ci_covid1, rt_ci_covid2, rt_ci_covid3)
+df_covid_ci$degree = as.factor(df_covid_ci$degree)
+
+fig_covid_ci <- df_covid_ci %>% 
+  mutate(degree = fct_recode(degree,
+    "Piecewise linear Rt" = "1",
+    "Piecewise quadratic Rt" = "2",
+    "Piecewise cubic Rt" = "3"
+  )) %>%
+  group_by(degree, lambda) %>%
+  ggplot(aes(x = Date)) +
   geom_line(aes(y = Rt)) +
+  facet_wrap(~ degree, scales = "free_y", ncol = 1) + 
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`),
     fill = "gray", alpha = 0.5
   ) +
   geom_hline(yintercept = 1, linetype = "dotted") +
-  scale_x_date(date_breaks = "12 months", date_labels = "%Y-%m-%d") +
-  labs(x = "Date", y = "") +
+  scale_x_date(date_breaks = "12 months", date_labels = "%Y") +
+  labs(x = "Year", y = "") +
   theme_bw()
 
-Covid_BC_Rt <- ggarrange(
-  covid_fig1, covid_fig_cv1, covid_fig2, covid_fig_cv2, covid_fig3, covid_fig_cv3,
-  ncol = 2, nrow = 3, common.legend = TRUE, legend = "bottom"
+Covid_BC_Rt <- ggarrange(fig_covid_Rt, fig_covid_ci,
+                         ncol = 2, nrow = 1, 
+                         common.legend = TRUE, legend = "bottom"
 )
 print(Covid_BC_Rt)
 ```
@@ -1120,52 +1075,97 @@ flu_dat <- data.frame(Flu_incidence = Flu1918$incidence, Time = 1:n)
 Flu_case <- flu_dat %>%
   ggplot(aes(y = Flu_incidence, x = Time)) +
   geom_line() +
-  labs(x = "Day", y = "1918 Influenza daily incidencs in ") +
+  labs(x = "Days since start of epidemic", y = "1918 Influenza daily incidence in Baltimore") +
   theme_bw()
 print(Flu_case)
 ```
 
+
 ```{r Fig9-display-influenza1918-Rt-est, eval=FALSE, include=FALSE}
-mod_rt <- estimate_rt(Flu1918$incidence, korder = 3, nsol = 50)
-fig_flu3 <- plot(mod_rt) + labs(y = "Piecewise cubic Rt", x = "Day")
-cv_mod_flu <- cv_estimate_rt(Flu1918$incidence, korder = 3, nfold = 10, nsol = 50)
-rt_ci_flu <- confband(cv_mod_flu, "lambda.1se") # get 95% confidence band
-fig_flu_cv3 <- rt_ci_flu %>%
-  ggplot(aes(x = 1:n, y = Rt)) +
+mod_rt_flu3 <- estimate_rt(Flu1918$incidence, korder = 3, nsol = 50)
+cv_mod_flu3 <- cv_estimate_rt(Flu1918$incidence, korder = 3, nfold = 10, nsol = 50)
+rt_ci_flu3 <- confband(cv_mod_flu3, "lambda.1se") 
+
+mod_rt_flu2 <- estimate_rt(Flu1918$incidence, korder = 2, nsol = 50)
+cv_mod_flu2 <- cv_estimate_rt(Flu1918$incidence, korder = 2, nfold = 10, nsol = 50)
+rt_ci_flu2 <- confband(cv_mod_flu2, "lambda.1se") 
+
+mod_rt_flu1 <- estimate_rt(Flu1918$incidence, korder = 1, nsol = 50)
+cv_mod_flu1 <- cv_estimate_rt(Flu1918$incidence, korder = 1, nfold = 10, nsol = 50)
+rt_ci_flu1 <- confband(cv_mod_flu1, "lambda.1se") 
+
+# Rt values with a candidate set
+n <- length(mod_rt_flu3$observed_counts)
+k <- length(mod_rt_flu3$lambda)
+df_flu3 <- data.frame(
+    Rt = c(mod_rt_flu3$Rt),
+    lambda = rep(mod_rt_flu3$lambda, each = n),
+    Time = rep(mod_rt_flu3$x, k),
+    degree = 3
+)
+df_flu2 <- data.frame(
+    Rt = c(mod_rt_flu2$Rt),
+    lambda = rep(mod_rt_flu2$lambda, each = n),
+    Time = rep(mod_rt_flu2$x, k),
+    degree = 2
+)
+df_flu1 <- data.frame(
+    Rt = c(mod_rt_flu1$Rt),
+    lambda = rep(mod_rt_flu1$lambda, each = n),
+    Time = rep(mod_rt_flu1$x, k),
+    degree = 1
+)
+df_flu_Rt<- rbind(df_flu1, df_flu2, df_flu3)
+df_flu_Rt$degree <- as.factor(df_flu_Rt$degree)
+
+fig_flu_Rt <- df_flu_Rt %>%
+  mutate(degree = fct_recode(degree,
+    "Piecewise linear Rt" = "1",
+    "Piecewise quadratic Rt" = "2",
+    "Piecewise cubic Rt" = "3"
+  )) %>%
+  group_by(degree, lambda) %>%
+  ggplot(aes(Time, Rt, colour = lambda, group = lambda)) +
   geom_line() +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), fill = "gray", alpha = 0.5) +
+  facet_wrap(~ degree, scales = "free_y", ncol = 1) + 
+  labs(y ="Rt estimates for 1918 Influenza in Baltimore", x = "Days since start of epidemic", color = "\u03BB") +
+  scale_colour_viridis_c(trans = "log10") +
+  guides(color = guide_colorbar(barwidth = 10, barheight = 1)) +
+  geom_hline(yintercept = 1) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+rt_ci_flu3 <- as.data.table(rt_ci_flu3) %>% 
+  mutate(degree = 3, lambda = cv_mod_flu3$lambda.min) %>% 
+  mutate(Day = flu_dat$Time) 
+rt_ci_flu2 <- as.data.table(rt_ci_flu2) %>% 
+  mutate(degree = 2, lambda = cv_mod_flu2$lambda.min) %>% 
+  mutate(Day = flu_dat$Time) 
+rt_ci_flu1 <- as.data.table(rt_ci_flu1) %>% 
+  mutate(degree = 1, lambda = cv_mod_flu1$lambda.min) %>% 
+  mutate(Day = flu_dat$Time) 
+df_flu_ci <- rbind(rt_ci_flu1, rt_ci_flu2, rt_ci_flu3)
+df_flu_ci$degree = as.factor(df_flu_ci$degree)
+
+fig_flu_ci <- df_flu_ci %>% 
+  mutate(degree = fct_recode(degree,
+    "Piecewise linear Rt" = "1",
+    "Piecewise quadratic Rt" = "2",
+    "Piecewise cubic Rt" = "3"
+  )) %>%
+  group_by(degree, lambda) %>%
+  ggplot(aes(x = Day)) +
+  geom_line(aes(y = Rt)) +
+  facet_wrap(~ degree, scales = "free_y", ncol = 1) + 
+  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`),
+    fill = "gray", alpha = 0.5
+  ) +
   geom_hline(yintercept = 1, linetype = "dotted") +
-  labs(x = "Day", y = "") +
+  labs(x = "Days since start of epidemic", y = "") +
   theme_bw()
 
-# k=2
-mod_rt <- estimate_rt(Flu1918$incidence, korder = 2, nsol = 50)
-fig_flu2 <- plot(mod_rt) + labs(y = "Piecewise quadratic Rt", x = "Day")
-cv_mod_flu <- cv_estimate_rt(Flu1918$incidence, korder = 2, nfold = 10, nsol = 50)
-rt_ci_flu <- confband(cv_mod_flu, "lambda.1se") # get 95% confidence band
-fig_flu_cv2 <- rt_ci_flu %>%
-  ggplot(aes(x = 1:n, y = Rt)) +
-  geom_line() +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), fill = "gray", alpha = 0.5) +
-  geom_hline(yintercept = 1, linetype = "dotted") +
-  labs(x = "Day", y = "") +
-  theme_bw()
-
-mod_rt <- estimate_rt(Flu1918$incidence, korder = 1, nsol = 50)
-fig_flu1 <- plot(mod_rt) + labs(y = "Piecewise linear Rt", x = "Day")
-cv_mod_flu <- cv_estimate_rt(Flu1918$incidence, korder = 1, nfold = 10, nsol = 50)
-rt_ci_flu <- confband(cv_mod_flu, "lambda.1se") # get 95% confidence band
-fig_flu_cv1 <- rt_ci_flu %>%
-  ggplot(aes(x = 1:n, y = Rt)) +
-  geom_line() +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), fill = "gray", alpha = 0.5) +
-  geom_hline(yintercept = 1, linetype = "dotted") +
-  labs(x = "Day", y = "") +
-  theme_bw()
-
-Flu_Rt <- ggarrange(
-  fig_flu1, fig_flu_cv1, fig_flu2, fig_flu_cv2, fig_flu3, fig_flu_cv3,
-  ncol = 2, nrow = 3, common.legend = TRUE, legend = "bottom"
+Flu_Rt <- ggarrange(fig_flu_Rt, fig_flu_ci,
+  ncol = 2, nrow = 1, common.legend = TRUE, legend = "bottom"
 )
 print(Flu_Rt)
 ```
