@@ -1103,7 +1103,7 @@ solely target understanding of the pandemic may prefer a smoother estimate.
 
 Our method \RtEstim\ provides a natural way to deal with missing data, for
 example, on weekends and holidays or due to changes in reporting frequency.
-While solving the convex optimization problem, our method can be easily 
+While solving the convex optimization problem, our method can easily 
 handle uneven spacing or irregular reporting. Computing the total
 primary infectiousness is also easily generalized to irregular reporting by
 modifying the discretization of the serial interval distribution. Additionally,
@@ -1113,7 +1113,7 @@ compared to $\ell_2$ regularization.
 
 
 There are a number of limitations that may influence the quality of
-$\calR_t$ estimation. While our model is generic for incidence data, 
+$\calR_t$ estimation. While our model is generic for incidence data 
 rather than tailored to any specific disease, it does assume that the 
 generation interval is short relative to the period of data collection. 
 More specialized methodologies would be required for diseases with long 
@@ -1150,7 +1150,7 @@ required as well. Or else, one would first need to deconvolve deaths to
 infection onset before using our software.
 
 
-Nonetheless, our \RtEstim\ estimator can be implemented easily through a
+Nonetheless, our methodology is implemented in a
 lightweight \R\ package \texttt{rtestim} and computed efficiently using the
 included proximal Newton method solver coded in \cpp, especially for large-scale
 data. Given available incident case data, prespecified serial interval
