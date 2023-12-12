@@ -8,7 +8,7 @@ sometime in the past. To make this precise, denote the number of new infections
 at time $t$ as $y(t)$. Then the total primary infectiousness can be written as
 $\eta(t) := \int_0^{\infty} p(i) y(t-i) \diff i$, where $p(i)$ is the
 probability that a new secondary infection is the result of a primary infection
-that occurred $i$ time units in the past. The reproduction number is then given
+that occurred $i$ time units in the past. The effective reproduction number is then given
 as the value that equates
 \begin{equation} \label{eq:pre-renew-equation}
   \bbE[y(t) \mid y(j),\ j<t]=\calR(t)\eta(t)=\calR(t)\int_0^\infty p(i)y(t-i)\diff i,
@@ -29,7 +29,7 @@ and \texttt{EpiFilter} \citep{parag2021improved}.
 
 
 In most cases, it is safe to assume that infectiousness disappears beyond 
-$\tau$ timepoints ($p(i) = 0$ for $i > \tau$) so that the truncated integral 
+$\tau$ timepoints ($p(i) = 0$ for $i > \tau$), resulting in the truncated integral 
 of the generation interval distribution $\int_0^\tau p(i)\diff i = 1$.
 Generation time, however, is usually unobservable and tricky to estimate, so
 common practice is to approximate it by the serial interval: the period between
@@ -56,7 +56,7 @@ fixed, as is common in existing studies, e.g.,
 
 
 The renewal equation in \eqref{eq:renew-equation} relates observable data
-streams (incident cases) occurring at different time points to the reproduction
+streams (incident cases) occurring at different timepoints to the effective reproduction
 number given the serial interval. The fact that it depends only on the observed
 incident counts makes it reasonable to estimate $\calR_t$. However, 
 data collection idiosyncrasies can obscure this relationship. Diagnostic testing
@@ -88,20 +88,20 @@ using \eqref{eq:renew-equation} to calculate $\calR_t$.
 \subsection{Poisson trend filtering estimator} 
 
 We use the daily confirmed incident cases $y_t$ on day $t$ to estimate the
-observed infectious cases under the model that $y_t$ given previous incident
-cases $y_{t-1},\ldots,y_1$ and a constant serial interval distribution follows a
+observed infectious cases under the model that $y_t$, given previous incident
+cases $y_{t-1},\ldots,y_1$ and a constant serial interval distribution, follows a
 Poisson distribution with mean $\Lambda_t$. That is, 
 $$y_t \mid y_1,\ldots,y_{t-1} \sim \mathrm{Poisson}(\Lambda_t), \textrm{ where } 
 \Lambda_t =  \calR_t\sum_{i=1}^{t-1}p_i y_{t-i} = \calR_t\eta_t.$$ 
 Given a history of $n$ confirmed incident counts $\bfy = {(y_1,\ldots,y_n)}^\top$,
 our goal is to estimate $\calR_t$. A natural approach is to maximize the
-likelihood, producing the MLE:
+likelihood, producing the maximum likelihood estimator (MLE):
 \begin{equation} \label{eq:mle}
   \begin{split}
     \widehat{\calR} &= \Argmax{\calR \in \bbR_+^n} \bbP(\calR \mid \bfy,\ \bfp)
     = \Argmax{\calR \in \bbR^n_+} \prod_{t = 1,\dots,n} 
     \frac{\lr{\calR_t \eta_t}^{y_t} \exp\{- \calR_t \eta_t\}  }{y_t!}\\
-    &= \Argmin{\calR\in\bbR^n_+} \frac{1}{n}\sum_{t = 1}^n \calR_t\eta_t - 
+    &= \Argmin{\calR\in\bbR^n_+} \sum_{t = 1}^n \calR_t\eta_t - 
     y_t\log(\calR_t\eta_t).
   \end{split}
 \end{equation}
@@ -126,7 +126,7 @@ Kalman filter procedure of \cite{parag2021improved} would enforce in
 $\ell_2$-smoothness ($\int_0^n {(\widehat{\calR}''(t))}^{2}\diff t < C$ for some
 $C$), although the computational implementation results in $\widehat{\calR}$
 taking values over a discrete grid. \cite{pascal2022nonsmooth} produces
-piecewise-linear $\widehat{\calR}_t$, which turns out to be closely related to a
+piecewise linear $\widehat{\calR}_t$, which turns out to be closely related to a
 special case of our methodology. Smoother estimated curves will provide
 high-level information about the entire epidemic, obscuring small local changes
 in $\calR(t)$, but may also remove the ability to detect large sudden changes,
@@ -150,7 +150,7 @@ write our estimator as the solution to the optimization problem
 where $\exp(\cdot)$ applies elementwise.
 Here, $D^{(k+1)} \in \bbZ^{(n-k-1)\times n}$ is the $(k+1)\th$ order divided
 difference matrix for any $k \in \{0,\ldots,n-1\}$. $D^{(k+1)}$ is defined 
-recursively as $D^{(k+1)} = D^{(1)} D^{(k)}$, where 
+recursively as $D^{(k+1)} := D^{(1)} D^{(k)}$, where 
 $D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times (n-k)}$ is a sparse matrix with diagonal band: 
 $$D^{(1)} = \begin{pmatrix} 
   -1 & 1 &  & & \\ 
@@ -158,7 +158,7 @@ $$D^{(1)} = \begin{pmatrix}
   & & \ddots & \ddots & \\
   & & & -1 & 1 
 \end{pmatrix}.$$ 
-The tuning parameter $\lambda$ balances data
+The tuning parameter (hyperparameter) $\lambda$ balances data
 fidelity with desired smoothness. When $\lambda=0$, the problem in
 \eqref{eq:rt-ptf} reduces to the MLE in \eqref{eq:mle}. Larger tuning parameters
 privilege the regularization term and yield smoother estimates. Finally, there
@@ -167,7 +167,7 @@ exists $\lambda_{\textrm{max}}$ such that any $\lambda \geq
 $\widehat{\theta}$ will be the Kullback-Leibler projection of $\bfy$ onto the
 null space of $D^{(k+1)}$ (see \autoref{sec:candidate-set}).
 
-The solution to \eqref{eq:rt-ptf} will result in piecewise continuous
+The solution to \eqref{eq:rt-ptf} will result in piecewise 
 polynomials, specifically called discrete splines. For example, $0\th$-degree
 discrete splines are piecewise constant, \first-degree curves are piecewise
 linear, and \second-degree curves are piecewise quadratic. For $k\geq 1$,
@@ -179,7 +179,7 @@ estimated effective reproduction numbers with different smoothness properties.
 
 
 
-For unevenly-spaced data, the spacing between neighboring parameters
+For unevenly-spaced data, the spacing between neighbouring parameters
 varies with the time between observations, and thus, the divided differences
 must be adjusted by the times that the observations occur. Given observation
 times $\bfx = {(x_1,\dots,x_n)}^\top$, for $k \geq 1$, define a $k\th$-order
@@ -194,9 +194,9 @@ for $k=0$.
 Due to the penalty structure, this estimator is locally adaptive,
 meaning that it can potentially capture local changes such as the initiation of
 control measures. \cite{abry2020spatial,pascal2022nonsmooth} considered only the
-\first-order divided difference of $\calR_t$ rather than its logarithm. In
-comparison to their work, our estimator (1) allows for arbitrary degrees of
-temporal smoothness and (2) avoids the potential numerical issues of
+\second-order divided difference of $\calR_t$ rather than its logarithm. In
+comparison to their work, our estimator (i) allows for arbitrary degrees of
+temporal smoothness and (ii) avoids the potential numerical issues of
 penalizing/estimating positive real values. Furthermore, as we will describe
 below, our procedure is computationally efficient for estimation over an entire
 sequence of penalty strengths $\lambda$ and provides methods for choosing how

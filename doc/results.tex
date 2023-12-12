@@ -59,7 +59,7 @@ with dispersion size 5, i.e., $y_t\sim \textrm{NB}(\Lambda_t,\
 with a single corresponding Poisson and negative Binomial sample incidence
 sequences is displayed in \autoref{fig:samples}. 
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
   \centering
   \includegraphics[width=.8\textwidth]{fig/plot_samples.png}
   \caption{The effective reproduction numbers (left column) and corresponding
@@ -74,14 +74,14 @@ We compare \RtEstim\ to \EpiEstim\ and \EpiLPS. Unfortunately,
 in these settings, so we are unable to include its results. \EpiEstim\ estimates
 the posterior distribution of the effective reproduction number given a Gamma
 prior and Poisson distributed observations
-over a trailing window, under the assumption that the reproduction number is
+over a trailing window, under the assumption that the effective reproduction number is
 constant during that window. A larger window averages out more
 fluctuations,
 leading to smoother estimates, whereas, a shorter sliding window is more
 responsive to sudden spikes or declines. We tried the default, a weekly sliding
 window, as well as a monthly window. However, since neither considerably
 outperforms the other across all scenarios, we defer the monthly results to the
-Appendix. \EpiLPS\ is another Bayesian approach that estimates P-splines coupled
+supplementary document. \EpiLPS\ is another Bayesian approach that estimates P-splines
 based on the Laplace approximation to the conditional posterior with negative
 Binomial likelihood. For \RtEstim\ on the four scenarios respectively, we
 estimate (1) piecewise constant $k=0$, (2) piecewise linear \& cubic $k=1,3$,
@@ -93,7 +93,7 @@ distribution for estimation that was used to create the data.
 
 To measure estimation accuracy, we compare $\widehat{\calR}$ to $\calR$ using
 the Kullback-Leibler (KL) divergence. We use the KL divergence for the
-Poisson distribution (averaged across all $t$) to measure the accuracy
+Poisson distribution (summed up across all $t$) to measure the accuracy
 of the $\calR_t$ estimates 
 $$D_{KL}(\calR \parallel \widehat{\calR}) = \sum_{t=1}^n w_t \lr{\calR_t
 \log\left(\frac{\calR_t} {\widehat{\calR}_t}\right) + \widehat{\calR}_t -
@@ -105,14 +105,15 @@ more appropriate for measuring accuracy because it connects directly to the
 Poisson likelihood used to generate the data, whereas standard measures like the
 mean-squared error correspond to Gaussian likelihood. Using Poisson likelihood
 has the effect of increasing the relative cost of mistakes when $\Lambda_t$ is
-small. Other details of the experimental settings are deferred to the Appendix. 
+small. Other details of the experimental settings are deferred to the 
+supplementary document. 
 
 
 \subsection{Results for synthetic data}
 
 \RtEstim\ overall outperforms \EpiEstim\ and \EpiLPS\ in the experimental study.
 \autoref{fig:kl-res} visualizes the KL divergence across the three models. Under
-both Poisson and egative Binomial distributions, \RtEstim\ is easily the most
+both Poisson and negative Binomial distributions, \RtEstim\ is easily the most
 accurate for Scenarios 1 and 3: the median of KL divergence is much lower and
 the boxes frequently fail to overlap indicating better performance than the
 other two methods across all 50 simulations. The advantage is less pronounced
@@ -126,7 +127,7 @@ the negative Binomial case. Both smoothness choices for \RtEstim\ in Scenario 2
 perform similarly across noise distributions, implying good performance under model misspecification. We will examine a single realization of each
 experiment to investigate these global conclusions in more detail.
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
   \centering
   \includegraphics[width=.99\textwidth]{fig/KL_no_outlier.png}
   \caption{Boxplot of KL divergence between the estimated 
@@ -137,7 +138,7 @@ experiment to investigate these global conclusions in more detail.
   \label{fig:kl-res}
 \end{figure}
 
-\autoref{fig:pois-est} shows one realization for the estimated reproduction
+\autoref{fig:pois-est} shows one realization for the estimated effective reproduction
 number under the Poisson generative model for all four scenarios. Compared to
 \EpiEstim\ and \EpiLPS, which have rather severe difficulties at the beginning
 of the time series, \RtEstim\ estimates are more accurate---they nearly
@@ -147,15 +148,16 @@ problem. Scenario
 edge problem, \EpiEstim\ and \EpiLPS\ produce ``smooth'' estimated curves that
 are continuous at the changepoint, which results in large mistakes in that
 neighbourhood. Since the piecewise constant \RtEstim\ estimator does not force
-any smoothness in $\calR_t$, it easily captures the sharp change. Scenario 2 is relatively easy for all methods, except at the change
-point occurring at the end of the exponential growth. Although the truth is
+any smoothness in $\calR_t$, it easily captures the sharp change. 
+Scenario 2 is relatively easy for all methods, except at the changepoint 
+occurring at the end of the exponential growth. Although the truth is
 likely best represented with a discontinuous piecewise cubic curve, the actual
 curvature is so gentle that linear estimation ($k=1$) appears potentially
 reasonable. However,
 \RtEstim\ has difficulty recovering the acute rise in the
-growth phase because it enforces continuity at the change point. 
+growth phase because it enforces continuity at the changepoint. 
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
   \centering
   \includegraphics[width=.99\textwidth]{fig/Pois-res-plot.png}
   \caption{Example of effective reproduction number estimation for Poisson observations.}
@@ -174,7 +176,7 @@ Poisson setting. In Scenario 3, the piecewise linear version of \RtEstim\
 recovers the curvature of $\calR_t$ well, but is less accurate than in the
 Poisson case.
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
   \centering
   \includegraphics*[width=.99\textwidth]{fig/NB-res-plot.png}
   \caption{Example of effective reproduction number estimation for negative
@@ -186,10 +188,10 @@ Finally, it is important to provide a brief comparison of the running times of
 all three models across the $8$ experimental settings. We find that almost all
 models across all experiments complete within $10$ seconds. \RtEstim\ generally
 takes the longest, due to a relatively large number of estimates---$50$ values
-of $\lambda$ and $10$ folds of cross validation require 500 estimates---while
+of $\lambda$ and $10$ folds of cross validation require $550$ estimates---while
 other models run only a single time for a fixed setting of hyperparameters per
 experiment. Additional results on timing comparisons are deferred to the
-Appendix. 
+supplementary document. 
 
 
 \subsection{Real-data results: Covid-19 incident cases in British Columbia}
@@ -200,7 +202,7 @@ the B.C.\ Centre for Disease Control. We use the gamma distribution with shape
 $2.5$ and scale $2.5$ to approximate the serial interval function, which is
 similar to empirical estimates~\citep{lehtinen2021relationship}. 
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
   \centering
   \includegraphics[width=0.9\textwidth]{fig/covid_dat.png}
   \caption{Covid-19 daily confirmed incident cases between March 1st, 
@@ -216,12 +218,12 @@ individuals in the population. Examining three different settings for $k$, the
 temporal evolution of $\widehat{\calR}$ (across all regularization levels
 $\lambda$) are similar near the highest peak around the end of 2021 before
 dropping shortly thereafter. Throughout the estimated curves, the peaks and
-troughs of the reproduction numbers precede the growth and decay cycles of
+troughs of the effective reproduction numbers precede the growth and decay cycles of
 confirmed cases, as expected. We also visualize 95\% confidence bands for the
 point estimates with $\lambda$ chosen by minimizing cross-validated KL
 divergence in \autoref{fig:covid-rt}.     
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
   \centering
   \includegraphics[width=0.9\linewidth]{fig/covid_full_res.png}
   \caption{Estimated effective reproduction number based on Covid-19 daily
@@ -234,16 +236,16 @@ divergence in \autoref{fig:covid-rt}.
   \label{fig:covid-rt}
 \end{figure} 
 
-The estimated reproduction numbers are relatively unstable before April 1st,
+The estimated effective reproduction numbers are relatively unstable before April,
 2022. The highest peak coincides with the emergence and global spread of the
-Omicron variant. The estimated reproduction numbers fall below 1 during two time
-periods---roughly from April 1st, 2021 to July 1st, 2021 and from January 1st,
-2022 to April 1st, 2022. The first trough coincides with the introduction of
+Omicron variant. The estimated effective reproduction numbers fall below 1 during two time
+periods---roughly from April, 2021 to July, 2021 and from January,
+2022 to April, 2022. The first trough coincides with the introduction of
 Covid-19 vaccines in British Columbia. The second trough, shortly after the
 largest peak may be due to variety of factors resulting in the depletion of the
 susceptible population such as increased self-isolation in response to media
-coverage of the peak or immunity incurred via recent infection. Since April 1st,
-2022, the estimated reproduction number has remained relatively stable
+coverage of the peak or immunity incurred via recent infection. Since April,
+2022, the estimated effective reproduction number has remained relatively stable
 (fluctuating around one) corresponding to low reported cases, though reporting
 behaviours also changed significantly since the Omicron wave. 
 
@@ -268,7 +270,7 @@ supported by the fact that incident cases decline to zero at the end of the
 period and matches $\calR$ estimates in \cite{cori2013new}, which are all lower
 than one.
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
   \centering
   \includegraphics[width=0.9\linewidth]{fig/flu_dat.png}
   \caption{Daily incident influenza cases in Baltimore, Maryland between September 
@@ -276,13 +278,13 @@ than one.
   \label{fig:flu-dat}
 \end{figure} 
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
   \centering
   \includegraphics[width=0.9\linewidth]{fig/flu_full_res.png}
   \caption{Estimated effective reproduction numbers for influenza in Baltimore,
   Maryland in 1918. The left panels show estimates for a set of 50 tuning
   parameters. The right column displays the CV-tuned estimates with approximate
-  95\% confidence bands. The rows (top to bottom) show estimated reproduction
+  95\% confidence bands. The rows (top to bottom) show estimated effective reproduction
   numbers ($\calR_t$) using the Poisson trend filtering in \eqref{eq:rt-ptf}
   with $k=1,2,3$ respectively.} 
   \label{fig:flu-res}

@@ -118,7 +118,7 @@ The relative performance of EpiEstim with monthly sliding windows, in general,
 is not as good as its weekly sliding window based on the relative positions of 
 its boxes and the counterparts of the other methods, except for the Scenario 2 
 with negative Binomial incidence. A reason is that EpiEstim with longer sliding 
-windows assume similarity of neighboring Rt across longer periods, and thus,
+windows assume similarity of neighbouring Rt across longer periods, and thus,
 is smoother and less accurate compared to the one with shorter sliding windows. 
 
 ```{r display-KL-monthly-full-res, echo=FALSE, fig.height=5.5, fig.width=6.2, fig.cap = "Fig 11. KL divergence for methods with monthly sliding windows. Y-axis is on a logarithmic scale."}
