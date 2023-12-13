@@ -1,7 +1,7 @@
 ---
 title: "Supplementary details on experiments of effective reproduction number estimation with trend filtering"
 author: "Jiaping Liu, Zhenglun Cai, Paul Gustafson, and Daniel J. McDonald"
-date: "`r Sys.Date()`"
+date: ""
 output: 
   pdf_document: 
     includes:
@@ -34,25 +34,29 @@ library(ggpubr)
 
 We run 10-fold cross validation (CV) to choose the best tuning parameter
 from the candidate set of size $50$, i.e., $\boldsymbol{\lambda} = \{\lambda_1,
-\cdots, \lambda_{50}\}$. Specifically, we divide the all samples (except the 
+\cdots, \lambda_{50}\}$. Specifically, we divide all samples (except the 
 first and last entries) into ten folds evenly and randomly, and build models on 
 each sample set by leaving a fold out across all hyperparameters. We select the 
 tuning parameter that gives the lowest averaged ***deviance*** between the 
-estimated reproduction numbers and the observed samples averaged over all folds. 
+estimated incidence and the observed samples averaged over all folds. 
 
-# Supplementary results of experiments for Fig 3 in Section 3.2
+# Experimental comparisons between EpiEstim with monthly sliding windows and other methods for Section 3.1
 
-The full KL divergence values for Poisson incidence without excluding the 
-outliers are shown in Fig 10. Y-axis is displayed on a logarithmic scale for a 
+Fig 10 displays the KL divergence values for negative Binomial incidence. 
+Comparing across $\calR_t$ estimates by EpiLPS, RtEstim and
+EpiEstim with ***monthly*** sliding windows, KL divergence computation
+excludes the first month of $\calR_t$ estimates for all approaches, since 
+EpiEstim estimates with the monthly sliding windows are not available until
+the second month. The $y$-axis is displayed on a logarithmic scale for a 
 better visualization, since a few values are much larger than others. 
 
-Comparing among Rt estimations by EpiLPS, RtEstim and EpiEstim with ***weekly***
-sliding windows, KL values computation excludes the first week of Rt estimates 
-for all approaches. The outliers are mainly EpiLPS and EpiEstim Rt estimations 
-in Scenario 2, which is generally an easy problem except for the changepoint at
-where the two segments are discontinuous. Since EpiEstim produces a continuous Rt 
-curve, the changepoint can be difficult to recover and make estimation less 
-accurate.
+The relative performance of EpiEstim with monthly sliding windows, in general, 
+is not as good as its weekly sliding window based on the relative positions of 
+its boxes and the counterparts of the other methods, except for the Scenario 2 
+with negative Binomial incidence. It can be explained by EpiEstim with longer 
+sliding windows assume similarity of neighbouring $\calR_t$ across longer 
+periods, and thus, is smoother and less accurate compared to the one with 
+shorter sliding windows. 
 
 ```{r load-simulation-results, include=FALSE}
 cbPalette <- c(
@@ -91,37 +95,7 @@ Rt_result <- Rt_result %>%
   mutate(Rt_kl = Rt_kl * n, Rt_kl_month = Rt_kl_month * n)
 ```
 
-```{r display-KL-weekly-full-res, echo=FALSE, fig.height=5.5, fig.width=6.2, fig.cap = "Fig 10. KL divergence for methods with weekly sliding windows. Y-axis is on a logarithmic scale."}
-fig_kl_full_week <- Rt_result %>%
-  filter(method != "EpiEstim (monthly)") |>
-  group_by(Rt_case, dist, method) |>
-  ggplot(aes(x = method, y = Rt_kl)) + # sum up KL per coordinate
-  geom_boxplot(aes(col = method)) +
-  facet_grid(dist ~ Rt_case, scales = "free") +
-  scale_y_log10() +
-  scale_colour_manual(values = cbPalette[-2]) +
-  labs(x = "Method", y = "KL divergence") +
-  theme_bw() +
-  theme(axis.text.x = element_blank(), legend.position = "bottom") +
-  guides(color = guide_legend(title = NULL))
-print(fig_kl_full_week)
-```
-
-# Experimental results of methods using monthly sliding windows for Section 3.1
-
-Fig 11 displays the KL divergence values for negative Binomial incidence 
-including the outliers. Comparing across Rt estimations by EpiLPS, RtEstim and
-EpiEstim with ***monthly*** sliding windows, KL divergece values computation
-excludes the first month of Rt estimates for all approaches. 
-
-The relative performance of EpiEstim with monthly sliding windows, in general, 
-is not as good as its weekly sliding window based on the relative positions of 
-its boxes and the counterparts of the other methods, except for the Scenario 2 
-with negative Binomial incidence. A reason is that EpiEstim with longer sliding 
-windows assume similarity of neighbouring Rt across longer periods, and thus,
-is smoother and less accurate compared to the one with shorter sliding windows. 
-
-```{r display-KL-monthly-full-res, echo=FALSE, fig.height=5.5, fig.width=6.2, fig.cap = "Fig 11. KL divergence for methods with monthly sliding windows. Y-axis is on a logarithmic scale."}
+```{r display-KL-monthly-full-res, echo=FALSE, fig.height=5.5, fig.width=6.2, fig.cap = "Fig 10. KL divergence for EpiEstim with monthly sliding windows and other methods. Y-axis is on a logarithmic scale."}
 fig_kl_full_month <- Rt_result %>%
   filter(method != "EpiEstim (weekly)") |>
   mutate(method = fct_relevel(
@@ -142,17 +116,50 @@ fig_kl_full_month <- Rt_result %>%
 print(fig_kl_full_month)
 ```
 
+
+# Supplementary results of experiments for Fig 3 in Section 3.2
+
+The full KL divergence values for Poisson incidence without excluding the 
+outliers are shown in Fig 11. The $y$-axis is displayed on a logarithmic scale 
+for the same reason in Fig 10.
+
+Comparing among $\calR_t$ estimations by EpiLPS, RtEstim and EpiEstim with
+***weekly*** sliding windows, KL divergence computation excludes the first week
+of $\calR_t$ estimates for all approaches. The outliers are mainly EpiLPS and 
+EpiEstim $\calR_t$ estimations in Scenario 2, which is generally an easy problem 
+except for the changepoint at where the two segments are discontinuous. Since 
+EpiEstim produces a continuous $\calR_t$ curve, the changepoint can be difficult 
+to recover and make estimation less accurate.
+
+```{r display-KL-weekly-full-res, echo=FALSE, fig.height=5.5, fig.width=6.2, fig.cap = "Fig 11. KL divergence for methods with weekly sliding windows. Y-axis is on a logarithmic scale."}
+fig_kl_full_week <- Rt_result %>%
+  filter(method != "EpiEstim (monthly)") |>
+  group_by(Rt_case, dist, method) |>
+  ggplot(aes(x = method, y = Rt_kl)) + # sum up KL per coordinate
+  geom_boxplot(aes(col = method)) +
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  scale_y_log10() +
+  scale_colour_manual(values = cbPalette[-2]) +
+  labs(x = "Method", y = "KL divergence") +
+  theme_bw() +
+  theme(axis.text.x = element_blank(), legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL))
+print(fig_kl_full_week)
+```
+
+
 # Time comparisons of methods for Section 3.2
 
 Fig 12 shows the time comparisons across all methods. EpiEstim with both weekly 
 and monthly sliding windows are very fast and converge in less than 0.1 seconds.
 Piecewise constant RtEstim (with k=0) estimates can be generated within 0.1 
 seconds as well. EpiLPS is slightly slower, but still very fast and within 1 
-second for all experiments. Piecewise linear and cubic RtEstim (with k=1 and 3 
-respectively) are slower, but mostly within 10 seconds. 
+second for all experiments. Piecewise linear and cubic RtEstim (with $k=1$ and 
+$k=3$ respectively) are slower, but mostly within 10 seconds. 
 
 It is remarkable that our RtEstim computes 50 lambda values with 10-fold CV for 
-each experiment, which results in 500 times of modelling per experiment. The 
+each experiment, which results in $550$ times of modelling per experiment 
+(including modelling for all folds). The 
 running times are no more than 10 seconds for most of the experiments, which 
 means the running time for each time of modelling is very fast, and on average 
 can be less than 0.02 seconds. The other two methods only run once for a fixed 
