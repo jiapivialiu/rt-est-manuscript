@@ -1,71 +1,76 @@
-\documentclass{article}
+\documentclass[12pt]{article}
 \input{doc/header/header}
 \input{doc/header/defs}
 
-\usepackage{arxiv}
+%\usepackage{arxiv}
 
 \usepackage[utf8]{inputenc} % allow utf-8 input
 \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
-\usepackage{hyperref}       % hyperlinks
 \usepackage{url}            % simple URL typesetting
 \usepackage{booktabs}       % professional-quality tables
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 \usepackage{lipsum}
-\usepackage{graphicx}
+% \usepackage{graphicx}
 \graphicspath{ {./images/} }
+\usepackage[margin=2.5cm,nohead]{geometry}
+\usepackage{authblk}
+\newcommand{\email}[1]{\href{mailto:#1}{#1}}
 
 \title{RtEstim: Effective reproduction number estimation with trend filtering}
 
-\author{
-    Jiaping Liu \\
-    Department of Statistics\\
-    The University of British Columbia\\
-    Vancouver, BC V6T 1Z4 \\
-    \texttt{jiaping.liu@stat.ubc.ca}\\
-    \And
-    Zhenglun Cai \\
-    Centre for Health Evaluation and Outcome Sciences\\
-    The University of British Columbia\\
-    Vancouver, BC V6T 1Z4 \\
-    \texttt{ecai@cheos.ubc.ca} \\
-    \AND
-    Paul Gustafson \\
-    Department of Statistics\\
-    The University of British Columbia\\
-    Vancouver, BC V6T 1Z4 \\
-    \texttt{gustaf@stat.ubc.ca} \\
-    \AnD
-    Daniel J. McDonald\thanks{Corresponding author.} \\
-    Department of Statistics\\
-    The University of British Columbia\\
-    Vancouver, BC V6T 1Z4 \\
-    \texttt{daniel@stat.ubc.ca} \\
-}
+\author[a,1]{Jiaping Liu}
+\author[b]{Zhenglun Cai}
+\author[a]{Paul Gustafson}
+\author[a]{Daniel J. McDonald}
+
+\affil[a]{Department of Statistics, The University of British Columbia}
+\affil[b]{Centre for Health Evaluation and Outcome Sciences, The University of
+British Columbia}
 
 \begin{document}
 
 \maketitle
 
-\section*{\centering Abstract}
+\begin{abstract}
+  To understand the transmissibility and spread of infectious diseases,
+  epidemiologists turn to estimates of the effective reproduction number.
+  While many approaches exist, their utility may be limited by the
+  challenges of surveillance data collection. Arbitrary model assumptions
+  that are unverifiable with data alone and sophisticated, though
+  computationally inefficient, frameworks that
+  are critical limitations for many
+  existing approaches. We propose a Poisson trend filtering estimator
+  \RtEstim\ for effective reproduction numbers estimation. \RtEstim\
+  produces remains accurate even under some process misspecifications and
+  is computationally efficient,
+  even for large-scale data. The 
+  implementation is easily accessible in a lightweight \texttt{R} package
+  \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
+
+  {\bf Keywords:} \attn{1--2 word phrases $|$ that aren't in the title.}
+\end{abstract}
+
+\footnotetext[1]{To whom correspondence should be
+  addressed. E-mail: \email{jiaping.liu@stat.ubc.ca}} 
 % Technical summary including research objective, method, results, and conclusions.
 
-\thispagestyle{empty}
-\pagenumbering{roman}
-\setcounter{page}{1}
+%\thispagestyle{empty}
+%\pagenumbering{roman}
+%\setcounter{page}{1}
 
 %\printnotation
 %\input{doc/notations.tex}
-
+\newpage
 %\hypersetup{linkcolor=black}
-%\tableofcontents
+\tableofcontents % for easy edits, remove later
 
 %\listoffigures
 
 \clearpage
-\pagenumbering{arabic}
-\setcounter{page}{1}
+%\pagenumbering{arabic}
+%\setcounter{page}{1}
 
 % research proposal
 \input{doc/introduction}  
@@ -73,7 +78,12 @@
 \input{doc/results}
 \input{doc/discussion}
 
+%\section*{Acknowledgement}
+
+
 \addcontentsline{toc}{section}{References}
+\attn{Need to check these for formatting.}
+\bibliographystyle{doc/rss.bst}
 \bibliography{doc/ptf}
 
 %\appendix
