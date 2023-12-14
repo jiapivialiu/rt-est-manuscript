@@ -2,8 +2,6 @@
 \input{doc/header/header}
 \input{doc/header/defs}
 
-%\usepackage{arxiv}
-
 \usepackage[utf8]{inputenc} % allow utf-8 input
 \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
 \usepackage{url}            % simple URL typesetting
@@ -17,6 +15,7 @@
 \usepackage[margin=2.5cm,nohead]{geometry}
 \usepackage{authblk}
 \newcommand{\email}[1]{\href{mailto:#1}{#1}}
+\usepackage[final]{pdfpages}
 
 \title{RtEstim: Effective reproduction number estimation with trend filtering}
 
@@ -36,37 +35,27 @@ British Columbia}
 \begin{abstract}
   To understand the transmissibility and spread of infectious diseases,
   epidemiologists turn to estimates of the effective reproduction number.
-  While many approaches exist, their utility may be limited by the
-  challenges of surveillance data collection. Arbitrary model assumptions
-  that are unverifiable with data alone and sophisticated, though
-  computationally inefficient, frameworks that
-  are critical limitations for many
-  existing approaches. We propose a Poisson trend filtering estimator
-  \RtEstim\ for effective reproduction numbers estimation. \RtEstim\
-  produces remains accurate even under some process misspecifications and
-  is computationally efficient,
-  even for large-scale data. The 
-  implementation is easily accessible in a lightweight \texttt{R} package
-  \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
+  While many estimation approaches exist, their utility may be limited. 
+  Challenges of surveillance data collection, model assumptions
+  that are unverifiable with data alone, and 
+  computationally inefficient frameworks are critical limitations for many
+  existing approaches. We propose a discrete spline-based approach 
+  \RtEstim\ that solves a convex optimization 
+  problem---Poisson trend filtering---using the proximal Newton method. 
+  It produces a locally adaptive 
+  estimator for effective reproduction number estimation with heterogeneous 
+  smoothness. \RtEstim\ remains accurate even under some process 
+  misspecifications and is computationally efficient, even for large-scale 
+  data. The implementation is easily accessible in a lightweight \R\ 
+  package \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
 
-  {\bf Keywords:} \attn{1--2 word phrases $|$ that aren't in the title.}
+  {\bf Keywords:} discrete splines $|$ piecewise polynomials
 \end{abstract}
+
 
 \footnotetext[1]{To whom correspondence should be
   addressed. E-mail: \email{jiaping.liu@stat.ubc.ca}} 
-% Technical summary including research objective, method, results, and conclusions.
 
-%\thispagestyle{empty}
-%\pagenumbering{roman}
-%\setcounter{page}{1}
-
-%\printnotation
-%\input{doc/notations.tex}
-\newpage
-%\hypersetup{linkcolor=black}
-\tableofcontents % for easy edits, remove later
-
-%\listoffigures
 
 \clearpage
 %\pagenumbering{arabic}
@@ -82,11 +71,13 @@ British Columbia}
 
 
 \addcontentsline{toc}{section}{References}
-\attn{Need to check these for formatting.}
+
 \bibliographystyle{doc/rss.bst}
 \bibliography{doc/ptf}
 
 %\appendix
 %\titleformat{\chapter}{\normalfont\huge\bfseries}{Appendix \thechapter}{1em}{}
+
+\includepdf[pages=-]{src/supp.pdf}
 
 \end{document}

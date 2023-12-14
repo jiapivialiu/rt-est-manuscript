@@ -2,41 +2,35 @@
 
 \subsection{Renewal model for incidence data} 
 
-The effective reproduction number $\calR(t)$
-is defined to be the expected number of secondary infections at time $t$
-produced by a primary infection sometime in the past.
-To make this precise, denote the number
-of new infections at time $t$ as $y(t)$. Then the total primary
-infectiousness can be written as $\eta(t) := \int_0^{\infty} p(i) y(t-i)
-\diff i$,
-where $p(i)$ is the probability that a new secondary infection is the result
-primary infection which occurred $i$ time units in the past. 
-The reproduction number is
-then given as the value that equates
+The effective reproduction number $\calR(t)$ is defined to be the expected
+number of secondary infections at time $t$ produced by a primary infection
+sometime in the past. To make this precise, denote the number of new infections
+at time $t$ as $y(t)$. Then the total primary infectiousness can be written as
+$\eta(t) := \int_0^{\infty} p(i) y(t-i) \diff i$, where $p(i)$ is the
+probability that a new secondary infection is the result of a primary infection
+that occurred $i$ time units in the past. The effective reproduction number is then given
+as the value that equates
 \begin{equation} \label{eq:pre-renew-equation}
-  \bbE[y(t) \mid y(j),\ j<t] = \calR(t)\eta(t) = \calR(t)\int_0^\infty p(i)y(t-i)\diff i,
+  \bbE[y(t) \mid y(j),\ j<t]=\calR(t)\eta(t)=\calR(t)\int_0^\infty p(i)y(t-i)\diff i,
 \end{equation}
-otherwise known as the renewal equation. 
-The period between primary and secondary
+otherwise known as the renewal equation. The period between primary and secondary
 infections is exactly the generation time of the disease, but given real data,
 observed at discrete times (say, daily) this delay distribution must be discretized
 into contiguous time intervals,
-say, $(0,1], (1,2], \dots$, which results in the sequence $\{p_i\}_1^\infty$
+say, $(0,1], (1,2], \dots$, which results in the sequence $\{p_i\}_0^\infty$
 corresponding to observations $y_t$ and resulting in the
 discretized version of \eqref{eq:pre-renew-equation},
 \begin{equation} \label{eq:renew-equation}
-  \bbE[y_t \mid y_1,\ldots,y_{t-1}] = \calR_t\eta_t = \calR_t\sum_{i = 0}^\infty p_i y_{t-i}.
+  \bbE[y_t \mid y_1,\ldots,y_{t-1}]=\calR_t\eta_t=\calR_t\sum_{i = 1}^\infty p_i y_{t-i}.
 \end{equation}
 Many approaches to estimating $\calR_t$ rely on \eqref{eq:renew-equation} as
-motivation for their procedures, among them,
-\EpiEstim\ \citep{cori2013new} and \texttt{EpiFilter}
-\citep{parag2021improved}. 
+motivation for their procedures, among them, \EpiEstim\ \citep{cori2013new} 
+and \texttt{EpiFilter} \citep{parag2021improved}. 
 
-% serial interval probabilities
-In most cases, it is safe to assume that
-infectiousness disappears beyond $\tau$ timepoints ($p(i) = 0$ for $i > \tau$)
-so that the truncated integral of the generation interval distribution
-$\int_0^\tau p(i)\diff i = 1$.
+
+In most cases, it is safe to assume that infectiousness disappears beyond 
+$\tau$ timepoints ($p(i) = 0$ for $i > \tau$), resulting in the truncated integral 
+of the generation interval distribution $\int_0^\tau p(i)\diff i = 1$.
 Generation time, however, is usually unobservable and tricky to estimate, so
 common practice is to approximate it by the serial interval: the period between
 the symptom onsets of primary and secondary infections. If the infectiousness
@@ -46,25 +40,26 @@ approximation is justifiable: the serial interval distribution and the
 generation interval distribution share the same mean. However, other properties
 may not be similarly shared, and, in general, the generation interval
 distribution is a convolution of the serial interval distribution with the
-distribution of the differance between independent draws from the delay
+distribution of the difference between independent draws from the delay
 distribution from infection to symptom onset. See, for example,
-\citet{gostic2020practical} for a fuller discussion of the dangers of this
-approximation. Nonetheless, treating these as interchangable is common
-\citep{cori2013new} and beyond the scope of this work. Additionally, we assume
-that the generation interval (and, therefore, the serial interval), is constant over time
-$t$. That is, the probability $p(i)$ depends only on the gap between primary and
-secondary infections and not on the time $t$ when the secondary infection
-occurs. For our methods, we will assume that the serial interval can be
-accurately estimated from auxilliary data (say by contact tracing, or previous
-epidemics) and we will take it as fixed, as is common in existing studies, e.g.,
+\cite{gostic2020practical} for a fuller discussion of the dangers of this
+approximation. Nonetheless, treating these as interchangeable is common
+\citep{cori2013new} and doing otherwise is beyond the scope of this work. 
+Additionally, we assume that the generation interval (and, therefore, the 
+serial interval), is constant over time $t$. That is, the probability $p(i)$ 
+depends only on the gap between primary and secondary infections and not on 
+the time $t$ when the secondary infection occurs. For our methods, we will 
+assume that the serial interval can be accurately estimated from auxiliary 
+data (say by contact tracing, or previous epidemics) and we will take it as 
+fixed, as is common in existing studies, e.g., 
 \cite{cori2013new,abry2020spatial,pascal2022nonsmooth}.
 
-% advantage of using the renewal equation
+
 The renewal equation in \eqref{eq:renew-equation} relates observable data
-streams (incident cases) occurring at different time points to the reproduction
+streams (incident cases) occurring at different timepoints to the effective reproduction
 number given the serial interval. The fact that it depends only on the observed
-incidence counts makes it reasonable to estimate $\calR_t$. However, this
-relationship obscures some difficulties in data collection. Diagnostic testing
+incident counts makes it reasonable to estimate $\calR_t$. However, 
+data collection idiosyncrasies can obscure this relationship. Diagnostic testing
 targets symptomatic individuals, omitting asymptomatic primary infections which
 can lead to future secondary infections. Testing practices, availability, and
 uptake can vary across space and time \citep{pitzer2021impact,
@@ -82,102 +77,88 @@ the reporting ratio, then it will cancel from both sides. Similar arguments mean
 that even if such a scaling varies in time, as long as it varies slowly relative
 to the set of $p_i$ that are larger than 0, \eqref{eq:renew-equation} will be a
 reasonably accurate approximation, so that $\calR_t$ can still be estimated well
-from reported incidence data. Finally, even a sudden change, say from $c_1$ for
-$i=1,\ldots,t_1$ to $c_2$ for $i>t_1$ would only result in large errors for $t$
-in the neighbourhood of $t_1$ (where the size of this neighbourhood is again
-determined by the effective support of $\{p_i\}$). This robustness to certain
-types of data reporting issues partially justifies using
-\eqref{eq:renew-equation} to calculate $\calR_t$.
+from reported incidence data. Finally, even a sudden change in reporting ratio, 
+say from $c_1$ for $i=1,\ldots,t_1$ to $c_2$ for $i>t_1$ would only result in 
+large errors for $t$ in the neighbourhood of $t_1$ (where the size of this 
+neighbourhood is again determined by the effective support of $\{p_i\}$). 
+This robustness to certain types of data reporting issues partially justifies 
+using \eqref{eq:renew-equation} to calculate $\calR_t$.
 
-\subsection{Poisson trend filtering estimator} %Proximal optimization
+
+\subsection{Poisson trend filtering estimator} 
 
 We use the daily confirmed incident cases $y_t$ on day $t$ to estimate the
-observed infectious cases under the model that $y_t$ given previous incident
-cases $y_{t-1},\ldots,y_1$ and a constant serial interval distribution follows a
+observed infectious cases under the model that $y_t$, given previous incident
+cases $y_{t-1},\ldots,y_1$ and a constant serial interval distribution, follows a
 Poisson distribution with mean $\Lambda_t$. That is, 
-$$
-y_t \mid y_1,\ldots,y_{t-1} \sim \mathrm{Poisson}(\Lambda_t), \textrm{ where } \Lambda_t =  \calR_t\sum_{i=0}^{t-1}p_i y_{t-i} = \calR_t\eta_t.$$ 
-Given a history of $n$ confirmed incidence counts $\bfy = (y_1,\ldots,y_n)^\top$,
+$$y_t \mid y_1,\ldots,y_{t-1} \sim \mathrm{Poisson}(\Lambda_t), \textrm{ where } 
+\Lambda_t =  \calR_t\sum_{i=1}^{t-1}p_i y_{t-i} = \calR_t\eta_t.$$ 
+Given a history of $n$ confirmed incident counts $\bfy = {(y_1,\ldots,y_n)}^\top$,
 our goal is to estimate $\calR_t$. A natural approach is to maximize the
-likelihood, producing the MLE:
+likelihood, producing the maximum likelihood estimator (MLE):
 \begin{equation} \label{eq:mle}
   \begin{split}
     \widehat{\calR} &= \Argmax{\calR \in \bbR_+^n} \bbP(\calR \mid \bfy,\ \bfp)
     = \Argmax{\calR \in \bbR^n_+} \prod_{t = 1,\dots,n} 
-    \frac{e^{- \calR_t \eta_t} \lr{\calR_t \eta_t}^{y_t} }{y_t!}\\
-    &= \Argmin{\calR\in\bbR^n_+} \frac{1}{n}\sum_{t = 1}^n \calR_t\eta_t - y_t\log(\calR_t\eta_t).
+    \frac{\lr{\calR_t \eta_t}^{y_t} \exp\{- \calR_t \eta_t\}  }{y_t!}\\
+    &= \Argmin{\calR\in\bbR^n_+} \sum_{t = 1}^n \calR_t\eta_t - 
+    y_t\log(\calR_t\eta_t).
   \end{split}
 \end{equation}
 This optimization problem, however, is easily seen to yield a one-to-one
-correspondence between the confirmed cases and the effective reproduction, i.e.,
+correspondence between the observations and the estimated effective reproduction
+number, i.e.,
 $\widehat{\calR}_t = y_t / \eta_t$, so that the estimated sequence
-$\widehat{\calR}$ will have no significant graphical smoothness.
+$\widehat{\calR}$ will have no significant smoothness.
+
 
 The MLE is an unbiased estimator of the true parameter $\calR_t$, but
 unfortunately has high variance: changes in $y_t$ result in proportional changes
 in $\widehat\calR_t$. To avoid this behaviour, and to match the intuition that
 $\calR_t \approx \calR_{t-1}$, we advocate enforcing smoothness of the effective
-reproduction numbers. This requirement will decrease the variance, and hopefully
-lead to more accurate estimation of $\calR$, as long as the smoothness
+reproduction numbers. This constraint will decrease the estimation variance, and
+hopefully lead to more accurate estimation of $\calR$, as long as the smoothness
 assumption is reasonable. Smoothness assumptions are common (see e.g.,
-\citet{parag2021improved} or \citet{gostic2020practical}), but the \emph{type}
-of smoothness assumed is critical. \citet{cori2020package} imposes smoothness
-indirectly by estimating $\calR_t$ with moving windows of of past observations.
-The Kalman filter procedure of \citet{parag2021improved} would enforce in
-$\ell_2$-smoothness ($\int_0^n (\widehat{\calR}''(t))^{2}\diff t < C$ for some
-$C$), although the algorithm results in $\widehat{\calR}$ taking values over a
-discrete grid. \citet{pascal2022nonsmooth} produces piecewise-linear
-$\widehat{\calR}_t$, which turns out to closely related to a special case of our
-methodology.
-%Meanwhile, the smoothed estimation can still keep the critical changing points
-%of the transmissibility for the reference to policy makers. 
-%Smoothness of the effective reproduction numbers is a key to understand the trend of transmissibility of infectious diseases in retrospective studies. 
-Smoother estimated curves will provide high-level information about the entire
-epidemic, obscuring small local changes in $\calR(t)$, but may also remove the
-ability to detect large sudden changes, such as those resulting from lockdowns
-or other major containment policies. 
-
-We choose to implement smoothness by assuming that $\log(\calR(t))$ is a
-piecewise polynomial of arbitrary degree. We specifically consider discrete
-splines with various degrees of continuity. For example, $0\th$-degree discrete
-splines are piecewise constant, the \first-degree curves are piecewise linear,
-and \second-degree curves are piecewise quadratic. For $k\geq 1$, $k\th$-degree
-discrete splines are continuous and have continuous discrete differences up to
-degree $k-1$ at the knots. To achieve such smoothness, we regularize the size of
-changes between adjacent effective reproduction numbers. Because $\calR_t > 0$,
-we explicitly penalize the divided differences (discrete derivatives) of
-neighbouring values of $\log(\calR_t)$. To achieve this, we penalize the
-$\ell_1$ norm of the divided differences, which introduces sparsity into the
-curvature, so that the estimates have heterogeneous smoothness in different
-periods of time. It is a more realistic setting compared to
-homogeneous smoothness created by the squared $\ell_2$ norm. Using different
-orders of divided differences result in estimated effective reproduction numbers
-with different smoothness assumptions. 
+\cite{parag2021improved} or \cite{gostic2020practical}), but the type of
+smoothness assumed is critical. \cite{cori2020package} imposes smoothness
+indirectly by estimating $\calR_t$ with moving windows of past observations. The
+Kalman filter procedure of \cite{parag2021improved} would enforce in
+$\ell_2$-smoothness ($\int_0^n {(\widehat{\calR}''(t))}^{2}\diff t < C$ for some
+$C$), although the computational implementation results in $\widehat{\calR}$
+taking values over a discrete grid. \cite{pascal2022nonsmooth} produces
+piecewise linear $\widehat{\calR}_t$, which turns out to be closely related to a
+special case of our methodology. Smoother estimated curves will provide
+high-level information about the entire epidemic, obscuring small local changes
+in $\calR(t)$, but may also remove the ability to detect large sudden changes,
+such as those resulting from lockdowns or other major containment policies. 
 
 To enforce smoothness of $\hat\calR_t$, we add a trend filtering penalty to
-\eqref{eq:rt-ptf}
-\citep{kim2009ell_1,tibshirani2014adaptive,tibshirani2022divided,sadhanala2022exponential}.
+\eqref{eq:rt-ptf} \citep{kim2009ell_1, tibshirani2014adaptive, tibshirani2022divided, 
+sadhanala2022exponential}. Because $\calR_t > 0$,
+we explicitly penalize the divided differences (discrete derivatives) of
+neighbouring values of $\log(\calR_t)$. 
 Let $\theta := \log(\calR) \in \bbR^n$, so that $\Lambda_t =
 \eta_t \exp(\theta_t)$, and $\log(\eta_t \calR_t) = \log(\eta_t) +
-\theta_t$. For evenly spaced incident case data, we
+\theta_t$. For evenly spaced incident case, we
 write our estimator as the solution to the optimization problem
-%We further regularize the smoothness of the reproduction number using the $\ell_1$ norm of the divided difference of the natural logarithm of $\calR$, which is real-valued. 
 \begin{equation} 
   \label{eq:rt-ptf}
-  \widehat{\calR} = \exp(\widehat{\theta}) \quad\textrm{where}\quad \widehat{\theta} = \Argmin{\theta\in\bbR^n} \eta^\top \exp(\theta) - \bfy^\top \theta + \lambda \snorm{D^{(k+1)} \theta}_1,
+  \widehat{\calR} = \exp(\widehat{\theta}) \quad\textrm{where}\quad \widehat{\theta} 
+  = \Argmin{\theta\in\bbR^n} \eta^\top \exp(\theta) - \bfy^\top \theta + \lambda 
+  \snorm{D^{(k+1)} \theta}_1,
 \end{equation}
 where $\exp(\cdot)$ applies elementwise.
 Here, $D^{(k+1)} \in \bbZ^{(n-k-1)\times n}$ is the $(k+1)\th$ order divided
-difference matrix for any $k \in \{0,\ldots,n-1\}$. $D^{(k+1)}$ is defined recursively as
-$D^{(k+1)} = D^{(1)} D^{(k)}$, where $D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times
-(n-k)}$ is a sparse matrix with diagonal band: 
+difference matrix for any $k \in \{0,\ldots,n-1\}$. $D^{(k+1)}$ is defined 
+recursively as $D^{(k+1)} := D^{(1)} D^{(k)}$, where 
+$D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times (n-k)}$ is a sparse matrix with diagonal band: 
 $$D^{(1)} = \begin{pmatrix} 
   -1 & 1 &  & & \\ 
   & -1 & 1 & & \\ 
   & & \ddots & \ddots & \\
   & & & -1 & 1 
 \end{pmatrix}.$$ 
-The tuning parameter $\lambda$ balances data
+The tuning parameter (hyperparameter) $\lambda$ balances data
 fidelity with desired smoothness. When $\lambda=0$, the problem in
 \eqref{eq:rt-ptf} reduces to the MLE in \eqref{eq:mle}. Larger tuning parameters
 privilege the regularization term and yield smoother estimates. Finally, there
@@ -186,10 +167,22 @@ exists $\lambda_{\textrm{max}}$ such that any $\lambda \geq
 $\widehat{\theta}$ will be the Kullback-Leibler projection of $\bfy$ onto the
 null space of $D^{(k+1)}$ (see \autoref{sec:candidate-set}).
 
-For unevenly-spaced incidence data, the spacing between neighboring parameters
+The solution to \eqref{eq:rt-ptf} will result in piecewise 
+polynomials, specifically called discrete splines. For example, $0\th$-degree
+discrete splines are piecewise constant, \first-degree curves are piecewise
+linear, and \second-degree curves are piecewise quadratic. For $k\geq 1$,
+$k\th$-degree discrete splines are continuous and have continuous discrete
+differences up to degree $k-1$ at the knots. This penalty results in more
+flexibility compared to the homogeneous smoothness that is created by the
+squared $\ell_2$ norm. Using different orders of divided differences result in
+estimated effective reproduction numbers with different smoothness properties. 
+
+
+
+For unevenly-spaced data, the spacing between neighbouring parameters
 varies with the time between observations, and thus, the divided differences
 must be adjusted by the times that the observations occur. Given observation
-times $\bfx = (x_1,\dots,x_n)^\top$, for $k \geq 1$, define a $k\th$-order
+times $\bfx = {(x_1,\dots,x_n)}^\top$, for $k \geq 1$, define a $k\th$-order
 diagonal matrix $$X^{(k)} = \diag \lr{\frac{k}{x_{k+1} - x_1},\ \frac{k}{x_{k+2}
 - x_2},\ \cdots,\ \frac{k}{x_n - x_{n-k}} }.$$ Letting $D^{(\bfx,1)} := D^{(1)}$,
 then for $k\geq 1$, the $(k+1)\th$-order divided difference matrix for unevenly
@@ -197,12 +190,13 @@ spaced data can be created recursively by
 $D^{(\bfx, k+1)} := D^{(1)} X^{(k)} D^{(\bfx,k)}.$ No adjustment is required
 for $k=0$. 
 
+
 Due to the penalty structure, this estimator is locally adaptive,
 meaning that it can potentially capture local changes such as the initiation of
 control measures. \cite{abry2020spatial,pascal2022nonsmooth} considered only the
 \second-order divided difference of $\calR_t$ rather than its logarithm. In
-comparison to their work, our estimator (1) allows for arbitrary degrees of
-temporal smoothness and (2) avoids the potential numerical issues of
+comparison to their work, our estimator (i) allows for arbitrary degrees of
+temporal smoothness and (ii) avoids the potential numerical issues of
 penalizing/estimating positive real values. Furthermore, as we will describe
 below, our procedure is computationally efficient for estimation over an entire
 sequence of penalty strengths $\lambda$ and provides methods for choosing how
@@ -214,8 +208,9 @@ smooth the final estimate should be.
 
 We can solve the Poisson trend filtering estimator over an arbitrary sequence of 
 $\lambda$ that produces different levels of smoothness in the estimated curves. 
-We consider a candidate set $\boldsymbol{\lambda} = \{\lambda_m\}_{m=1}^M$, which contains a strictly decreasing $\lambda$ sequence.% with 
-%$\lambda_M \geq \lambda_{min}$ and $\lambda_1 \leq \lambda_{max}$. 
+We consider a candidate set $\boldsymbol{\lambda} = \{\lambda_m\}_{m=1}^M$
+that is strictly decreasing.
+
 
 Let $D := D^{(k+1)}$ for simplicity in the remainder of this section. As
 $\lambda \to\infty$, the penalty term $\lambda \snorm{D\theta}_1$ dominants the
@@ -234,71 +229,69 @@ $r\lambda_{max}$ for some $r \in (0,1)$ (typically $r=10^{-5}$). Given any
 $M\geq 3$, we generate a sequence of $\lambda$ values to be equally spaced on
 the log-scale between $\lambda_1$ and $\lambda_M$. 
 
+To compute the sequence efficiently, the model is estimated sequentially by
+visiting each component of $\boldsymbol{\lambda}$ in order. The estimates
+produced for a larger $\lambda$ are used as the initial values (warm starts) for
+the next smaller $\lambda$. By solving through the entire sequence of tuning
+parameters, we have a better chance to achieve a better trade-off between bias
+and variance, and accordingly, improved accuracy relative to procedures
+examining one fixed value of $\lambda$.
+
+
 \subsection{Choosing a final $\lambda$}
 \label{sec:cv}
 
-We estimate model accuracy over the candidate set through $k$-fold cross
+We estimate model accuracy over the candidate set through $K$-fold cross
 validation (CV) to choose the best tuning parameter. Specifically, we divide
 $\bfy$ (except the first and last observations) roughly evenly and randomly into
-$k$ folds, estimate $\calR_t$ for all $\boldsymbol{\lambda}$ leaving one fold
+$K$ folds, estimate $\calR_t$ for all $\boldsymbol{\lambda}$ leaving one fold
 out, and then predict the held-out observations. Model accuracy can be measured
 by multiple metrics such as mean squared error $\mathrm{MSE}(\widehat{y},\ y) =
 n^{-1}\snorm{\widehat{y} - y}_2^2$ or mean absolute error
 $\mathrm{MAE}(\widehat{y},\ y) = n^{-1}\snorm{\widehat{y} - y}_1$, but we prefer
-to use the deviance, to mimic the likelihood in \autoref{eq:mle}: $D\lr{y,\
-\hat{y}} = \fr{n} \sum_{i=1}^n 2\lr{y_i \log(y_i) - y_i\log(\hat{y}_i) - y_i +
-\hat{y}_i},$ where we define $0\log(0) = 0$. 
-
-To estimate the sequence efficiently, the model is fitted sequentially by visiting each component 
-of $\boldsymbol{\lambda}$ in order. The estimates produced with a larger 
-$\lambda$ are used as the initial values (warm starts) for the next smaller $\lambda$. 
-By solving through the entire sequence of tuning parameters, we have a better chance to 
-achieve a better trade-off between bias and variance, and accordingly, improved
-accuracy relative to procedures examining one fixed value of $\lambda$. Note
-that for any $k$ and any $M$, we will end up estimating the model $(k+1)M$
-times rather than once.
+to use the (average) deviance, to mimic the likelihood in \eqref{eq:mle}:
+$D\lr{y,\ \hat{y}} = n^{-1}\sum_{i=1}^n 2\lr{y_i \log(y_i) - y_i\log(\hat{y}_i)
+- y_i + \hat{y}_i},$ with the convention that $0\log(0) = 0$. Note that for any $K$ and any $M$, we will end up 
+estimating the model $(K+1)M$ times rather than once.
 
 
 \subsection{Approximate confidence bands} 
 \label{sec:conf-band} 
 
 We also provide empirical confidence bands of the estimators with  
-approximate coverage guarantees. 
-Consider the related estimator $\widetilde{\calR}_t$ defined as
+approximate coverage. Consider the related estimator $\widetilde{\calR}_t$
+defined as
 $$\widetilde{\calR} = \exp(\widetilde{\theta}) \quad\textrm{where}\quad
 \widetilde{\theta} = \Argmin{\theta\in\bbR^n} \eta^\top \exp(\theta) - \bfy^\top
-\theta + \lambda \snorm{\widetilde{D} \theta}_2^2,$$ where $\widetilde{D}$ is a
-block-diagonal matrix such that each block is the divided difference matrix for
-the corresponding segment of the original estimated $\calR_t$, and let
-$\widetilde{\bfy} = \eta \circ \calR$. Then it can be shown \citep[for example,
-Theorem 2 in][]{vaiter2017degrees}, that an estimator for
+\theta + \lambda \snorm{D \theta}_2^2.$$ 
+Let $\widetilde{\bfy} = \eta \circ \widetilde\calR$, and then it can be shown (for example,
+Theorem 2 in \cite{vaiter2017degrees}) that an estimator for
 $\Var(\widetilde{\bfy})$ is given by $\big(\mathrm{diag}(\widetilde{\bfy}^{-2})
-+ \lambda \widetilde{D}^{\top} \widetilde{D}\big)^{\dagger}.$ Finally, an
++ \lambda D^{\top} D\big)^{\dagger}.$ Finally, an
 application of the delta method shows that $\Var(\widetilde{\bfy}_t) / \eta_t^2$
-is an estimator for $\Var(\widetilde{\calR}_t)$ for each $t = 1, \cdots, n$. We
-therefore use $\big(\mathrm{diag}(\widetilde{\bfy}^{-2}) + \lambda
-\widetilde{D}^{\top} \widetilde{D}\big)^{\dagger}_t / \eta_t^2$ as an estimator
-for $\Var{\widehat{\calR}_t}$. An approximate $(1-\alpha)\%$ confidence interval
-then can be written as $\widehat{\calR} \pm \textrm{T}(\alpha/2, n-\textrm{df}) s$, where $s_t$ is
-the square-root of $\Var(\widehat{\calR}_t)$ for each $t = 1, \cdots, n$ and $\textrm{df}$ is
-the number of blocks in $\widetilde{D}$ plus $k+1$. 
+is an estimator for $\Var(\widetilde{\calR}_t)$ for each $t = 1, \ldots, n$. We
+therefore use ${\big(\mathrm{diag}(\widehat{\bfy}^{-2}) + \lambda
+D^{\top} D\big)}^{\dagger}_t / \eta_t^2$ as an estimator
+for $\Var(\widehat{\calR}_t)$. An approximate $(1-\alpha)\%$ confidence interval
+then can be written as $\widehat{\calR}_t\pm s_t \times T_{\alpha/2,n-\textrm{df}}$, 
+where $s_t$ is the square-root of $\Var(\widehat{\calR}_t)$ for each 
+$t = 1, \cdots, n$ and $\textrm{df}$ is the number of changepoints in 
+$\widehat{\theta}$ plus $k+1$. 
 
 
 \subsection{Bayesian perspective}
-%The epidemiology evolution mechanism suggests a hierarchical framework that posteriori of reproduction number depends on its prior and the distribution of confirmed cases. 
 
-%We here provide an alternative interpretation of our approach from the Bayesian perspective. 
-Unlike many other methods for $\calR_t$ estimation, our apporach is frequentist
+Unlike many other methods for $\calR_t$ estimation, our approach is frequentist
 rather than Bayesian. Nonetheless, it has a corresponding Bayesian
 interpretation: as a state-space model with Poisson observational noise,
 autoregressive transition equation of degree $k\geq 0$, e.g., $\theta_{t+1} =
 2\theta_t - \theta_{t-1} + \varepsilon_{t+1}$ for $k=1$, and Laplace transition
 noise $\varepsilon_{t+1}\sim \mathrm{Laplace}(0,\ 1/\lambda)$. Compared to
-\texttt{EpiFilter} \citep{parag2021improved}, another retrospective study of
-$\calR_t$, we share same observational assumptions, but our approach has a
+\texttt{EpiFilter} \citep{parag2021improved},
+ we share the same observational assumptions, but our approach has a
 different transition noise. \texttt{EpiFilter} estimates the posterior
 distribution of
 $\calR_t$, and thus it can provide credible interval estimates as well. Our
 approach produces the maximum \emph{a posteriori} estimate via an efficient
-convex optimization, omitting the need for MCMC sampling. But the associated
+convex optimization, obviating the need for MCMC sampling. But the associated
 confidence bands are created differently.
