@@ -6,4 +6,4 @@ The manuscript version that we submitted to medRxiv is [here](medRxiv_version.pd
 
 Supplementary details on experimental designs and results are attached at the bottom of the manuscript and can also be checked out [here](src/supp.pdf). 
 
-Code to generate all data and figures except running the experiments is [here](src/supp.Rmd). Data examples and experiment results are saved in the [dat](dat) directory. All figures are included in the [fig](fig) directory.
+Code to generate all data and figures except running the experiments is [here](src/supp.Rmd). Code for the experiments is contained in [this](src/exp) directory. Data examples and experiment results are saved in the [dat](dat) directory. All figures are included in the [fig](fig) directory.
