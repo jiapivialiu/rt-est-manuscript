@@ -91,8 +91,10 @@ We use the daily confirmed incident cases $y_t$ on day $t$ to estimate the
 observed infectious cases under the model that $y_t$, given previous incident
 cases $y_{t-1},\ldots,y_1$ and a constant serial interval distribution, follows a
 Poisson distribution with mean $\Lambda_t$. That is, 
-$$y_t \mid y_1,\ldots,y_{t-1} \sim \mathrm{Poisson}(\Lambda_t), \textrm{ where } 
-\Lambda_t =  \calR_t\sum_{i=1}^{t-1}p_i y_{t-i} = \calR_t\eta_t.$$ 
+\begin{equation}
+  y_t \mid y_1,\ldots,y_{t-1} \sim \mathrm{Poisson}(\Lambda_t), \textrm{ where } 
+  \Lambda_t =  \calR_t\sum_{i=1}^{t-1}p_i y_{t-i} = \calR_t\eta_t.
+\end{equation}  
 Given a history of $n$ confirmed incident counts $\bfy = {(y_1,\ldots,y_n)}^\top$,
 our goal is to estimate $\calR_t$. A natural approach is to maximize the
 likelihood, producing the maximum likelihood estimator (MLE):
@@ -152,12 +154,15 @@ Here, $D^{(k+1)} \in \bbZ^{(n-k-1)\times n}$ is the $(k+1)\th$ order divided
 difference matrix for any $k \in \{0,\ldots,n-1\}$. $D^{(k+1)}$ is defined 
 recursively as $D^{(k+1)} := D^{(1)} D^{(k)}$, where 
 $D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times (n-k)}$ is a sparse matrix with diagonal band: 
-$$D^{(1)} = \begin{pmatrix} 
-  -1 & 1 &  & & \\ 
-  & -1 & 1 & & \\ 
-  & & \ddots & \ddots & \\
-  & & & -1 & 1 
-\end{pmatrix}.$$ 
+\begin{equation}
+  D^{(1)} = 
+  \begin{pmatrix} 
+    -1 & 1 &  & & \\ 
+    & -1 & 1 & & \\ 
+    & & \ddots & \ddots & \\
+    & & & -1 & 1 
+  \end{pmatrix}.
+\end{equation}
 The tuning parameter (hyperparameter) $\lambda$ balances data
 fidelity with desired smoothness. When $\lambda=0$, the problem in
 \eqref{eq:rt-ptf} reduces to the MLE in \eqref{eq:mle}. Larger tuning parameters
@@ -183,8 +188,12 @@ For unevenly-spaced data, the spacing between neighbouring parameters
 varies with the time between observations, and thus, the divided differences
 must be adjusted by the times that the observations occur. Given observation
 times $\bfx = {(x_1,\dots,x_n)}^\top$, for $k \geq 1$, define a $k\th$-order
-diagonal matrix $$X^{(k)} = \diag \lr{\frac{k}{x_{k+1} - x_1},\ \frac{k}{x_{k+2}
-- x_2},\ \cdots,\ \frac{k}{x_n - x_{n-k}} }.$$ Letting $D^{(\bfx,1)} := D^{(1)}$,
+diagonal matrix 
+\begin{equation}
+  X^{(k)} = \diag \lr{\frac{k}{x_{k+1} - x_1},\ \frac{k}{x_{k+2} - x_2},\ 
+  \cdots,\ \frac{k}{x_n - x_{n-k}} }.
+\end{equation} 
+Letting $D^{(\bfx,1)} := D^{(1)}$,
 then for $k\geq 1$, the $(k+1)\th$-order divided difference matrix for unevenly
 spaced data can be created recursively by
 $D^{(\bfx, k+1)} := D^{(1)} X^{(k)} D^{(\bfx,k)}.$ No adjustment is required
@@ -261,9 +270,11 @@ estimating the model $(K+1)M$ times rather than once.
 We also provide empirical confidence bands of the estimators with  
 approximate coverage. Consider the related estimator $\widetilde{\calR}_t$
 defined as
-$$\widetilde{\calR} = \exp(\widetilde{\theta}) \quad\textrm{where}\quad
-\widetilde{\theta} = \Argmin{\theta\in\bbR^n} \eta^\top \exp(\theta) - \bfy^\top
-\theta + \lambda \snorm{D \theta}_2^2.$$ 
+\begin{equation}
+  \widetilde{\calR} = \exp(\widetilde{\theta}) \quad\textrm{where}\quad
+  \widetilde{\theta} = \Argmin{\theta\in\bbR^n} \eta^\top \exp(\theta) - \bfy^\top
+  \theta + \lambda \snorm{D \theta}_2^2.
+\end{equation}
 Let $\widetilde{\bfy} = \eta \circ \widetilde\calR$, and then it can be shown (for example,
 Theorem 2 in \cite{vaiter2017degrees}) that an estimator for
 $\Var(\widetilde{\bfy})$ is given by $\big(\mathrm{diag}(\widetilde{\bfy}^{-2})
