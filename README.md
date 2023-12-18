@@ -1,7 +1,9 @@
-# Rt estimation manuscript
+# RtEstim manuscript
 
-Outline is listed in this Google [doc](https://docs.google.com/document/d/1xVQTxRtHYJnZgQf2WvNqBjgfDUUcroo0ZwEyAwwVtKs/edit#heading=h.g4v79qllfum3).
+This repository contains all materials (including but not limited to all data and code) for the manuscript "RtEstim: Effective reproduction number estimation with trend filtering".
 
-Manuscript is in the medRxiv version [here](main.pdf) and the PLOS-CB version [here](rt-first-draft.pdf). Two versions have same contents. 
+The manuscript version that we submitted to medRxiv is [here](medRxiv_version.pdf) and the version we submitted to PLoS Computational Biology is [here](PLoS_CB_version.pdf). The two versions have the same content and only differ in formatting. 
 
-Supplementary document on experiments is [here](src/supp.pdf).
+Supplementary details on experimental designs and results are attached at the bottom of the manuscript and can also be checked out [here](src/supp.pdf). 
+
+Code to generate all data and figures except running the experiments is [here](src/supp.Rmd). Data examples and experiment results are saved in the [dat](dat) directory. All figures are included in the [fig](fig) directory.
