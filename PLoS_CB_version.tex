@@ -347,9 +347,12 @@ parameters and can be selected using a built-in cross validation procedure.
 \section{Introduction}
 \label{sec:intro}
 
-The effective reproduction number is defined to be the average number of
-secondary infections caused by a primary infection that occurred sometime in the past.
-Also called the instantaneous reproduction number, it is a key quantity
+The effective reproduction number at time $\textit{t}$ is defined to be the expected number of
+secondary infections produced by a primary infection throughout the course of the entire infection 
+if conditions remain the same at the specific time. 
+We focus on instantaneous reproduction numbers specifically, which is a type of effective reproduction 
+number focusing on the transmission at a specific timepoint \citep{gostic2020practical}.
+It is a key quantity
 for understanding infectious disease dynamics including the potential size of an
 outbreak and the required stringency of control measures.  Tracking the time
 series of this quantity is useful for understanding whether or not
@@ -502,10 +505,10 @@ as the value that equates
 \end{equation}
 otherwise known as the renewal equation. The period between primary and secondary
 infections is exactly the generation time of the disease, but given real data,
-observed at discrete times (say, daily) this delay distribution must be discretized
+observed at discrete times (say, daily), this delay distribution must be discretized
 into contiguous time intervals,
-say, $(0,1], (1,2], \dots$, which results in the sequence $\{p_i\}_0^\infty$
-corresponding to observations $y_t$ and resulting in the
+say, $(0,1], (1,2], \cdots$. It results in the sequence $\{p_i\}_0^\infty$
+corresponding to observations $y_t$ and yields the
 discretized version of \eqref{eq:pre-renew-equation},
 \begin{equation} \label{eq:renew-equation}
   \bbE[y_t \mid y_1,\ldots,y_{t-1}]=\calR_t\eta_t=\calR_t\sum_{i = 1}^\infty p_i y_{t-i}.
@@ -636,7 +639,7 @@ write our estimator as the solution to the optimization problem
   = \Argmin{\theta\in\bbR^n} \eta^\top \exp(\theta) - \bfy^\top \theta + \lambda 
   \snorm{D^{(k+1)} \theta}_1,
 \end{equation}
-where $\exp(\cdot)$ applies elementwise.
+where $\exp(\cdot)$ applies elementwise and $\snorm{\boldsymbol{a}}_1 := \sum_{i=1}^n |a_i|$ is the $\ell_1$ norm.
 Here, $D^{(k+1)} \in \bbZ^{(n-k-1)\times n}$ is the $(k+1)\th$ order divided
 difference matrix for any $k \in \{0,\ldots,n-1\}$. $D^{(k+1)}$ is defined 
 recursively as $D^{(k+1)} := D^{(1)} D^{(k)}$, where 
@@ -650,6 +653,7 @@ $D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times (n-k)}$ is a sparse matrix with diagonal 
     & & & -1 & 1 
   \end{pmatrix}.
 \end{equation}
+$D^{(1)} \in \{-1,0,1\}^{(n-1)\times n}$ is the divided difference matrix for $k=0$.
 The tuning parameter (hyperparameter) $\lambda$ balances data
 fidelity with desired smoothness. When $\lambda=0$, the problem in
 \eqref{eq:rt-ptf} reduces to the MLE in \eqref{eq:mle}. Larger tuning parameters
@@ -704,7 +708,7 @@ smooth the final estimate should be.
 
 We can solve the Poisson trend filtering estimator over an arbitrary sequence of 
 $\lambda$ that produces different levels of smoothness in the estimated curves. 
-We consider a candidate set $\boldsymbol{\lambda} = \{\lambda_m\}_{m=1}^M$
+We consider a candidate set of M $\lambda$-values, $\boldsymbol{\lambda} = \{\lambda_m\}_{m=1}^M$,
 that is strictly decreasing.
 
 
@@ -719,7 +723,8 @@ threshold, so define $\lambda_{\textrm{max}}$ to be the smallest $\lambda$ that
 produces $\theta\in\mathcal{N}(D)$. It turns out that this value can be written
 explicitly as $\lambda_{\textrm{max}} = \snorm{\lr{D^{\dagger}}^{\top} \lr{\eta
 - y}}_{\infty},$ where $D^{\dagger}$ is the (left) generalized inverse of $D$
-satisfying $D^{\dagger} D = I$. Therefore, we use $\lambda_1 =
+satisfying $D^{\dagger} D = I$ and $\snorm{a}_{\infty} := \mathrm{max}_{i=1}^n\{|a_i|\}$ is the infinity norm. 
+Therefore, we use $\lambda_1 =
 \lambda_{\textrm{max}}$ and then choose the minimum $\lambda_M$ to be
 $r\lambda_{max}$ for some $r \in (0,1)$ (typically $r=10^{-5}$). Given any
 $M\geq 3$, we generate a sequence of $\lambda$ values to be equally spaced on
@@ -798,16 +803,17 @@ confidence bands are created differently.
 \section{Results}
 
 Implementation of our approach is provided in the \R\ package
-\href{https://dajmcdon.github.io/rtestim/}{\texttt{rtestim}}. All experiments
-are run in \R\ version 4.3.1 on a MacBook with an Apple M1 Pro chip
-and 32GB RAM running under macOS Sonoma 14.0. The \R\ packages used for
+\href{https://dajmcdon.github.io/rtestim/}{\texttt{rtestim}}. 
+All computational experiments are conducted on the Cedar cluster provided 
+by Compute Canada with \R\ version 4.3.1. The \R\ packages used for
 simulation and real-data application are \texttt{EpiEstim 2.2-4},
 \texttt{EpiLPS 1.2.0}, and \texttt{rtestim 0.0.4}. 
 
 \subsection{Synthetic experiments}
 
 We simulate four scenarios of the time-varying effective reproduction number,
-intended to mimic different epidemics. The first two scenarios are rapidly controlled by intervention, where the $\calR(t)$ consists
+intended to mimic different epidemics. The first two scenarios are rapidly 
+controlled by intervention, where the $\calR(t)$ consists
 of one discontinuity and two segments. Scenario 1 has constant $\calR(t)$ before
 and after an intervention, while Scenario 2 grows exponentially, then decays.
 The other two scenarios are more complicated, where more waves
@@ -825,72 +831,108 @@ lines or curves respectively.
 
 In all cases, the times of observation are regular, and epidemics are of
 length $n=300$. Specifically, in Scenario 1, $\calR_t = 2, 0.8$ before and after
-$t=70$. In Scenario 2, $\calR_t$ increases and decreases exponentially with
-rates $0.015, 0.005$ pre and post $t=50$. 
+$t=120$. In Scenario 2, $\calR_t$ increases and decreases exponentially with
+rates $0.01, 0.005$ pre and post $t=100$. 
 In Scenario 3, $\calR_t$ is piecewise linear with four discontinuous segments following 
 \begin{equation}
   \begin{split}
-    \calR(t) =& \lr{2.5 - \frac{0.5}{59}\lr{t-1}} \boldsymbol{1}_{[1,61)}(t)
-     + \lr{0.8 - \frac{0.2}{49}\lr{t-61}} \boldsymbol{1}_{[61,111)}(t) \\
-    & + \lr{1.7 + \frac{0.3}{39}\lr{t-111}} \boldsymbol{1}_{[111,151)}(t)
-       + \lr{0.9 - \frac{0.4}{149}\lr{t-151}} \boldsymbol{1}_{[151,300]}(t),
+    \calR(t) =& \lr{2.5 - \frac{0.5}{74}\lr{t-1}} \boldsymbol{1}_{[1,76)}(t)
+     + \lr{0.8 - \frac{0.2}{74}\lr{t-76}} \boldsymbol{1}_{[76,151)}(t) \\
+    & + \lr{1.7 + \frac{0.3}{74}\lr{t-151}} \boldsymbol{1}_{[151,226)}(t)
+       + \lr{0.9 - \frac{0.4}{74}\lr{t-226}} \boldsymbol{1}_{[226,300]}(t),
   \end{split}
 \end{equation}
 where $\boldsymbol{1}_{A}(t) = 1$, if $t\in A$, and $\boldsymbol{1}_{A}(t)=0$ otherwise. 
 In Scenario 4, $\calR_t$ is realization of the 
 continuous, periodic curve generated by the function 
 \begin{equation}
-  \calR(t) = 0.2 \big(\lr{\sin(\pi t/12) + 1} + \lr{2 \sin\lr{\pi t / 6} + 2} 
-  + \lr{3 \sin(\pi t / 1.2) + 3}\big),
+  \calR(t) = 0.2 \big(\lr{\sin(\pi t/12) + 1} + \lr{2 \sin\lr{5 \pi t / 12} + 2} 
+  + \lr{3 \sin(5\pi t / 6) + 3}\big),
 \end{equation} 
 evaluated at equally spaced points $t\in [0,10]$. 
-These settings are illustrated in the left column of \autoref{fig:samples}.
-
-
-We assume that the serial interval follows the Gamma distribution with fixed
-shapes and scales $(3,3)$, $(2.5,2.5)$, $(3.5,3.5)$ and $(3.5,3.5)$ for
-Scenarios 1--4 respectively. We initialize all epidemics with $y_1=2$ cases and
-generating for $t=2,\ldots,300$. We compute the expected incidence $\Lambda_t$
-using the renewal equation, and generate the incident infections from the
-Poisson distribution $y_t\sim \textrm{Pois}(\Lambda_t)$. To verify the
-performance of our model under the violation of this distributional assumption,
-we also generate incident infections using the negative Binomial distribution
-with dispersion size 5, i.e., $y_t\sim \textrm{NB}(\Lambda_t,\
-\textrm{size}=5)$. For each setting, we generate 50 random samples, resulting in
-400 total experiments. An example of each effective reproduction number scenario
-with a single corresponding Poisson and negative Binomial sample incidence
-sequences is displayed in \autoref{fig:samples}. 
+These $\calR_t$ scenarios are illustrated in \autoref{fig:samples-rt}.
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=.8\textwidth]{fig/plot_samples.png}
-  \caption{The effective reproduction numbers (left column) and corresponding
-  sample incident cases drawn from a  Poisson (middle column) or negative
-  Binomial (right column) distribution. The rows correspond to the four
-  $\calR_t$ settings.} 
-  \label{fig:samples}
+  \includegraphics[width=.8\textwidth]{fig/fig_true_rt.png}
+  \caption{The effective reproduction numbers for four $\calR_t$ scenarios.} 
+  \label{fig:samples-rt}
 \end{figure}
 
-We compare \RtEstim\ to \EpiEstim\ and \EpiLPS. Unfortunately,
-\texttt{EpiFilter} frequently fails to converge due to the large incident counts
-in these settings, so we are unable to include its results. \EpiEstim\ estimates
+We use serial interval (SI) distributions of measles (with mean $14.9$ and standard 
+deviation $3.9$) at Hagelloch, Germany in 1861 \citep{groendyke2011bayesian} and 
+SARS (with mean $8.4$ and standard deviation $3.8$) at Hong Kong in 2003 
+\citep{cori2009temporal}, inspired by \cite{cori2013new}, to generate synthetic 
+epidemics. We initialize all epidemics with $y_1=2$ cases and generate for $t=2,\ldots,300$. 
+We compute the expected incidence $\Lambda_t$
+using the renewal equation, and generate the incident infections from the
+Poisson distribution $y_t\sim \textrm{Pois}(\Lambda_t)$. 
+The synthetic measles epidemics tend to have smaller incident cases, and the SARS 
+epidemics tend to have larger incidence. The intuition behind this is since the 
+mean of serial interval of SARS is smaller with a similar standard deviation 
+compared to the counterpart of measles, SARS epidemics have an averaged shorter period 
+between primary and secondary onsets of symptoms of the infected individuals, and 
+then they can result in a larger increase in incidence within the same period of time. 
+To verify the
+performance of our model under the violation of this distributional assumption,
+we also generate incident infections using the negative Binomial distribution
+with dispersion size 5, i.e., $y_t\sim \textrm{NB}(\textrm{mean}=\Lambda_t,\
+\textrm{size}=5)$, which gives a reasonably large overdispersion. 
+For each problem setting (including a SI distribution, a $\calR_t$ scenario, 
+and an incidence distribution), we generate 50 random samples, resulting in 
+$800$ total synthetic epidemics. 
+An example of measles epidemics for each effective reproduction number scenario
+with an incidence distribution is displayed in \autoref{fig:samples-measles}; 
+SARS epidemics are displayed in \autoref{fig:samples-sars}. 
+We also visualize the (over)dispersion level of the following synthetic epidemics 
+using signal-to-noise ratios in Appendix. 
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=.8\textwidth]{fig/fig_measles_data.png}
+  \caption{The sample measles incident cases drawn from Poisson (upper row) or negative
+  Binomial (bottom row) distribution across 4 $\calR_t$ scenarios.} 
+  \label{fig:samples-measles}
+\end{figure}
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=.8\textwidth]{fig/fig_sars_data.png}
+  \caption{The sample SARS incident cases drawn from Poisson (upper row) or negative
+  Binomial (bottom row) distribution across 4 $\calR_t$ scenarios.} 
+  \label{fig:samples-sars}
+\end{figure}
+
+We compare \RtEstim\ to \EpiEstim, \EpiLPS, and \texttt{EpiFilter}. \EpiEstim\ estimates
 the posterior distribution of the effective reproduction number given a Gamma
 prior and Poisson distributed observations
 over a trailing window, under the assumption that the effective reproduction number is
 constant during that window. A larger window averages out more
 fluctuations,
 leading to smoother estimates, whereas, a shorter sliding window is more
-responsive to sudden spikes or declines. We tried the default, a weekly sliding
+responsive to sudden spikes or declines. We tried the weekly sliding
 window, as well as a monthly window. However, since neither considerably
 outperforms the other across all scenarios, we defer the monthly results to the
 supplementary document. \EpiLPS\ is another Bayesian approach that estimates P-splines 
 based on the Laplace approximation to the conditional posterior with negative
-Binomial likelihood. For \RtEstim\ on the four scenarios respectively, we
-estimate (1) piecewise constant $k=0$, (2) piecewise linear \& cubic $k=1,3$,
-(3) piecewise linear $k=1$ and (4) piecewise cubic polynomials $k=3$. In each
-case, we examine a grid of 50 $\lambda$ values, selecting the best using 10-fold
+Binomial likelihood. \texttt{EpiFilter} is also a Bayesian approach that smooths 
+$\calR_t$ at each timepoint given all observed incidence, improved upon the filtering methods
+that filter $\calR_t$ given the observations prior to and on time $t$.
+We apply \RtEstim\ with four degrees, (1) piecewise constant $k=0$, (2) piecewise linear \& cubic $k=1,3$,
+(3) piecewise linear $k=1$ and (4) piecewise cubic polynomials $k=3$, to solve all settings.
+In each case, we examine a grid of 50 $\lambda$ values, selecting the best using 10-fold
 cross validation. For all models and problems, we use the same serial interval
 distribution for estimation that was used to create the data. 
+Taking different hyper parameters into consideration, we solve each problem using 7 methods in total.
+
+% discusse `degree' of all methods; more details in Discussion section
+Throughout the four $\calR_t$ scenarios, the degrees of \RtEstim\ can be correctly or wrongly specified. 
+On one hand, our method can take the advantage of a correctly specified degree 
+of piecewise polynomials compared to other methods, since the competitors only consider
+one fixed degree of smoothness and do not allow a user-specified degree. 
+(We will discuss more in Section \ref{sec:disc}.) 
+On the other hand, we will illustrate that a wrongly specified degree can still 
+result in relatively accurate $\calR_t$ estimates in the following experimental results. 
 
 
 To measure estimation accuracy, we compare $\widehat{\calR}$ to $\calR$ using
@@ -917,7 +959,8 @@ supplementary document.
 \subsection{Results for synthetic data}
 
 \RtEstim\ overall outperforms \EpiEstim\ and \EpiLPS\ in the experimental study.
-\autoref{fig:kl-res} visualizes the KL divergence across the three models. Under
+\autoref{fig:kl-res-measles} and \autoref{fig:kl-res-sars} visualizes 
+the KL divergence across the seven models. Under
 both Poisson and negative Binomial distributions, \RtEstim\ is easily the most
 accurate for Scenarios 1 and 3: the median of KL divergence is much lower and
 the boxes frequently fail to overlap indicating better performance than the
@@ -935,16 +978,27 @@ experiment to investigate these global conclusions in more detail.
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=.99\textwidth]{fig/KL_no_outlier.png}
+  \includegraphics[width=.99\textwidth]{fig/fig_kl_week_measles.png}
   \caption{Boxplot of KL divergence between the estimated 
-  $\hat{\calR}_t$ and the true $\calR_t$ across 50 random samples for 
+  $\hat{\calR}_t$ and the true $\calR_t$ across 50 synthetic measles epidemics for 
   each approach given Poisson incidence \textit{(in top panels)} and negative 
   Binomial incidence \textit{(in bottom panels)} respectively.  
   Outliers are excluded.} 
-  \label{fig:kl-res}
+  \label{fig:kl-res-measles}
 \end{figure}
 
-\autoref{fig:pois-est} shows one realization for the estimated effective reproduction
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=.99\textwidth]{fig/fig_kl_week_sars.png}
+  \caption{Boxplot of KL divergence between the estimated 
+  $\hat{\calR}_t$ and the true $\calR_t$ across 50 synthetic SARS epidemics for 
+  each approach given Poisson incidence \textit{(in top panels)} and negative 
+  Binomial incidence \textit{(in bottom panels)} respectively.  
+  Outliers are excluded.} 
+  \label{fig:kl-res-sars}
+\end{figure}
+
+\autoref{fig:pois-est-measles} show one realization for the estimated effective reproduction
 number under the Poisson generative model for all four scenarios. Compared to
 \EpiEstim\ and \EpiLPS, which have rather severe difficulties at the beginning
 of the time series, \RtEstim\ estimates are more accurate---they nearly
@@ -965,14 +1019,14 @@ growth phase because it enforces continuity at the changepoint.
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=.99\textwidth]{fig/Pois-res-plot.png}
-  \caption{Example of effective reproduction number estimation for Poisson observations.}
-  \label{fig:pois-est}
+  \includegraphics[width=.99\textwidth]{fig/fig_res_pois_measles.png}
+  \caption{Example of effective reproduction number estimation for measles epidemics with Poisson observations.}
+  \label{fig:pois-est-measles}
 \end{figure}
 
 To investigate the performance when the Poisson assumption (imposed by both
 \RtEstim\ and \EpiEstim) is violated, we also examine estimation accuracy with
-negative Binomial data. \autoref{fig:nb-est} displays a realization, analogous
+negative Binomial data. \autoref{fig:nb-est-measles} displays a realization, analogous
 to the previous case, for all methods and scenarios. \RtEstim\ has more
 difficulty relative to the Poisson setting, especially at the beginning of the
 outbreak. This is most pronounced in Scenario 4, where \RtEstim\ is overly
@@ -984,10 +1038,10 @@ Poisson case.
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics*[width=.99\textwidth]{fig/NB-res-plot.png}
-  \caption{Example of effective reproduction number estimation for negative
+  \includegraphics*[width=.99\textwidth]{fig/fig_res_NB_measles.png}
+  \caption{Example of effective reproduction number estimation for measles epidemics with negative
   Binomial observations.}
-  \label{fig:nb-est}
+  \label{fig:nb-est-measles}
 \end{figure}
 
 Finally, it is important to provide a brief comparison of the running times of
@@ -1099,6 +1153,7 @@ than one.
 
 
 \section{Discussion}
+\label{sec:disc}
 
 The \RtEstim\ methodology provides a locally adaptive estimator using Poisson
 trend filtering on univariate data. It captures the heterogeneous smoothness of
@@ -1116,7 +1171,7 @@ The property of local adaptivity (heterogenous smoothness) is useful to
 automatically distinguish, for example, seasonal outbreaks from outbreaks driven
 by other factors (behavioural changes, foreign introduction, etc.). Given a
 well-chosen polynomial degree, the growth rates can be quickly detected, 
-potentially advising public health to implement policy changes. The effective
+potentially advising public health authorities to implement policy changes. The effective
 reproduction numbers can be estimated retrospectively to examine the efficacy of
 such policies, whether they result in $\calR_t$ falling below 1 or the speed of
 their effects. The smoothness of $\calR_t$ curves (including the polynomial 
@@ -1257,7 +1312,11 @@ tuning parameter selection via cross validation.
 %reproduction number estimation with trend filtering.} 
 
 
-%\section*{Acknowledgments}
+\section*{Acknowledgments}
+
+This research was enabled in part by support provided by 
+BC DRI group who manages Cedar cloud (https://docs.alliancecan.ca/wiki/Cedar)
+and the Digital Research Alliance of Canada (alliancecan.ca).
 
 \nolinenumbers
 
@@ -1274,9 +1333,16 @@ tuning parameter selection via cross validation.
 % here. See http://journals.plos.org/plosone/s/latex for 
 % step-by-step instructions.
 % 
+%\bibliography{doc/ptf}
 
 \begin{thebibliography}{10}
 
+  \bibitem{gostic2020practical}
+  Gostic KM, McGough L, Baskerville EB, Abbott S, Joshi K, Tedijanto C, et~al.
+  \newblock Practical considerations for measuring the effective reproductive
+    number, \emph{R}$_t$.
+  \newblock PLoS Computational Biology. 2020;16(12):e1008409.
+  
   \bibitem{cori2020package}
   Cori A, Cauchemez S, Ferguson NM, Fraser C, Dahlqwist E, Demarsh PA, et~al..
     {EpiEstim}: estimate time varying reproduction numbers from epidemic curves;
@@ -1316,7 +1382,7 @@ tuning parameter selection via cross validation.
   Lison A, Abbott S, Huisman J, Stadler T.
   \newblock Generative {B}ayesian modeling to nowcast the effective reproduction
     number from line list data with missing symptom onset dates.
-  \newblock arXiv preprint arXiv:230813262. 2023.
+  \newblock arXiv preprint arXiv:230813262. 2023;.
   
   \bibitem{parag2021improved}
   Parag KV.
@@ -1385,7 +1451,7 @@ tuning parameter selection via cross validation.
   \newblock Estimating the instantaneous reproduction number with imperfect data:
     a method to account for case-reporting variation and serial interval
     uncertainty.
-  \newblock arXiv preprint arXiv:230212078. 2023.
+  \newblock arXiv preprint arXiv:230212078. 2023;.
   
   \bibitem{CovidTimelineCanada}
   Berry I, O'Neill M, Sturrock SL, Wright JE, Acharya K, Brankston G, et~al.
@@ -1393,12 +1459,6 @@ tuning parameter selection via cross validation.
     the {COVID}-19 pandemic in Canada.
   \newblock Scientific Data. 2021;8(1).
   \newblock doi:{10.1038/s41597-021-00955-2}.
-  
-  \bibitem{gostic2020practical}
-  Gostic KM, McGough L, Baskerville EB, Abbott S, Joshi K, Tedijanto C, et~al.
-  \newblock Practical considerations for measuring the effective reproductive
-    number, \emph{R}$_t$.
-  \newblock PLoS Computational Biology. 2020;16(12):e1008409.
   
   \bibitem{pitzer2021impact}
   Pitzer VE, Chitwood M, Havumaki J, Menzies NA, Perniciaro S, Warren JL, et~al.
@@ -1440,12 +1500,23 @@ tuning parameter selection via cross validation.
   \bibitem{sadhanala2022exponential}
   Sadhanala V, Bassett R, Sharpnack J, McDonald DJ.
   \newblock Exponential Family Trend Filtering on Lattices.
-  \newblock arXiv preprint arXiv:220909175. 2022.
+  \newblock arXiv preprint arXiv:220909175. 2022;.
   
   \bibitem{vaiter2017degrees}
   Vaiter S, Deledalle C, Fadili J, Peyr{\'e} G, Dossal C.
   \newblock The degrees of freedom of partly smooth regularizers.
   \newblock Annals of the Institute of Statistical Mathematics. 2017;69:791--832.
+  
+  \bibitem{groendyke2011bayesian}
+  Groendyke C, Welch D, Hunter DR.
+  \newblock Bayesian inference for contact networks given epidemic data.
+  \newblock Scandinavian Journal of Statistics. 2011;38(3):600--616.
+  
+  \bibitem{cori2009temporal}
+  Cori A, Bo{\"e}lle PY, Thomas G, Leung GM, Valleron AJ.
+  \newblock Temporal variability and social heterogeneity in disease
+    transmission: the case of SARS in Hong Kong.
+  \newblock PLoS computational biology. 2009;5(8):e1000471.
   
   \bibitem{covidbc}
   BCCDC. {BC} {C}entre for {D}isease {C}ontrol {C}ovid-19 {D}ashboard {C}ase;
@@ -1468,7 +1539,7 @@ tuning parameter selection via cross validation.
   \newblock 1918 {I}nfluenza: the mother of all pandemics.
   \newblock Emerging Infectious Diseases. 2006;17(1):69--79.
   
-\end{thebibliography}
+  \end{thebibliography}
   
 
 \includepdf[pages=-]{src/supp.pdf}

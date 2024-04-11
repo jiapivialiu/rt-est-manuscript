@@ -13,9 +13,13 @@
 library(EpiEstim)
 library(rtestim)
 library(EpiLPS)
+library(EpiNow2)
 library(data.table)
 library(dplyr)
 library(tidyr)
 library(testthat)
 library(batchtools)
 library(microbenchmark)
+
+source('src/exp/EpiFilter-master/R files/main/epiFilter.R')
+source('src/exp/EpiFilter-master/R files/main/epiSmoother.R')
