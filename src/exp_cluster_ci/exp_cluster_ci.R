@@ -3,16 +3,16 @@ library(here)
 source(here::here("load_functions.R"))
 source(here::here("generate_data_ci.R"))
 source(here::here("design_algos_ci.R"))
-rt_exp_cluster_ci1145 <- loadRegistry("rt_exp_cluster_ci1145", writeable = T)
 
-rt_exp_cluster_ci1145 <- makeExperimentRegistry(
-  file.dir = here::here("src/exp_cluster_ci/rt_exp_cluster_ci1145"), seed = 1145,
-  packages = c("EpiEstim", "rtestim", "EpiLPS", "data.table", "dplyr",
-               "tidyr", "testthat", "batchtools", "microbenchmark"),
-  source = c(here::here("src/exp_cluster_ci/generate_data_ci.R"), here::here("src/exp_cluster_ci/design_algos_ci.R"))
-  )
+#rt_exp_cluster_ci1145 <- loadRegistry("rt_exp_cluster_ci1145", writeable = T)
+#rt_exp_cluster_ci1145 <- makeExperimentRegistry(
+#  file.dir = here::here("src/exp_cluster_ci/rt_exp_cluster_ci1145"), seed = 1145,
+#  packages = c("EpiEstim", "rtestim", "EpiLPS", "data.table", "dplyr",
+#               "tidyr", "testthat", "batchtools", "microbenchmark"),
+#  source = c(here::here("src/exp_cluster_ci/generate_data_ci.R"), here::here("src/exp_cluster_ci/design_algos_ci.R"))
+#  )
 
-#rt_exp_cluster_ci108 <- loadRegistry("rt_exp_cluster_ci108", writeable = T)
+rt_exp_cluster_ci108 <- loadRegistry("rt_exp_cluster_ci108", writeable = T)
 
 
 addProblem(name = "prob_design", fun = data_generator) 
@@ -21,7 +21,7 @@ addAlgorithm(name = "algo_design", fun = problem_solver)
 
 addExperiments(prob_list, algo_list, repls = 5, combine = 'crossprod')
 
-summarizeExperiments(findExpired(), by = c("Rt_case", "dist", "si_type", "method"))
+summarizeExperiments(findErrors(), by = c("Rt_case", "dist", "si_type", "method"))
 summarizeExperiments()
 
 # split the jobs ----
@@ -55,25 +55,9 @@ unique(rbind(jobs21,jobs22,jobs23,jobs24, jobs25,jobs26,jobs27,jobs28,
              jobs11,jobs12,jobs13,jobs14, jobs15,jobs16,jobs17,jobs18))
       
 # SUBMIT JOBS ----       
-submitJobs(setdiff(jobs11, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(setdiff(jobs12, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(setdiff(jobs13, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(setdiff(jobs14, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
+submitJobs(findErrors(), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
+submitJobs(findExpired(), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
 
-submitJobs(setdiff(jobs15, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(setdiff(jobs16, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(setdiff(jobs17, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(setdiff(jobs18, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-
-submitJobs(setdiff(jobs21, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(setdiff(jobs22, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(setdiff(jobs23, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(setdiff(jobs24, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-
-submitJobs(setdiff(jobs25, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(setdiff(jobs26, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(setdiff(jobs27, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(setdiff(jobs28, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
 
 getStatus()
 

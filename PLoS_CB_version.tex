@@ -205,6 +205,8 @@
 \def\RtEstim{\texttt{RtEstim}}
 \def\EpiEstim{\texttt{EpiEstim}}
 \def\EpiLPS{\texttt{EpiLPS}}
+\def\EpiFilter{\texttt{EpiFilter}}
+\def\EpiNow2{\texttt{EpiNow2}}
 % binary relations
 \def\condind{{\perp\!\!\!\perp}} %independence/conditional independence
 \def\equdist{\stackrel{\text{\rm\tiny d}}{=}} %equal in distribution
@@ -350,13 +352,13 @@ parameters and can be selected using a built-in cross validation procedure.
 The effective reproduction number at time $\textit{t}$ is defined to be the expected number of
 secondary infections produced by a primary infection throughout the course of the entire infection 
 if conditions remain the same at the specific time. 
-We focus on instantaneous reproduction numbers specifically, which is a type of effective reproduction 
+The instantaneous reproduction number, specifically, is a type of effective reproduction 
 number focusing on the transmission at a specific timepoint \citep{gostic2020practical}.
-It is a key quantity
+It is a key quantity 
 for understanding infectious disease dynamics including the potential size of an
-outbreak and the required stringency of control measures.  Tracking the time
+outbreak and the required stringency of control measures \citep{nishiura2009effective,fraser2007estimating}. Tracking the time
 series of this quantity is useful for understanding whether or not
-future infections are likely to increase or decrease from the current state. Let
+future infections are likely to increase or decrease from the current state \citep{anderson1991infectious}. Let
 $\calR(t)$ denote the effective reproduction number at time $t$. Practically, as
 long as $\calR(t) < 1$, infections will decline gradually, eventually resulting
 in a disease-free equilibrium, whereas when $\calR(t) > 1$, infections will
@@ -367,7 +369,9 @@ reproduction numbers over time is not observable, but, nonetheless, is easily
 interpretable and retrospectively describes the course of an epidemic.
 Therefore, a number of procedures exist to estimate $\calR_t$ from different
 types of observed incidence data such as cases, deaths, or hospitalizations,
-while relying on various domain-specific assumptions. Importantly, accurate
+while relying on various domain-specific assumptions, e.g., 
+\cite{wallinga2004different,hao2020reconstruction,goldstein2023semiparametric,goldstein2022incorporating}. 
+Importantly, accurate
 estimation of effective reproduction numbers relies heavily on the quality of
 the available data, and, due to the limitations of data collection, such as
 underreporting and lack of standardization, estimation methodologies rely on
@@ -393,7 +397,7 @@ distinguish imported cases from local transmission and simultaneously estimate
 the serial interval distribution. \cite{nash2023estimating} further extended
 \EpiEstim\ by using ``reconstructed'' daily incidence data to handle irregularly
 spaced observations. Recently, \cite{abbott2020estimating} proposed a Bayesian
-latent variable framework, \texttt{EpiNow2} \citep{EpiNow2}, which leverages
+latent variable framework, \EpiNow2\ \citep{EpiNow2}, which leverages
 incident cases, deaths or other available streams simultaneously along with
 allowing additional delay distributions (incubation period and onset to
 reporting delays) in modelling.  
@@ -401,8 +405,8 @@ reporting delays) in modelling.
 imputation followed by a truncation adjustment. These modifications are intended
 to increase accuracy at the most recent (but most uncertain) timepoints, to aid 
 policymakers. \cite{parag2021improved} also proposed a Bayesian approach, 
-\texttt{EpiFilter} based on the (discretized) Kalman filter and smoother. 
-\texttt{EpiFilter} also estimates the posterior of $\calR_t$ given a Gamma 
+\EpiFilter, based on the (discretized) Kalman filter and smoother. 
+\EpiFilter\ also estimates the posterior of $\calR_t$ given a Gamma 
 prior and Poisson distributed incident cases. Compared to \EpiEstim, 
 however, \texttt{EpiFilter} estimates $\calR_t$ retrospectively using all 
 available incidence data both before and after time $t$, with the goal of being 
@@ -412,11 +416,19 @@ observations. \cite{trevisin2023spatially} also proposed a Bayesian model estima
 with particle filtering to incorporate spatial structures. 
 Bayesian approaches estimate the posterior distribution of the effective
 reproduction numbers and possess the advantage that credible intervals may be
-easily computed. A limitation of many Bayesian approaches, however, is that they
-usually require more intensive computational routines, especially when observed
-data sequences are long or hierarchical structures are complex.  Below, we
-compare our method to two of the more computationally efficient Bayesian models,
-\EpiEstim\ and \EpiLPS. 
+easily computed. They incorporate the prior knowledge on parameters to 
+modelling. Some techniques are used to eliminate the power of prior parameters on 
+the posterior estimates to make the estimates more plausible, e.g., 
+\cite{thompson2019improved} assumes a relatively large prior mean of $\calR_t$ 
+(appreciably larger than 1), and if the estimate is less than $1$, researchers will 
+know it is a direct result from data, instead of the choice of prior parameters.
+Some Bayesian approaches, however, are computationally expensive, since they 
+require more intensive computational routines, especially when observed
+data sequences are long or hierarchical structures are complex, e.g., 
+\cite{abbott2020estimating}. While, some Bayesian methods with more efficient structures, 
+especially the ones with only conjugate priors, can be computationally efficient,
+e.g., \cite{cori2013new}. Below, we compare our method to the aforementioned Bayesian models,
+\EpiEstim, \EpiLPS, \EpiFilter, and \EpiNow2. 
 
 
 There are also frequentist approaches for $\calR_t$ estimation.
@@ -436,7 +448,8 @@ incidence data.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% our approach %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-We propose a retrospective effective reproduction number estimator
+We propose an estimator for retrospective estimation of effective reproduction number, 
+instantaneous reproduction number specifically,  
 called \RtEstim\ that requires only incidence data. Our model makes the
 conditional Poisson assumption, similar to much of the prior work described
 above, but is empirically more robust to misspecification. This estimator is 
@@ -473,15 +486,17 @@ We use a proximal Newton method to solve the convex optimization problem along
 with warm starts to produce estimates efficiently, typically in a matter of 
 seconds, even for long sequences of data. In a number of simulation experiments, 
 we show empirically that our approach is more accurate than existing methods at 
-estimating the true effective reproduction numbers. 
+estimating the true effective reproduction numbers and robust under multiple 
+settings of the misspecification of incidence distribution, serial interval 
+distribution, and the order of graphical curvature. 
 
 
 The manuscript proceeds as follows. We first introduce the methodology of
 \RtEstim\ including the renewal equation and the development of Poisson
 trend filtering estimator. We explain how this method could be interpreted from
 the Bayesian perspective, connecting it to previous work in this context. We
-provide illustrative experiments comparing our estimator to \EpiEstim\ and
-\EpiLPS. We then apply our \RtEstim\ on the Covid-19 pandemic incidence in
+provide illustrative experiments comparing our estimator to other Bayesian alternatives. 
+We then apply our \RtEstim\ and the alternatives on the Covid-19 pandemic incidence in
 British Columbia and the 1918 influenza pandemic incidence in the United States. 
 Finally, we conclude with a discussion of the advantages and limitations of our 
 approach and describe practical considerations for effective reproduction number
@@ -641,10 +656,11 @@ write our estimator as the solution to the optimization problem
 \end{equation}
 where $\exp(\cdot)$ applies elementwise and $\snorm{\boldsymbol{a}}_1 := \sum_{i=1}^n |a_i|$ is the $\ell_1$ norm.
 Here, $D^{(k+1)} \in \bbZ^{(n-k-1)\times n}$ is the $(k+1)\th$ order divided
-difference matrix for any $k \in \{0,\ldots,n-1\}$. $D^{(k+1)}$ is defined 
-recursively as $D^{(k+1)} := D^{(1)} D^{(k)}$, where 
-$D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times (n-k)}$ is a sparse matrix with diagonal band: 
-\begin{equation}
+difference matrix for any $k \in \{0,\ldots,n-1\}$. 
+$D^{(1)} \in \{-1,0,1\}^{(n-1)\times n}$ is the divided difference matrix for $k=0$. 
+It is a sparse matrix with diagonal band of the form:
+\begin{equation} 
+  \label{eq:d1mat}
   D^{(1)} = 
   \begin{pmatrix} 
     -1 & 1 &  & & \\ 
@@ -653,7 +669,11 @@ $D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times (n-k)}$ is a sparse matrix with diagonal 
     & & & -1 & 1 
   \end{pmatrix}.
 \end{equation}
-$D^{(1)} \in \{-1,0,1\}^{(n-1)\times n}$ is the divided difference matrix for $k=0$.
+$D^{(k+1)}$ for $k\geq 1$ is defined recursively as $D^{(k+1)} := D^{(1)} D^{(k)}$, where 
+$D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times (n-k)}$ takes the form defined in \eqref{eq:d1mat}. 
+More description on the recursive definition of divided difference matrix for trend filtering
+can be found in \cite{tibshirani2014adaptive,tibshirani2022divided}.
+
 The tuning parameter (hyperparameter) $\lambda$ balances data
 fidelity with desired smoothness. When $\lambda=0$, the problem in
 \eqref{eq:rt-ptf} reduces to the MLE in \eqref{eq:mle}. Larger tuning parameters
@@ -805,7 +825,7 @@ confidence bands are created differently.
 Implementation of our approach is provided in the \R\ package
 \href{https://dajmcdon.github.io/rtestim/}{\texttt{rtestim}}. 
 All computational experiments are conducted on the Cedar cluster provided 
-by Compute Canada with \R\ version 4.3.1. The \R\ packages used for
+by Compute Canada with \texttt{R 4.3.1}. The \R\ packages used for
 simulation and real-data application are \texttt{EpiEstim 2.2-4},
 \texttt{EpiLPS 1.2.0}, and \texttt{rtestim 0.0.4}. 
 
@@ -850,14 +870,7 @@ continuous, periodic curve generated by the function
   + \lr{3 \sin(5\pi t / 6) + 3}\big),
 \end{equation} 
 evaluated at equally spaced points $t\in [0,10]$. 
-These $\calR_t$ scenarios are illustrated in \autoref{fig:samples-rt}.
-
-\begin{figure}[!ht]
-  \centering
-  \includegraphics[width=.8\textwidth]{fig/fig_true_rt.png}
-  \caption{The effective reproduction numbers for four $\calR_t$ scenarios.} 
-  \label{fig:samples-rt}
-\end{figure}
+These $\calR_t$ scenarios are illustrated in \autoref{fig:samples}.
 
 We use serial interval (SI) distributions of measles (with mean $14.9$ and standard 
 deviation $3.9$) at Hagelloch, Germany in 1861 \citep{groendyke2011bayesian} and 
@@ -881,26 +894,18 @@ with dispersion size 5, i.e., $y_t\sim \textrm{NB}(\textrm{mean}=\Lambda_t,\
 For each problem setting (including a SI distribution, a $\calR_t$ scenario, 
 and an incidence distribution), we generate 50 random samples, resulting in 
 $800$ total synthetic epidemics. 
-An example of measles epidemics for each effective reproduction number scenario
-with an incidence distribution is displayed in \autoref{fig:samples-measles}; 
-SARS epidemics are displayed in \autoref{fig:samples-sars}. 
-We also visualize the (over)dispersion level of the following synthetic epidemics 
-using signal-to-noise ratios in Appendix. 
+An example of measles and SARS epidemics for each effective reproduction number scenario
+with an incidence distribution is displayed in \autoref{fig:samples}. 
+We also visualize the (over)dispersion level of the following synthetic epidemics in Appendix. 
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=.8\textwidth]{fig/fig_measles_data.png}
-  \caption{The sample measles incident cases drawn from Poisson (upper row) or negative
-  Binomial (bottom row) distribution across 4 $\calR_t$ scenarios.} 
-  \label{fig:samples-measles}
-\end{figure}
-
-\begin{figure}[!ht]
-  \centering
-  \includegraphics[width=.8\textwidth]{fig/fig_sars_data.png}
-  \caption{The sample SARS incident cases drawn from Poisson (upper row) or negative
-  Binomial (bottom row) distribution across 4 $\calR_t$ scenarios.} 
-  \label{fig:samples-sars}
+  \includegraphics[width=1.0\textwidth]{fig/fig_samples.png}
+  \caption{The effective reproduction numbers for four $\calR_t$ scenarios (\textit{in the top row}). 
+  The sample measles (\textit{in the middle row}) and SARS (\textit{in the bottom row}) incident cases drawn 
+  from Poisson (\textit{in blue curves}) or negative Binomial (\textit{in red curves}) distribution 
+  across 4 $\calR_t$ scenarios (\textit{in four columns respectively}).} 
+  \label{fig:samples}
 \end{figure}
 
 We compare \RtEstim\ to \EpiEstim, \EpiLPS, and \texttt{EpiFilter}. \EpiEstim\ estimates
@@ -1176,9 +1181,7 @@ reproduction numbers can be estimated retrospectively to examine the efficacy of
 such policies, whether they result in $\calR_t$ falling below 1 or the speed of
 their effects. The smoothness of $\calR_t$ curves (including the polynomial 
 degrees and tuning parameters) should be chosen based on the purpose of the 
-study in practice, e.g., epidemic forecasting may require less smoothness
-while retrospective studies that 
-solely target understanding of the pandemic may prefer a smoother estimate. 
+study in practice. 
 
 
 Our method \RtEstim\ provides a natural way to deal with missing data, for
@@ -1333,214 +1336,9 @@ and the Digital Research Alliance of Canada (alliancecan.ca).
 % here. See http://journals.plos.org/plosone/s/latex for 
 % step-by-step instructions.
 % 
-%\bibliography{doc/ptf}
+\bibliography{doc/ptf}
 
-\begin{thebibliography}{10}
-
-  \bibitem{gostic2020practical}
-  Gostic KM, McGough L, Baskerville EB, Abbott S, Joshi K, Tedijanto C, et~al.
-  \newblock Practical considerations for measuring the effective reproductive
-    number, \emph{R}$_t$.
-  \newblock PLoS Computational Biology. 2020;16(12):e1008409.
-  
-  \bibitem{cori2020package}
-  Cori A, Cauchemez S, Ferguson NM, Fraser C, Dahlqwist E, Demarsh PA, et~al..
-    {EpiEstim}: estimate time varying reproduction numbers from epidemic curves;
-    2020.
-  
-  \bibitem{cori2013new}
-  Cori A, Ferguson NM, Fraser C, Cauchemez S.
-  \newblock A new framework and software to estimate time-varying reproduction
-    numbers during epidemics.
-  \newblock American Journal of Epidemiology. 2013;178(9):1505--1512.
-  
-  \bibitem{thompson2019improved}
-  Thompson RN, Stockwin JE, van Gaalen RD, Polonsky JA, Kamvar ZN, Demarsh PA,
-    et~al.
-  \newblock Improved inference of time-varying reproduction numbers during
-    infectious disease outbreaks.
-  \newblock Epidemics. 2019;29:100356.
-  
-  \bibitem{nash2023estimating}
-  Nash RK, Bhatt S, Cori A, Nouvellet P.
-  \newblock Estimating the epidemic reproduction number from temporally
-    aggregated incidence data: A statistical modelling approach and software
-    tool.
-  \newblock PLoS Computational Biology. 2023;19(8):e1011439.
-  
-  \bibitem{abbott2020estimating}
-  Abbott S, Hellewell J, Thompson RN, Sherratt K, Gibbs HP, Bosse NI, et~al.
-  \newblock Estimating the time-varying reproduction number of {SARS-CoV-2} using
-    national and subnational case counts.
-  \newblock Wellcome Open Research. 2020;5:112.
-  
-  \bibitem{EpiNow2}
-  Abbott S, Funk S, Hickson J, Badr HS, Monticone P, Ellis P, et~al..
-    epiforecasts/{EpiNow2}: 1.4.0 release; 2023.
-  
-  \bibitem{lison2023generative}
-  Lison A, Abbott S, Huisman J, Stadler T.
-  \newblock Generative {B}ayesian modeling to nowcast the effective reproduction
-    number from line list data with missing symptom onset dates.
-  \newblock arXiv preprint arXiv:230813262. 2023;.
-  
-  \bibitem{parag2021improved}
-  Parag KV.
-  \newblock Improved estimation of time-varying reproduction numbers at low case
-    incidence and between epidemic waves.
-  \newblock PLoS Computational Biology. 2021;17(9):e1009347.
-  
-  \bibitem{gressani2022epilps}
-  Gressani O, Wallinga J, Althaus CL, Hens N, Faes C.
-  \newblock EpiLPS: A fast and flexible {B}ayesian tool for estimation of the
-    time-varying reproduction number.
-  \newblock PLoS Computational Biology. 2022;18(10):e1010618.
-  
-  \bibitem{trevisin2023spatially}
-  Trevisin C, Bertuzzo E, Pasetto D, Mari L, Miccoli S, Casagrandi R, et~al.
-  \newblock Spatially explicit effective reproduction numbers from incidence and
-    mobility data.
-  \newblock Proceedings of the National Academy of Sciences.
-    2023;120(20):e2219816120.
-  
-  \bibitem{abry2020spatial}
-  Abry P, Pustelnik N, Roux S, Jensen P, Flandrin P, Gribonval R, et~al.
-  \newblock Spatial and temporal regularization to estimate {COVID-19}
-    reproduction number \emph{R(t)}: Promoting piecewise smoothness via convex
-    optimization.
-  \newblock PLoS ONE. 2020;15(8):e0237901.
-  
-  \bibitem{pascal2022nonsmooth}
-  Pascal B, Abry P, Pustelnik N, Roux S, Gribonval R, Flandrin P.
-  \newblock Nonsmooth convex optimization to estimate the {C}ovid-19 reproduction
-    number space-time evolution with robustness against low quality data.
-  \newblock IEEE Transactions on Signal Processing. 2022;70:2859--2868.
-  
-  \bibitem{pircalabelu2023spline}
-  Pircalabelu E.
-  \newblock A spline-based time-varying reproduction number for modelling
-    epidemiological outbreaks.
-  \newblock Journal of the Royal Statistical Society Series C: Applied
-    Statistics. 2023;72(3):688--702.
-  
-  \bibitem{ho2023accounting}
-  Ho F, Parag KV, Adam DC, Lau EH, Cowling BJ, Tsang TK.
-  \newblock Accounting for the Potential of Overdispersion in Estimation of the
-    Time-varying Reproduction Number.
-  \newblock Epidemiology. 2023;34(2):201--205.
-  
-  \bibitem{azmon2014estimation}
-  Azmon A, Faes C, Hens N.
-  \newblock On the estimation of the reproduction number based on misreported
-    epidemic data.
-  \newblock Statistics in Medicine. 2014;33(7):1176--1192.
-  
-  \bibitem{gressani2021approximate}
-  Gressani O, Faes C, Hens N.
-  \newblock An approximate {B}ayesian approach for estimation of the
-    instantaneous reproduction number under misreported epidemic data.
-  \newblock Biometrical Journal. 2022;65(6):2200024.
-  
-  \bibitem{jin2023epimix}
-  Jin S, Dickens BL, Lim JT, Cook AR.
-  \newblock {EpiMix}: A novel method to estimate effective reproduction number.
-  \newblock Infectious Disease Modelling. 2023;8(3):704--716.
-  
-  \bibitem{hettinger2023estimating}
-  Hettinger G, Rubin D, Huang J.
-  \newblock Estimating the instantaneous reproduction number with imperfect data:
-    a method to account for case-reporting variation and serial interval
-    uncertainty.
-  \newblock arXiv preprint arXiv:230212078. 2023;.
-  
-  \bibitem{CovidTimelineCanada}
-  Berry I, O'Neill M, Sturrock SL, Wright JE, Acharya K, Brankston G, et~al.
-  \newblock A sub-national real-time epidemiological and vaccination database for
-    the {COVID}-19 pandemic in Canada.
-  \newblock Scientific Data. 2021;8(1).
-  \newblock doi:{10.1038/s41597-021-00955-2}.
-  
-  \bibitem{pitzer2021impact}
-  Pitzer VE, Chitwood M, Havumaki J, Menzies NA, Perniciaro S, Warren JL, et~al.
-  \newblock The impact of changes in diagnostic testing practices on estimates of
-    {COVID-19} transmission in the {U}nited {S}tates.
-  \newblock American Journal of Epidemiology. 2021;190(9):1908--1917.
-  
-  \bibitem{hitchings2021usefulness}
-  Hitchings MD, Dean NE, Garc{\'\i}a-Carreras B, Hladish TJ, Huang AT, Yang B,
-    et~al.
-  \newblock The usefulness of the test-positive proportion of severe acute
-    respiratory syndrome coronavirus 2 as a surveillance tool.
-  \newblock American Journal of Epidemiology. 2021;190(7):1396--1405.
-  
-  \bibitem{pellis2021challenges}
-  Pellis L, Scarabel F, Stage HB, Overton CE, Chappell LH, Fearon E, et~al.
-  \newblock Challenges in control of {COVID-19}: short doubling time and long
-    delay to effect of interventions.
-  \newblock Philosophical Transactions of the Royal Society B.
-    2021;376(1829):20200264.
-  
-  \bibitem{kim2009ell_1}
-  Kim SJ, Koh K, Boyd S, Gorinevsky D.
-  \newblock $\ell_1$ trend filtering.
-  \newblock SIAM Review. 2009;51(2):339--360.
-  
-  \bibitem{tibshirani2014adaptive}
-  Tibshirani RJ.
-  \newblock Adaptive piecewise polynomial estimation via trend filtering.
-  \newblock The Annals of Statistics. 2014;42(1):285--323.
-  
-  \bibitem{tibshirani2022divided}
-  Tibshirani RJ.
-  \newblock Divided differences, falling factorials, and discrete splines:
-    Another look at trend filtering and related problems.
-  \newblock Foundations and Trends{\textregistered} in Machine Learning.
-    2022;15(6):694--846.
-  
-  \bibitem{sadhanala2022exponential}
-  Sadhanala V, Bassett R, Sharpnack J, McDonald DJ.
-  \newblock Exponential Family Trend Filtering on Lattices.
-  \newblock arXiv preprint arXiv:220909175. 2022;.
-  
-  \bibitem{vaiter2017degrees}
-  Vaiter S, Deledalle C, Fadili J, Peyr{\'e} G, Dossal C.
-  \newblock The degrees of freedom of partly smooth regularizers.
-  \newblock Annals of the Institute of Statistical Mathematics. 2017;69:791--832.
-  
-  \bibitem{groendyke2011bayesian}
-  Groendyke C, Welch D, Hunter DR.
-  \newblock Bayesian inference for contact networks given epidemic data.
-  \newblock Scandinavian Journal of Statistics. 2011;38(3):600--616.
-  
-  \bibitem{cori2009temporal}
-  Cori A, Bo{\"e}lle PY, Thomas G, Leung GM, Valleron AJ.
-  \newblock Temporal variability and social heterogeneity in disease
-    transmission: the case of SARS in Hong Kong.
-  \newblock PLoS computational biology. 2009;5(8):e1000471.
-  
-  \bibitem{covidbc}
-  BCCDC. {BC} {C}entre for {D}isease {C}ontrol {C}ovid-19 {D}ashboard {C}ase;
-    2023.
-  
-  \bibitem{lehtinen2021relationship}
-  Lehtinen S, Ashcroft P, Bonhoeffer S.
-  \newblock On the relationship between serial interval, infectiousness profile
-    and generation time.
-  \newblock Journal of the Royal Society Interface. 2021;18(174):20200756.
-  
-  \bibitem{frost1919influenza}
-  Frost WH, Sydenstricker E.
-  \newblock {I}nfluenza in {M}aryland: preliminary statistics of certain
-    localities.
-  \newblock Public Health Reports (1896-1970). 1919; p. 491--504.
-  
-  \bibitem{taubenberger20061918}
-  Taubenberger JK, Morens DM.
-  \newblock 1918 {I}nfluenza: the mother of all pandemics.
-  \newblock Emerging Infectious Diseases. 2006;17(1):69--79.
-  
-  \end{thebibliography}
-  
+ 
 
 \includepdf[pages=-]{src/supp.pdf}
 

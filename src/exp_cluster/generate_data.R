@@ -7,14 +7,6 @@ prob_list <- list(
     si_type = c("SARS", "measles")
   )
 )
-prob_list2 <- list(
-  prob_design_short = data.table(
-    Rt_case = 3,
-    dist = c("poisson", "NB"),
-    len = 50,
-    si_type = "flu"
-  )
-)
 prob_list_add <- list(
   prob_design_add = data.table::CJ(
     Rt_case = 1:3,
@@ -27,22 +19,6 @@ prob_list_add2 <- list(
   prob_design_add2 = data.table::CJ(
     Rt_case = 4,
     dist = "poisson",
-    len = 300,
-    si_type = "measles"
-  )
-)
-prob_list_add_si1 <- list(
-  prob_design_si_add1 = data.table::CJ(
-    Rt_case = 3,
-    dist = "poisson",
-    len = 300,
-    si_type = "measles"
-  )
-)
-prob_list_add_si2 <- list(
-  prob_design_si_add2 = data.table::CJ(
-    Rt_case = 3,
-    dist = "NB",
     len = 300,
     si_type = "measles"
   )
@@ -63,6 +39,31 @@ prob_list_mis_si <- list(
     si_type = "measles"
   )
 )
+
+prob_list2 <- list(
+  prob_design_short = data.table(
+    Rt_case = 3,
+    dist = c("poisson", "NB"),
+    len = 50,
+    si_type = "flu"
+  )
+)
+prob_list_add_si1 <- list(
+  prob_design_si_add1 = data.table::CJ(
+    Rt_case = 3,
+    dist = "poisson",
+    len = 50,
+    si_type = "flu"
+  )
+)
+prob_list_add_si2 <- list(
+  prob_design_si_add2 = data.table::CJ(
+    Rt_case = 3,
+    dist = "NB",
+    len = 50,
+    si_type = "flu"
+  )
+)
 prob_list_mis_si_short <- list(
   prob_design_si_short = data.table(
     Rt_case = 3,
@@ -71,6 +72,7 @@ prob_list_mis_si_short <- list(
     si_type = "flu"
   )
 )
+
 prob_list_epinow2 <- list(
   prob_design_epinow2 = data.table::CJ(
     Rt_case = 1,

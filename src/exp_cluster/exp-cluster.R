@@ -4,12 +4,22 @@ source("generate_data.R")
 source("design_algos.R")
 rt_exp_cluster611 = loadRegistry("rt_exp_cluster611", writeable = T)
 
-#rt_exp_cluster611 = makeExperimentRegistry(
-#  file.dir = here::here("src/exp_cluster/rt_exp_cluster611"), seed = 611,
-#  packages = c("EpiEstim", "rtestim", "EpiLPS", "EpiNow2", "data.table", "dplyr",
-#               "tidyr", "testthat", "batchtools", "microbenchmark"),
-#  source = c(here::here("src/exp_cluster/generate_data.R"), here::here("src/exp_cluster/design_algos.R"))
-#)
+rt_exp_cluster1007 = makeExperimentRegistry(
+  file.dir = here::here("rt_exp_cluster1007"), seed = 611,
+  packages = c("EpiEstim", "rtestim", "EpiLPS", "EpiNow2", "data.table", "dplyr",
+               "tidyr", "testthat", "batchtools", "microbenchmark"),
+  source = c(here::here("generate_data.R"), here::here("design_algos.R"))
+)
+rt_exp_cluster1110 = makeExperimentRegistry(
+  file.dir = here::here("rt_exp_cluster1110"), seed = 1110,
+  packages = c("EpiEstim", "rtestim", "EpiLPS", "EpiNow2", "data.table", "dplyr",
+               "tidyr", "testthat", "batchtools", "microbenchmark"),
+  source = c(here::here("generate_data.R"), here::here("design_algos.R"))
+)
+# resubmit long epi's in: 
+rt_exp_cluster1007 = loadRegistry("rt_exp_cluster1007", writeable = T) 
+# resubmit others in:
+rt_exp_cluster1110 = loadRegistry("rt_exp_cluster1110", writeable = T) 
 
 #rt_exp_cluster450 = loadRegistry("rt_exp_cluster450", writeable = T)
 #rt_exp_cluster1016 = loadRegistry("rt_exp_cluster1016", writeable = T)
@@ -30,12 +40,14 @@ addExperiments(prob_list2, algo_list2, repls = 50, combine = 'crossprod')
 removeExperiments(findExperiments(prob.pars = (si_type == "SARS"), algo.pars = (si_pars == "measles")))
 
 ## summarize all experiments 
-summarizeExperiments(findErrors(), by = c("Rt_case", "dist", "si_type", "si_pars", "method"))
+summarizeExperiments(by = c("Rt_case", "dist", "si_type", "si_pars", "method"))
 summarizeExperiments()
 
 getStatus()
+summarizeExperiments(findDone(), by = c("Rt_case", "dist", "si_type", "si_pars", "method"))
 
-submitJobs(findErrors(), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
+
+submitJobs(1, resources = list(ncpus = 1, walltime = "8:00:00", memory = "8G"))
 
 
 # split jobs into 8*4=32 piles, each pile include 2 dist * 8/9 methods * 50 replicates ----
@@ -229,15 +241,14 @@ unique(rbind(jobs_add_rt1_1, jobs_add_rt2_1, jobs_add_rt3_1,
              jobs_add_rt1_8, jobs_add_rt2_8, jobs_add_rt3_8)
        )
 # 200 * 8 * 3 = 4800 experiments
-submitJobs(jobs_add_rt3_1, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobs_add_rt3_2, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobs_add_rt3_3, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobs_add_rt3_4, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-
-submitJobs(jobs_add_rt3_5, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobs_add_rt3_6, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobs_add_rt3_7, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobs_add_rt3_8, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
+submitJobs(jobs_add_rt3_5[1:100], resources = list(ncpus = 1, walltime = "6:00:00", memory = "16G"))
+submitJobs(jobs_add_rt3_5[101:200], resources = list(ncpus = 1, walltime = "6:00:00", memory = "16G"))
+submitJobs(jobs_add_rt3_6[1:100], resources = list(ncpus = 1, walltime = "6:00:00", memory = "16G"))
+submitJobs(jobs_add_rt3_6[101:200], resources = list(ncpus = 1, walltime = "6:00:00", memory = "16G"))
+submitJobs(jobs_add_rt3_7[1:100], resources = list(ncpus = 1, walltime = "6:00:00", memory = "16G"))
+submitJobs(jobs_add_rt3_7[101:200], resources = list(ncpus = 1, walltime = "6:00:00", memory = "16G"))
+submitJobs(jobs_add_rt3_8[1:100], resources = list(ncpus = 1, walltime = "6:00:00", memory = "16G"))
+submitJobs(jobs_add_rt3_8[101:200], resources = list(ncpus = 1, walltime = "6:00:00", memory = "16G"))
 
 
 ## 2. re-submit a few with Rt=4, n=300: 80 exp's ----
@@ -249,8 +260,8 @@ addExperiments(prob_list_add3, algo_list, repls = 4, combine = 'crossprod')
 
 jobsAdd2 <- findExperiments(prob.name = "prob_design_add2") # 2 si_pars * 8 methods = 16 exp's
 jobsAdd3 <- findExperiments(prob.name = "prob_design_add3") # 4 rep's * 16 = 64 exp's
-submitJobs(jobsAdd2, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobsAdd3, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
+submitJobs(jobsAdd2, resources = list(ncpus = 1, walltime = "2:00:00", memory = "4G"))
+submitJobs(jobsAdd3, resources = list(ncpus = 1, walltime = "2:00:00", memory = "4G"))
 
 
 ## 3. re-submit a few short epidemics ----
@@ -259,11 +270,11 @@ addProblem(name = "prob_design_si_add2", fun = data_generator, cache = TRUE)
 addAlgorithm(name = "algo_design_all", fun = problem_solver)
 addExperiments(prob_list_add_si1, algo_list2, repls = 3, combine = 'crossprod')
 addExperiments(prob_list_add_si2, algo_list2, repls = 7, combine = 'crossprod')
-jobsSIAdd1 <- findExperiments(prob.name = "prob_design_si_add1") # 3 rep's * 9 methods * 2 si_pars = 54 exp's
-jobsSIAdd2 <- findExperiments(prob.name = "prob_design_si_add2") # 7 rep's * 9 methods * 2 si_pars = 126 exp's
-submitJobs(jobsSIAdd1, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobsSIAdd2, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-
+jobs_si_short2 <- findExperiments(prob.name = "prob_design_si_add1") # 3 rep's * 9 methods * 2 si_pars = 54 exp's
+jobs_si_short3 <- findExperiments(prob.name = "prob_design_si_add2") # 7 rep's * 9 methods * 2 si_pars = 126 exp's
+submitJobs(jobs_si_short2, resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_si_short3, resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+#removeExperiments(rbind(jobs_si_short2, jobs_si_short3))
 
 
 # II. Add more experiments for SI misspecification with slight deviation from the true: 3200 exp's ----
@@ -297,10 +308,18 @@ unique(rbind(jobs_new_si_rt1_1, jobs_new_si_rt1_2, jobs_new_si_rt1_3, jobs_new_s
              jobs_new_si_rt3_1, jobs_new_si_rt3_2, jobs_new_si_rt3_3, jobs_new_si_rt3_4,
              jobs_new_si_rt4_1, jobs_new_si_rt4_2, jobs_new_si_rt4_3, jobs_new_si_rt4_4))
 ## 200 * 4 * 4 = 3200 experiments
-submitJobs(jobs_new_si_rt4_1, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobs_new_si_rt4_2, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobs_new_si_rt4_3, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobs_new_si_rt4_4, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
+
+summarizeExperiments(setdiff(jobs_new_si_rt4_4, findDone()), by = c("Rt_case", "dist", "si_type", "si_pars", "method"))
+
+submitJobs(jobs_new_si_rt4_1[1:100], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_rt4_1[101:200], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_rt4_2[1:100], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_rt4_2[101:200], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_rt4_3[1:100], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_rt4_3[101:200], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_rt4_4[1:100], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_rt4_4[101:200], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+
 
 ## 2. short epidemics for mild SI misspecification: 900 exp's ----
 addProblem(name = "prob_design_si_short", fun = data_generator, cache = TRUE)
@@ -313,60 +332,113 @@ jobs_new_si_short_rt3 <- findExperiments(prob.name = "prob_design_si_short", pro
 jobs_new_si_short_rt4 <- findExperiments(prob.name = "prob_design_si_short", prob.pars = (dist == "NB"), algo.pars = (method %in% c("RtEstim(k=0)", "RtEstim(k=1)", "RtEstim(k=2)", "RtEstim(k=3)")))
 unique(rbind(jobs_new_si_short_rt1, jobs_new_si_short_rt2, 
              jobs_new_si_short_rt3, jobs_new_si_short_rt4))
-submitJobs(jobs_new_si_short_rt1, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobs_new_si_short_rt2, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobs_new_si_short_rt3, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(jobs_new_si_short_rt4, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
+submitJobs(jobs_new_si_short_rt1[1:125], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_short_rt1[126:250], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_short_rt2[1:100], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_short_rt2[101:200], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_short_rt3[1:125], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_short_rt3[126:250], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_short_rt4[1:100], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+submitJobs(jobs_new_si_short_rt4[101:200], resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
 
 # III. Run one experiment for long epidemic using EpiNow2 and get the running time ----
 addProblem(name = "prob_design_epinow2", fun = data_generator, cache = TRUE)
 addAlgorithm(name = "algo_design_epinow2", fun = problem_solver)
 addExperiments(prob_list_epinow2, algo_list_epinow2, repls = 1, combine = 'crossprod')
 jobs_epinow2 <- findExperiments(prob.name = "prob_design_epinow2")
-submitJobs(jobs_epinow2, resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
+submitJobs(jobs_epinow2, resources = list(ncpus = 1, walltime = "10:00:00", memory = "32G"))
 
 
 ## check the results ----
 # remove the exp's in `jobs_to_remove`
-jobs_to_remove <- readRDS("jobsToRemove.RDS")
-# also exclude the Rt=1,2,3 for long epidemics 
-oldJobs_to_exclude <- findExperiments(prob.name = "prob_design", prob.pars = (Rt_case != 4 && si_type == "measles"))
-jobs_total <- findExperiments(prob.name = "prob_design")
-jobs_first <- setdiff(jobs_total, oldJobs_to_exclude)
-jobs_first <- setdiff(jobs_first[[1]], jobs_to_remove)
+#jobs_to_remove <- readRDS("jobsToRemove.RDS")
+## also exclude the Rt=1,2,3 for long epidemics 
+#oldJobs_to_exclude <- findExperiments(prob.name = "prob_design", prob.pars = (Rt_case != 4 && si_type == "measles"))
+#jobs_total <- findExperiments(prob.name = "prob_design")
+#jobs_first <- setdiff(jobs_total, oldJobs_to_exclude)
+#jobs_first <- setdiff(jobs_first[[1]], jobs_to_remove)
+
+# 9600 jobs
+jobs_first <- findExperiments(prob.name = "prob_design")
 jobs_second <- findExperiments(prob.name = "prob_design_add")
 jobs_third <- findExperiments(prob.name = "prob_design_add2") # 2 si_pars * 8 methods = 16 exp's
 jobs_fourth <- findExperiments(prob.name = "prob_design_add3") # 4 rep's * 16 = 64 exp's
-jobs_to_download <- c(jobs_first, jobs_second[[1]], jobs_third[[1]], jobs_fourth[[1]])
-#length(jobs_to_download) # 9600 in total
-getStatus(jobs_to_download)
-
-getStatus(jobs_second)
-
-submitJobs(setdiff(jobs_to_download, findDone()[[1]]), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-
-# another pile for SI: 3200 exp's
+# another pile for SI: 3200 jobs
 jobs_si <- findExperiments(prob.name = "prob_design_si")
-getStatus(jobs_si)
-jobs_si_short <- findExperiments(prob.name = "prob_design_si_short")
-getStatus(jobs_si_short)
+jobs_long <- rbind(jobs_first, jobs_second, jobs_third, jobs_fourth, jobs_si)
 
-summarizeExperiments(findErrors(), by = c("Rt_case", "dist", "si_type", "si_pars", "method"))
+summarizeExperiments(jobs_long, by = c("Rt_case", "dist", "si_type", "si_pars", "method"))
+getStatus(jobs_long)
 
+saveRDS(jobs_long, "jobs_long.RDS")
+
+submitJobs(setdiff(jobs_si, findDone()), resources = list(ncpus = 1, walltime = "4:00:00", memory = "16G"))
+
+# 2700 jobs
+jobs_short0 <- findExperiments(prob.name = "prob_design_short")
+jobs_si_short1 <- findExperiments(prob.name = "prob_design_si_short")
+jobs_si_short2 <- findExperiments(prob.name = "prob_design_si_add1")
+jobs_si_short3 <- findExperiments(prob.name = "prob_design_si_add2")
+jobs_short <- rbind(jobs_short0, jobs_si_short1, jobs_si_short2, jobs_si_short3)
+
+getStatus(jobs_short)
+summarizeExperiments(jobs_short, by = c("Rt_case", "dist", "si_type", "si_pars", "method"))
+
+saveRDS(jobs_short, "jobs_short.RDS")
+
+submitJobs(setdiff(jobs_si_short1, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
+
+
+# 1 job
+jobs_epinow2 <- findExperiments(prob.name = "prob_design_epinow2")
+getStatus(jobs_epinow2)
+saveRDS(jobs_epinow2, "jobs_epinow2.RDS")
+
+submitJobs(setdiff(jobs_epinow2, findDone()), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
+
+summarizeExperiments(findDone(), by = c("Rt_case", "dist", "si_type", "si_pars", "method"))
+
+
+## save reduced results ----
 res <- ijoin(
-  getJobPars(ids=jobs_to_download),
-  reduceResultsDataTable(ids=jobs_to_download, fun = function(x) list(res_list = x))
+  getJobPars(ids=findDone()),
+  reduceResultsDataTable(ids=findDone(), fun = function(x) list(res_list = x))
 )
 for(i in 1:nrow(res)){
   res$result[[i]] <- res$result[[i]]$res_list
 }
 Rt_result <- unwrap(res)
 
-saveRDS(Rt_result, "rt_cluster_results611.RDS")
+saveRDS(Rt_result, "rt_cluster_results1110.RDS")
 
-## 
+## filter jobs ----
+jobs_long <- findExperiments(prob.pars = (len == 300), algo.pars = (method != "EpiNow2"))
+jobs_short <- findExperiments(prob.pars = (len == 50))
+jobs_epinow2 <- findExperiments(prob.pars = (len == 300), algo.pars = (method == "EpiNow2"))
+
 
 Rt_result <- readRDS("dat/rt_cluster_results611.RDS")
+#jobs_long <- readRDS(here::here("dat/jobs_long.RDS"))
+#jobs_short <- readRDS(here::here("dat/jobs_short.RDS"))
+#jobs_epinow2 <- readRDS(here::here("dat/jobs_epinow2.RDS"))
+#jobs_long_done <- intersect(Rt_result$job.id, jobs_long)
+#jobs_short_done <- intersect(Rt_result$job.id, jobs_short)
+
+#jobs_to_run_long <- setdiff(1:14600, Rt_result$job.id)
+#saveRDS(jobs_to_run_long, here::here("dat/jobs_to_run_long.RDS"))
+
+Rt_result2 <- readRDS("dat/rt_cluster_results1007.RDS")
+Rt_result1 <- Rt_result %>%
+  filter(job.id <= 14600, len == 300)
+Rt_result3 <- readRDS("dat/rt_cluster_results1110.RDS")
+
+Rt_result_combined <- rbind(Rt_result1, Rt_result2)#, Rt_result3)
+
+saveRDS(Rt_result_combined, here::here("dat/Rt_result_combined.RDS"))
+
+
+
+
 
 cbPalette <- c("#E69F00","#F0E442", "#009E73", "#D55E00", 
                "#CC79A7", "#56B4E9", "#0072B2", "#999999")
@@ -397,6 +469,7 @@ Rt_result %>%
   filter(is.na(Rt_kl))
 
 Rt_result
+
 
 
 
