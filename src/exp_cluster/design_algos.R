@@ -1,32 +1,48 @@
 # choose problem solvers -------------
-algo_list <- list(
-  algo_design = data.table::CJ(
+algo_list_meas <- list(
+  algo_design_meas = data.table::CJ(
     method = c("EpiEstim(week)", "EpiEstim(month)", "EpiLPS", "EpiFilter",
                "RtEstim(k=0)", "RtEstim(k=1)", "RtEstim(k=2)", "RtEstim(k=3)"),
-    si_pars = c("measles", "SARS") 
+    si_pars = "measles"
   )
 )
-algo_list2 <- list(
-  algo_design_all = data.table::CJ(
+algo_list_sars <- list(
+  algo_design_sars = data.table::CJ(
+    method = c("EpiEstim(week)", "EpiEstim(month)", "EpiLPS", "EpiFilter",
+               "RtEstim(k=0)", "RtEstim(k=1)", "RtEstim(k=2)", "RtEstim(k=3)"),
+    si_pars = "SARS"
+  )
+)
+algo_list_meas_ss <- list(
+  algo_design_meas_ss = data.table::CJ(
+    method = c("EpiEstim(week)", "EpiEstim(month)", "EpiLPS", "EpiFilter",
+               "RtEstim(k=0)", "RtEstim(k=1)", "RtEstim(k=2)", "RtEstim(k=3)"),
+    si_pars = "measles_ss" 
+  )
+)
+
+algo_list_flu <- list(
+  algo_design_flu = data.table::CJ(
     method = c("EpiEstim(week)", "EpiEstim(month)", "EpiLPS", "EpiFilter", "EpiNow2", 
                "RtEstim(k=0)", "RtEstim(k=1)", "RtEstim(k=2)", "RtEstim(k=3)"),
-    si_pars = c("flu", "measles")
+    si_pars = "flu" 
   )
 )
-algo_list_mis_si <- list(
-  algo_design_si = data.table::CJ(
-    method = c("EpiEstim(week)", "EpiEstim(month)", "EpiLPS", "EpiFilter",
-               "RtEstim(k=0)", "RtEstim(k=1)", "RtEstim(k=2)", "RtEstim(k=3)"),
-    si_pars = "measles_ss" # shifted and scaled measles par's
-  )
-)
-algo_list_mis_si_short <- list(
-  algo_design_si_short = data.table::CJ(
+algo_list_flu_ss <- list(
+  algo_design_flu_ss = data.table::CJ(
     method = c("EpiEstim(week)", "EpiEstim(month)", "EpiLPS", "EpiFilter", "EpiNow2", 
                "RtEstim(k=0)", "RtEstim(k=1)", "RtEstim(k=2)", "RtEstim(k=3)"),
     si_pars = "flu_ss" # shifted and scaled flu par's
   )
 )
+algo_list_meas_all <- list(
+  algo_design_meas_all = data.table::CJ(
+    method = c("EpiEstim(week)", "EpiEstim(month)", "EpiLPS", "EpiFilter", "EpiNow2", 
+               "RtEstim(k=0)", "RtEstim(k=1)", "RtEstim(k=2)", "RtEstim(k=3)"),
+    si_pars = "measles"
+  )
+)
+
 algo_list_epinow2 <- list(
   algo_design_epinow2 = data.table::CJ(
     method = "EpiNow2",
@@ -40,16 +56,14 @@ problem_solver <- function(data, method, instance, si_pars = "measles", ...) {
   incidence <- instance$incidence
   Rt_case <- instance$Rt_case
   len <- length(Rt)
-  #gamma_pars <- instance$gamma_pars
-  if (!is.null(si_pars)) {
-    gamma_pars <- switch(si_pars,
+  gamma_pars <- switch(si_pars,
                          "flu" = c(3.0044, 0.8654),
                          "SARS" = c(4.8864, 1.7190),
                          "measles" = c(14.5963, 1.0208),
-                         "measles_ss" = c(15.51882, 1.08900), 
-                         "flu_ss" = c(7.7722681, 0.5918478), 
-                         c(14.5963, 1.0208))
-  }
+                         "measles_ss" = c(9.0420, 1.4267),
+                         "measles_ss2" = c(15.5188, 1.089),
+                         "flu_ss" = c(7.7723, 0.5918)
+                       )
   
   # for SI misspecification
   w <- instance$total_infect
@@ -81,12 +95,22 @@ problem_solver <- function(data, method, instance, si_pars = "measles", ...) {
       return(config)
     }
   }
-  impute_NAs <- function(Rt_fitted) {
+  impute_NAs <- function(n, Rt_fitted) { # impute NA by their right hand entries
     non_nas <- which(!is.na(Rt_fitted))
     if (length(non_nas) == length(Rt_fitted)) {
+      if(length(Rt_fitted) < n) 
+        Rt_fitted <- c(rep(Rt_fitted[1], n-length(Rt_fitted)), Rt_fitted)
       return(Rt_fitted)
     } else {
-      Rt_fitted[1:(non_nas[1] - 1)] <- Rt_fitted[non_nas[1]]
+      nas <- which(is.na(Rt_fitted))
+      if(nas[length(nas)]==length(Rt_fitted)) Rt_fitted[length(Rt_fitted)] <- Rt_fitted[length(Rt_fitted)-1]
+      else {
+        for(i in length(nas):1) {
+          Rt_fitted[nas[i]] <- Rt_fitted[nas[i]+1]
+        }
+      }
+      if(length(Rt_fitted) < n) 
+        Rt_fitted <- c(rep(Rt_fitted[1], n-length(Rt_fitted)), Rt_fitted)
       stopifnot(sum(is.na(Rt_fitted)) == 0)
       return(Rt_fitted)
     }
@@ -218,8 +242,8 @@ problem_solver <- function(data, method, instance, si_pars = "measles", ...) {
           config = config,
           method = "non_parametric_si"
         )$R$`Mean(R)`
-        Rt_fitted <- impute_NAs(Rt_fitted)
-        Rt_fitted <- c(rep(NA, 7), Rt_fitted)
+        Rt_fitted <- impute_NAs(len-7, Rt_fitted)
+        Rt_fitted <- c(rep(0, 7), Rt_fitted)
       },
       times = 10,
       unit = "us"
@@ -231,8 +255,8 @@ problem_solver <- function(data, method, instance, si_pars = "measles", ...) {
           config = config,
           method = "non_parametric_si"
         )$R$`Mean(R)`
-        Rt_fitted <- impute_NAs(Rt_fitted) 
-        Rt_fitted <- c(rep(NA, 30), Rt_fitted) 
+        Rt_fitted <- impute_NAs(len-30, Rt_fitted) 
+        Rt_fitted <- c(rep(0, 30), Rt_fitted) 
       },
       times = 10,
       unit = "us"
@@ -243,7 +267,7 @@ problem_solver <- function(data, method, instance, si_pars = "measles", ...) {
           incidence = incidence, si = si, K = 40,
           CoriR = FALSE
         )$RLPS$R
-        Rt_fitted[1:7] <- NA 
+        Rt_fitted[1:7] <- 0 
       },
       times = 10,
       unit = "us"

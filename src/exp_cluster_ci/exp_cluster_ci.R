@@ -4,24 +4,15 @@ source(here::here("load_functions.R"))
 source(here::here("generate_data_ci.R"))
 source(here::here("design_algos_ci.R"))
 
-#rt_exp_cluster_ci1145 <- loadRegistry("rt_exp_cluster_ci1145", writeable = T)
-#rt_exp_cluster_ci1145 <- makeExperimentRegistry(
-#  file.dir = here::here("src/exp_cluster_ci/rt_exp_cluster_ci1145"), seed = 1145,
-#  packages = c("EpiEstim", "rtestim", "EpiLPS", "data.table", "dplyr",
-#               "tidyr", "testthat", "batchtools", "microbenchmark"),
-#  source = c(here::here("src/exp_cluster_ci/generate_data_ci.R"), here::here("src/exp_cluster_ci/design_algos_ci.R"))
-#  )
-
 rt_exp_cluster_ci108 <- loadRegistry("rt_exp_cluster_ci108", writeable = T)
+rt_exp_cluster_ci1145 <- loadRegistry("rt_exp_cluster_ci1145", writeable = T)
 
 
 addProblem(name = "prob_design", fun = data_generator) 
-
 addAlgorithm(name = "algo_design", fun = problem_solver) 
+addExperiments(prob_list, algo_list, repls = 50, combine = 'crossprod')
 
-addExperiments(prob_list, algo_list, repls = 5, combine = 'crossprod')
-
-summarizeExperiments(findErrors(), by = c("Rt_case", "dist", "si_type", "method"))
+summarizeExperiments(by = c("Rt_case", "dist", "si_type", "method"))
 summarizeExperiments()
 
 # split the jobs ----
@@ -50,21 +41,20 @@ jobs26 <- findExperiments(prob.pars = (si_type == "SARS" && dist == "NB" && Rt_c
 jobs27 <- findExperiments(prob.pars = (si_type == "SARS" && dist == "NB" && Rt_case %in% 1:2), algo.pars = (method %in% c("EpiEstim(week)", "EpiEstim(month)", "EpiLPS", "EpiFilter")))
 jobs28 <- findExperiments(prob.pars = (si_type == "SARS" && dist == "NB" && Rt_case %in% 3:4), algo.pars = (method %in% c("EpiEstim(week)", "EpiEstim(month)", "EpiLPS", "EpiFilter")))
 
-
 unique(rbind(jobs21,jobs22,jobs23,jobs24, jobs25,jobs26,jobs27,jobs28,
              jobs11,jobs12,jobs13,jobs14, jobs15,jobs16,jobs17,jobs18))
       
 # SUBMIT JOBS ----       
-submitJobs(findErrors(), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
-submitJobs(findExpired(), resources = list(ncpus = 1, walltime = "8:00:00", memory = "32G"))
+submitJobs(jobs11, resources = list(ncpus = 1, walltime = "8:00:00", memory = "16G"))
 
+
+summarizeExperiments(findErrors(), by = c("Rt_case", "dist", "si_type", "method"))
+summarizeExperiments(findExpired(), by = c("Rt_case", "dist", "si_type", "method"))
+
+submitJobs(findErrors(), resources = list(ncpus = 1, walltime = "8:00:00", memory = "16G"))
+submitJobs(findExpired(), resources = list(ncpus = 1, walltime = "8:00:00", memory = "16G"))
 
 getStatus()
-
-
-# find not done----
-ci_notdones <- readRDS("dat/notDone_ci_jobs.RDS")
-
 
 
 # save results ----
@@ -80,7 +70,7 @@ Rt_result <- unwrap(res)
 saveRDS(Rt_result, "rt_cluster_ci_results108.RDS")
 
 # read results ----
-Rt_result <- readRDS("dat/rt_cluster_ci_results108.RDS")
+#Rt_result <- readRDS("dat/rt_cluster_ci_results108.RDS")
 
 cbPalette <- c("#E69F00","#F0E442", "#009E73", "#D55E00", 
                "#CC79A7", "#0072B2", "#999999", "#56B4E9")
@@ -146,7 +136,6 @@ Rt_result %>%
 
 
 # ci coverage averaged across all replicates
-
 ci_len <- double(nrow(Rt_result))
 for(i in 1:nrow(Rt_result)) {
   ci_len[i] <- length(Rt_result[i,]$ci_coverage[[1]])
