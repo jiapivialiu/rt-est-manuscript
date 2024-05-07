@@ -463,8 +463,11 @@ logarithm of $\calR_t$, we naturally accommodate the positivity requirement, in
 contrast to related methods, can
 handle large or small incidence measurements, and are automatically (reasonably)
 robust to outliers without additional constraints. A small illustration using
-three years of Covid-19 case data in Canada is shown in \autoref{fig:intro-fig} 
-\citep{CovidTimelineCanada}.
+three years of Covid-19 case data in Canada is shown in \autoref{fig:intro-fig} \citep{CovidTimelineCanada}. 
+We use the estimated serial interval (Gamma) distributions by Xu et al. \citep{xu2023assessing} for 
+each variant dominating a specific time period, specifically Ancestral lineage 
+(mean$=5.1 $, sd$=4.0$), Alpha (mean$=3.5$, sd$=4.5$), Delta (mean$=3.5$, sd$=2.9$), 
+and Omicron (mean$=3.0$, sd$=2.1$) variants over time, estimated by \cite{duotang_2023}.
 
 \begin{figure}[!ht]
   \centering
@@ -473,10 +476,12 @@ three years of Covid-19 case data in Canada is shown in \autoref{fig:intro-fig}
   by \RtEstim\ and the corresponding predicted incident cases for the Covid-19 epidemic 
   in Canada during the period from March 28, 2020 to June 28, 2023. 
   In the top panel, the blue curve is the estimated piecewise
-  quadratic $\calR_t$ and the gray ribbon is the corresponding 95\% confidence band. 
+  quadratic $\calR_t$ and the colorful ribbon is the corresponding 95\% confidence band. 
+  The ribbon is dyed by four colors representing the variants whose serial interval distributions
+  are used to estimate $\calR_t$.
   The black curve in the bottom panel is the observed Covid-19 daily confirmed 
   cases, and the orange curve is the predicted incident cases
-  corresponding to the estimated $\calR_t$.}
+  corresponding to the estimated $\calR_t$. }
   \label{fig:intro-fig}
 \end{figure}
 
@@ -549,7 +554,7 @@ distribution of the difference between independent draws from the delay
 distribution from infection to symptom onset. See, for example,
 \cite{gostic2020practical} for a fuller discussion of the dangers of this
 approximation. Nonetheless, treating these as interchangeable is common
-\citep{cori2013new} and doing otherwise is beyond the scope of this work. 
+\citep{cori2013new,park2021forward} and doing otherwise is beyond the scope of this work. 
 Additionally, we assume that the generation interval (and, therefore, the 
 serial interval), is constant over time $t$. That is, the probability $p(i)$ 
 depends only on the gap between primary and secondary infections and not on 
@@ -1043,7 +1048,7 @@ Poisson case.
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics*[width=.99\textwidth]{fig/fig_res_NB_measles.png}
+  \includegraphics*[width=.99\textwidth]{fig/fig_res_NB_sars.png}
   \caption{Example of effective reproduction number estimation for measles epidemics with negative
   Binomial observations.}
   \label{fig:nb-est-measles}
@@ -1063,9 +1068,12 @@ supplementary document.
 
 We implement \RtEstim\ on Covid-19 confirmed incident cases in British Columbia
 (B.C.) as reported on May 18, 2023 (visualized in \autoref{fig:covid-data}) by
-the B.C.\ Centre for Disease Control \citep{covidbc}. We use the gamma distribution with shape
-$2.5$ and scale $2.5$ to approximate the serial interval function, which is
-similar to empirical estimates~\citep{lehtinen2021relationship}. 
+the B.C.\ Centre for Disease Control \citep{covidbc}. 
+Since other methods cannot incorporate time-varying serial interval distributions, 
+we use the weighted probabilities of serial interval distributions of four dominated variants 
+used in \autoref{fig:intro-fig} as the serial interval distribution here.
+We compute their percentages of dominated days throughout the pandemic as the weights in computation, 
+specifically Ancestral lineage ($32.6\%$), Alpha ($8.5\%$), Delta ($16.0\%$), and Omicron($42.9\%$). 
 
 \begin{figure}[!ht]
   \centering
@@ -1189,8 +1197,16 @@ example, on weekends and holidays or due to changes in reporting frequency.
 While solving the convex optimization problem, our method can easily 
 handle uneven spacing or irregular reporting. Computing the total
 primary infectiousness is also easily generalized to irregular reporting by
-modifying the discretization of the serial interval distribution. Additionally,
-because the $\ell_1$ penalty introduces sparsity (operating like a median
+modifying the discretization of the serial interval distribution. There are many
+other aspects to be considered in choosing the delay distribution to make a more accurate
+estimation \citep{park2024estimating}. 
+Imported cases can be distinguished from the local cases to avoid the biasness 
+in effective reproduction number estimation, for example, \cite{thompson2019improved} 
+assumed the total past infectiousness of combined previous cases scaled by effective 
+reproduction number to be the mean of the local incidence and illustrated that 
+failure of distinguishing the local cases from the imported cases may cause the overestimation 
+of $\calR$ using the MERS data in Saudi Arabia from August 2014 to December 2015. 
+Additionally, because the $\ell_1$ penalty introduces sparsity (operating like a median
 rather than a mean), this procedure is relatively insensitive to outliers
 compared to $\ell_2$ regularization.
 
