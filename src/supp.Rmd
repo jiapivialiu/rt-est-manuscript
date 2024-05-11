@@ -233,22 +233,6 @@ kbl(df_exp, booktabs = T, caption = "Summary of experimental setting on accuracy
   kable_styling(latex_options = c("repeat_header"))
 ```
 
-Here we list the hyperparameters used in modelling for each method. Most of them 
-are the experimental settings used in the papers where they were proposed and 
-deemed as the ``best" tuned ones. We consider both weekly and monthly sliding 
-windows in \EpiEstim, 40 basis functions in \EpiLPS with the NelderMead method 
-to maximize the hyperparameter posterior distribution. We input 2000 grid size 
-in \EpiFilter with 0.1 diffusion noise and uniform prior on $\calR_t$ with mean 
-1/2000, and use the smoothed $\calR_t$ given all observed incidence as the final 
-estimates. We run 10-fold cross validation (CV) to choose the best tuning parameter
-from the candidate set of size $50$, i.e., $\boldsymbol{\lambda} = \{\lambda_1,
-\cdots, \lambda_{50}\}$, for long epidemics, and $5$-fold CV for short epidemics. 
-Specifically, we divide all samples (except the first and last entries) into, 
-e.g., $10$ folds evenly and randomly, and build models on each subset of samples 
-by leaving a fold out using each choice of the tuning parameter. We select the 
-tuning parameter that gives the lowest averaged ***deviance*** between the 
-estimated incidence and the observed samples averaged over all folds. 
-
 We visualize the selected key results of the accuracy comparison using long synthetic 
 epidemics in Section 3.2. Other main experimental results are displayed in 
 Section \@ref(sec:exp-accuracy).
@@ -755,6 +739,7 @@ fig_res_full_pois_measles <- res_dat_long %>%
   labs(y = "Rt estimates for measles epidemics with Poisson incidence") + 
   scale_x_continuous(expand = expansion(c(0, 0.05))) + 
   scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(0, 5)) + 
   theme_bw() +
   theme(legend.position = "bottom", strip.text.y = element_blank()) +
   guides(color = guide_legend(title = NULL, byrow=TRUE))
@@ -774,6 +759,7 @@ fig_res_full_nb_measles <- res_dat_long %>%
   labs(y = "Rt estimates for measles epidemics with negative Binomial incidence") + 
   scale_x_continuous(expand = expansion(c(0, 0.05))) + 
   scale_y_continuous(expand = expansion(c(0, 0.05))) + # truncate y, due to large EpiLPS at the first few timepoints
+  coord_cartesian(ylim = c(0, 5)) + 
   theme_bw() +
   theme(legend.position = "bottom", strip.text.y = element_blank()) +
   guides(color = guide_legend(title = NULL, byrow=TRUE))
@@ -793,6 +779,7 @@ fig_res_full_nb_measles <- res_dat_long %>%
   labs(y = "Rt estimates for SARS epidemics with Poisson incidence") + 
   scale_x_continuous(expand = expansion(c(0, 0.05))) + 
   scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(0, 5)) + 
   theme_bw() +
   theme(legend.position = "bottom", strip.text.y = element_blank()) +
   guides(color = guide_legend(title = NULL, byrow=TRUE))
@@ -812,6 +799,7 @@ fig_res_full_nb_measles <- res_dat_long %>%
   labs(y = "Rt estimates for SARS epidemics with negative Binomial incidence") + 
   scale_x_continuous(expand = expansion(c(0, 0.05))) + 
   scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(0, 5)) + 
   theme_bw() +
   theme(legend.position = "bottom", strip.text.y = element_blank()) +
   guides(color = guide_legend(title = NULL, byrow=TRUE))
@@ -922,7 +910,7 @@ ci_cover_measles <- Rt_res_ci_noNAs %>% # exclude NAs for certain methods
   geom_line(aes(col = method)) + 
   facet_grid(dist ~ Rt_case, scales = "free") +
   scale_colour_manual(values = cbPalette[-5]) + 
-  labs(y = "CI coverage for measles epidemics") + 
+  labs(y = "CI coverage for measles epidemics", x = "Methods") + 
   theme_bw() +
   theme(axis.text.x = element_blank(), legend.position = "bottom") +
   guides(color = guide_legend(title = NULL, byrow=TRUE))
@@ -937,7 +925,7 @@ ci_cover_sars <- Rt_res_ci_noNAs %>% # exclude NAs for certain methods
   geom_line(aes(col = method)) + 
   facet_grid(dist ~ Rt_case, scales = "free") +
   scale_colour_manual(values = cbPalette[-5]) + 
-  labs(y = "CI coverage for SARS epidemics") + 
+  labs(y = "CI coverage for SARS epidemics", x = "Methods") + 
   theme_bw() +
   theme(axis.text.x = element_blank(), legend.position = "bottom") +
   guides(color = guide_legend(title = NULL, byrow=TRUE))
@@ -981,11 +969,18 @@ ci_percent_sars <- CI_result %>%
 print(ci_percent_sars)
 ```
 
+
+We output a vector of the CI coverage for each timepoint per experiment, 
+the percentage of coverage of all timepoints, and the interval score 
+$$score_{\alpha}(\calR,u,l) = \frac{1}{n} \sum_{t=1}^n (u_t-l_t) + \frac{2}{\alpha}(l_t-\calR_t)\boldsymbol{1}_{(\calR_t<l_t)} + \frac{2}{\alpha}(\calR_t-u_t)\boldsymbol{1}_{(\calR_t>u_t)}$$, where $\alpha=0.05$ is the 
+significance level, $l,u$ are the lower and upper bounds, $\calR_t$ is the true 
+effective reproduction number, and $\mathbf{1}_{X}$ is the indicator function 
+of the condition $X$. [@Bracher_2021].
 Figures \@ref(fig:ci-score-measles) and \@ref(fig:ci-score-sars) displays the 
 interval scores of 95% CI averaged over 50 random measles and SARS epidemics 
 respectively. 
 
-```{r ci-score-measles, echo=FALSE, fig.cap="Averaged interval scores with measles epidemics.", fig.height=4.5, fig.width=6.2, message=FALSE, warning=FALSE}
+```{r ci-score-measles, echo=FALSE, fig.cap="Averaged interval scores with measles epidemics. EpiLPS is excluded, since it's scores are always larger than 100.", fig.height=4.5, fig.width=6.2, message=FALSE, warning=FALSE}
 ci_score_measles <- CI_result %>% 
   filter(method != "EpiLPS") %>% # too large
   filter(si_type == "measles") %>%
@@ -993,17 +988,16 @@ ci_score_measles <- CI_result %>%
   ggplot(aes(y = ci_score, x = method)) +
   facet_grid(dist ~ Rt_case, scales = "free") +
   geom_boxplot(aes(col = method)) +
-  scale_colour_manual(values = cbPalette[-5]) +
+  scale_colour_manual(values = cbPalette[-c(5)]) +
   scale_y_log10() +
-  labs(x = "Methods", y = "Interval scores") + 
   theme_bw() + 
-  labs(y = "Interval scores for measles epidemics") + 
+  labs(y = "Interval scores for measles epidemics", x = "Methods") + 
   theme(axis.text.x = element_blank(), legend.position = "bottom") +
   guides(color = guide_legend(title = NULL, byrow=TRUE))
 print(ci_score_measles)
 ```
 
-```{r ci-score-sars, echo=FALSE, fig.cap="Averaged interval scores with SARS epidemics.", fig.height=4.5, fig.width=6.2, message=FALSE, warning=FALSE}
+```{r ci-score-sars, echo=FALSE, fig.cap="Averaged interval scores with SARS epidemics. EpiLPS is excluded, since it's scores are always larger than 100.", fig.height=4.5, fig.width=6.2, message=FALSE, warning=FALSE}
 ci_score_sars <- CI_result %>% 
   filter(method != "EpiLPS") %>% # too large
   filter(si_type == "SARS") %>%
@@ -1011,11 +1005,10 @@ ci_score_sars <- CI_result %>%
   ggplot(aes(y = ci_score, x = method)) +
   facet_grid(dist ~ Rt_case, scales = "free") +
   geom_boxplot(aes(col = method)) +
-  scale_colour_manual(values = cbPalette[-5]) +
+  scale_colour_manual(values = cbPalette[-c(3,5)]) +
   scale_y_log10() +
-  labs(x = "Methods", y = "Interval scores") + 
   theme_bw() + 
-  labs(y = "Interval scores for SARS epidemics") + 
+  labs(y = "Interval scores for SARS epidemics", x = "Methods") + 
   theme(axis.text.x = element_blank(), legend.position = "bottom") +
   guides(color = guide_legend(title = NULL, byrow=TRUE))
 print(ci_score_sars)
@@ -1195,7 +1188,7 @@ alpha <- 0.05
 
 # RtEstim k = 0
 fit_covidBC_RtEstim0 <- cv_estimate_rt(
-  x = cancovid$date, cancovid$incident_cases, korder = 0, nfold = 10, maxiter = 1e7L, 
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 0, nfold = 10, maxiter = 1e7L, 
   nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn)
 ci_covidBC_RtEstim0 <- confband(fit_covidBC_RtEstim0, "lambda.min", 1-alpha)
 
@@ -1205,17 +1198,17 @@ RtEstim0_95Up_covidBC <- ci_covidBC_RtEstim0[,3][[1]]
 
 # RtEstim k=1,2,3
 fit_covidBC_RtEstim1 <- cv_estimate_rt(
-  x = cancovid$date, cancovid$incident_cases, korder = 1, nfold = 10, maxiter = 1e7L, 
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 1, nfold = 10, maxiter = 1e7L, 
   nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn)
 ci_covidBC_RtEstim1 <- confband(fit_covidBC_RtEstim1, "lambda.min", 1-alpha)
 
 fit_covidBC_RtEstim2 <- cv_estimate_rt(
-  x = cancovid$date, cancovid$incident_cases, korder = 2, nfold = 10, maxiter = 1e7L, 
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 2, nfold = 10, maxiter = 1e7L, 
   nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn)
 ci_covidBC_RtEstim2 <- confband(fit_covidBC_RtEstim2, "lambda.min", 1-alpha)
 
 fit_covidBC_RtEstim3 <- cv_estimate_rt(
-  x = cancovid$date, cancovid$incident_cases, korder = 3, nfold = 10, maxiter = 1e7L, 
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 3, nfold = 10, maxiter = 1e7L, 
   nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn)
 ci_covidBC_RtEstim3 <- confband(fit_covidBC_RtEstim3, "lambda.min", 1-alpha)
 
@@ -1231,14 +1224,14 @@ RtEstim3_95Up_covidBC <- ci_covidBC_RtEstim3[,3][[1]]
 
 
 # EpiEstim (weekly)
-datBC <- cases[,-3]
-colnames(datBC) <- c("dates", "I")
+#datBC <- cases[,-3]
+#colnames(datBC) <- c("dates", "I")
 ## weekly
 t_start_week <- seq(2, len - 6)
 t_end_week <- t_start_week + 6
 config_week <- make_config(list(si_distr = c(0, covid_delay_distn), t_start = t_start_week, t_end = t_end_week))
 # fit model
-fit_week <- EpiEstim::estimate_R(incid = cancovid$incident_cases, config = config_week, 
+fit_week <- EpiEstim::estimate_R(incid = rtestim::cancovid$incident_cases, config = config_week, 
                                  method = "non_parametric_si")
 l <- which(colnames(fit_week$R) == paste0("Quantile.",alpha/2,"(R)"))
 u <- which(colnames(fit_week$R) == paste0("Quantile.",1 - alpha/2,"(R)"))
@@ -1256,7 +1249,7 @@ t_start_month <- seq(2, len - 29)
 t_end_month <- t_start_month + 29
 config_month <- make_config(list(si_distr = c(0, covid_delay_distn), t_start = t_start_month, t_end = t_end_month))
 # fit model
-fit_month <- EpiEstim::estimate_R(incid = cancovid$incident_cases, config = config_month, 
+fit_month <- EpiEstim::estimate_R(incid = rtestim::cancovid$incident_cases, config = config_month, 
                                   method = "non_parametric_si")
 l <- which(colnames(fit_month$R) == paste0("Quantile.",alpha/2,"(R)"))
 u <- which(colnames(fit_month$R) == paste0("Quantile.",1 - alpha/2,"(R)"))
@@ -1271,8 +1264,8 @@ EpiMonth_Rt_covidBC <- fill_NAs(fit_month$R$`Mean(R)`, len)
 
 
 # EpiLPS
-fitLPS <- EpiLPS::estimR(incidence = cancovid$incident_cases, si = covid_delay_distn, K = 40, 
-                         dates = cancovid$date, CoriR = FALSE)
+fitLPS <- EpiLPS::estimR(incidence = rtestim::cancovid$incident_cases, si = covid_delay_distn, K = 40, 
+                         dates = rtestim::cancovid$date, CoriR = FALSE)
 l <- which(colnames(fitLPS$RLPS) == paste0("Rq", alpha/2)) # alpha can only by 0.05, 0.1, 0.5
 u <- which(colnames(fitLPS$RLPS) == paste0("Rq", 1 - alpha/2))
 EpiLPS_Rt_covidBC <- fill_NAs(fitLPS$RLPS$R, len)
@@ -1284,8 +1277,8 @@ EpiLPS_95Up_covidBC <- fill_NAs(fitLPS$RLPS[,u], len)
 m <- 2000
 pR0 <- (1 / m) * rep(1, m)
 Rgrid <- seq(0.01, 10, length.out = m)
-w <- delay_calculator(cancovid$incident_cases, x = cancovid$date, delay_distn = covid_delay_distn)
-R_filter <- epiFilter(Rgrid, m, eta=0.1, pR0, len, w, cancovid$incident_cases, a = alpha)
+w <- delay_calculator(rtestim::cancovid$incident_cases, x = rtestim::cancovid$date, delay_distn = covid_delay_distn)
+R_filter <- epiFilter(Rgrid, m, eta=0.1, pR0, len, w, rtestim::cancovid$incident_cases, a = alpha)
 R_smoother <- epiSmoother(Rgrid, m, R_filter[[4]], R_filter[[5]], len, R_filter[[6]], a = alpha)
 EpiFilter_Rt_covidBC <- R_smoother[[3]]
 EpiFilter_95Lo_covidBC <- R_smoother[[2]][1,]
@@ -1293,7 +1286,7 @@ EpiFilter_95Up_covidBC <- R_smoother[[2]][2,]
 
 
 dat_cancovid_fitted_long <- data.table(
-  Date = rep(cancovid$date, 8),
+  Date = rep(rtestim::cancovid$date, 8),
   Method = rep(c("RtEstim (k=0)", "RtEstim (k=1)", "RtEstim (k=2)", "RtEstim (k=3)", 
                  "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS", "EpiFilter"), each = len),
   fitted_Rt = c(RtEstim0_Rt_covidBC, RtEstim1_Rt_covidBC, RtEstim2_Rt_covidBC, RtEstim3_Rt_covidBC, 
@@ -1314,8 +1307,8 @@ saveRDS(dat_cancovid_fitted_long, here::here("dat/dat_cancovid_fitted.RDS"))
 ```
 
 ```{r plot-cancovid-ci, echo=FALSE, fig.height=8, fig.width=6.2, fig.cap = "Rt estimates with CIs for Covid19."}
-dat_covidBC_fitted_long <- readRDS(here::here("dat/dat_covidBC_fitted_long.RDS"))
-dat_covidBC_fitted_long %>%
+dat_cancovid_fitted_long <- readRDS(here::here("dat/dat_cancovid_fitted.RDS"))
+dat_cancovid_fitted_long %>%
   filter(fitted_Rt > 0) %>% # remove NAs marked by -1
   group_by(Method) %>%
   ggplot(aes(x = Date)) + 
@@ -1335,7 +1328,7 @@ dat_covidBC_fitted_long %>%
 ```
 
 ```{r plot-cancovid-one, echo=FALSE, fig.height=3.5, fig.width=6.2, fig.cap = "Rt estimates for Covid19."}
-dat_covidBC_fitted_long %>%
+dat_cancovid_fitted_long %>%
   filter(fitted_Rt > 0) %>% # remove NAs marked by -1
   group_by(Method) %>%
   ggplot(aes(x = Date)) + 
@@ -1520,25 +1513,19 @@ dat_flu_fitted_long %>%
 
 
 
-
-
-
-
 <!-- The following R chunks reproduce figures in the main manuscript. -->
 
 ```{r Fig1-display-cancovid-example, eval = FALSE, include = FALSE}
 library(rtestim)
 library(Matrix)
-cancovid <- rtestim::cancovid[-1:-65, ] # drop the beginning period
-n <- nrow(cancovid)
-
-#can_pred_class <- readRDS(here::here("dat/can_pred_class.RDS"))
-#delay_dstns_can <- readRDS(here::here("dat/delay-distns-byvar.rds")) |>
-#  filter(para == "SI", type %in% unique(can_pred_class$var)) 
+n <- nrow(rtestim::cancovid)
+can_pred_class <- readRDS(here::here("dat/can_pred_class.RDS"))
+delay_dstns_can <- readRDS(here::here("dat/delay-distns-byvar.rds")) |>
+  filter(para == "SI", type %in% unique(can_pred_class$var)) 
 delay_mat <- matrix(0, n, n)
 delay_mat[1,1] <- 1
 for (iter in 2:n) {
-  current_var <- can_pred_class$var[iter+65]
+  current_var <- can_pred_class$var[iter]
   current_pars <- delay_dstns_can |> filter(type == current_var)
   delay <- discretize_gamma(0:(iter - 1), current_pars$shape, current_pars$scale)
   delay_mat[iter, 1:iter] <- rev(delay)
@@ -1546,22 +1533,24 @@ for (iter in 2:n) {
 delay_mat <- drop0(as(delay_mat, "CsparseMatrix")) # make it sparse, not necessary
 delay_mat <- delay_mat / rowSums(delay_mat) # renormalize
 
+
 # plot fitted Rt with confidence band
 cv_mod <- cv_estimate_rt(
-  x = cancovid$date, cancovid$incident_cases, korder = 2, nfold = 10, delay_distn = delay_mat,
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 2, nfold = 10, 
+  delay_distn = delay_mat,
   maxiter = 1e7L, nsol = 50, error_measure = "deviance",
   lambda_min_ratio = 1e-6, init = configure_rt_admm(tol = 1e-6)
 )
 rt_ci_covid <- confband(cv_mod, "lambda.1se") # get 95% confidence band
 
-start_dates <- data.table(rt_ci_covid, variant = can_pred_class$var[-1:-65], date = cancovid$date) %>% group_by(variant) %>% summarize(min(date))
+start_dates <- data.table(rt_ci_covid, variant = can_pred_class$var, date = rtestim::cancovid$date) %>% group_by(variant) %>% summarize(min(date))
 
-fig_rt_fit <- data.table(rt_ci_covid, variant = can_pred_class$var[-1:-65]) %>%
+fig_rt_fit <- data.table(rt_ci_covid, variant = can_pred_class$var) %>%
   mutate(variant = fct_relevel(
     variant, 
     "Ancestral lineage", "Alpha", "Delta", "Omicron"
   )) %>%
-  ggplot(aes(x = cancovid$date)) +
+  ggplot(aes(x = rtestim::cancovid$date)) +
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`, fill=variant), alpha = 0.5) +#fill = "gray", 
   geom_line(aes(y = Rt), col = "#0072B2", lwd = 1) +
   scale_x_date(date_breaks = "8 months", date_labels = "%Y-%m-%d", expand = expansion(c(0, 0.05))) +
@@ -1569,18 +1558,20 @@ fig_rt_fit <- data.table(rt_ci_covid, variant = can_pred_class$var[-1:-65]) %>%
   geom_hline(yintercept = 1, linetype = "dotted") +
   #geom_vline(xintercept = start_dates$`min(date)`[-2], linetype = "dashed") +
   labs(x = "Date", y = "Piecewise quadratic Rt with 95% CIs") +
+  coord_cartesian(ylim = c(0, 2)) + 
   theme_bw() +
   scale_fill_brewer(palette = "Dark2", name = "")
 fig_rt_fit
 
 # plot fitted incidence
 mod_best <- estimate_rt(
-  x = cancovid$date, cancovid$incident_cases, korder = 2, maxiter = 1e7L, delay_distn = delay_mat,
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 2, maxiter = 1e7L, delay_distn = delay_mat,
   lambda = cv_mod$lambda.1se
 )
 incidence_fit <- mod_best$weighted_past_counts * rt_ci_covid$Rt
-inc_dat <- data.table(cancovid, incidence_fit = incidence_fit)
-fig_inc_fit <- data.table(inc_dat, variant = can_pred_class$var[-1:-65]) %>%
+inc_dat <- data.table(rtestim::cancovid, incidence_fit = incidence_fit)
+
+fig_inc_fit <- data.table(inc_dat, variant = can_pred_class$var) %>%
   ggplot(aes(x = date)) +
   geom_line(aes(y = incident_cases / 1000)) +
   geom_line(aes(y = incidence_fit / 1000), col = "#D55E00", lwd = 1) +
@@ -2588,7 +2579,7 @@ fig_res_pois_measles <- res_dat_long %>%
   geom_line(aes(col = method)) +
   facet_wrap( ~ Rt_case, scales = "free") +
   scale_colour_manual(values = cbPalette[-5]) +
-  labs(y = "Rt estimates for measles epidemics with Poisson incidence") + 
+  labs(y = "Rt estimates for measles epidemics with Poisson incidence", x="Time") + 
   scale_x_continuous(expand = expansion(c(0, 0.05))) + 
   scale_y_continuous(expand = expansion(c(0, 0.05))) +
   coord_cartesian(ylim = c(0, 4)) + 
@@ -2605,7 +2596,7 @@ fig_res_NB_sars <- res_dat_long %>%
   geom_line(aes(col = method)) +
   facet_wrap( ~ Rt_case, scales = "free") +
   scale_colour_manual(values = cbPalette[-5]) +
-  labs(y = "Rt estimates for SARS epidemics with NB incidence") + 
+  labs(y = "Rt estimates for SARS epidemics with NB incidence", x="Time") + 
   scale_x_continuous(expand = expansion(c(0, 0.05))) + 
   scale_y_continuous(expand = expansion(c(0, 0.05))) + 
   coord_cartesian(ylim = c(0, 4)) + 
@@ -2622,7 +2613,7 @@ ggsave(plot=fig_res_NB_sars, here::here("fig/fig_res_NB_sars.png"), width = 6.5,
 ## estimate Rt using RtEstim
 # k=1
 cv_mod_covid1 <- cv_estimate_rt(
-  x = cancovid$date, cancovid$incident_cases, korder = 1, nfold = 10,
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 1, nfold = 10,
   maxiter = 1e7L, nsol = 50, error_measure = "deviance", 
   lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn
 )
@@ -2630,7 +2621,7 @@ rt_ci_covid1 <- confband(cv_mod_covid1, "lambda.1se") # get 95% confidence band
 
 # k=2
 cv_mod_covid2 <- cv_estimate_rt(
-  x = cancovid$date, cancovid$incident_cases, korder = 2, nfold = 10,
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 2, nfold = 10,
   maxiter = 1e7L, nsol = 50, error_measure = "deviance", 
   lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn
 )
@@ -2638,19 +2629,19 @@ rt_ci_covid2 <- confband(cv_mod_covid2, "lambda.1se") # get 95% confidence band
 
 # k=3
 cv_mod_covid3 <- cv_estimate_rt(
-  x = cancovid$date, cancovid$incident_cases, korder = 3, nfold = 10,
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 3, nfold = 10,
   maxiter = 1e7L, nsol = 50, error_measure = "deviance", 
   lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn
 )
 rt_ci_covid3 <- confband(cv_mod_covid3, "lambda.1se") # get 95% confidence band
 
 # Rt values with a candidate set
-len <- nrow(cancovid)
+len <- nrow(rtestim::cancovid) #1253
 k <- 50
 df_covid_Rt <- data.table(
   Rt = c(as.vector(cv_mod_covid1$full_fit$Rt), as.vector(cv_mod_covid2$full_fit$Rt), as.vector(cv_mod_covid3$full_fit$Rt)),
   lambda = c(rep(cv_mod_covid1$lambda, each = len), rep(cv_mod_covid2$lambda, each = len), rep(cv_mod_covid3$lambda, each = len)),
-  Time = rep(cancovid$date, k*3),
+  Time = rep(rtestim::cancovid$date, k*3),
   degree = rep(c("1","2","3"), each = len*k)
 )
 
@@ -2669,6 +2660,7 @@ fig_covid_Rt <- df_covid_Rt %>%
   guides(color = guide_colorbar(barwidth = 10, barheight = 1)) +
   scale_x_date(date_breaks = "12 months", date_labels = "%Y", expand = expansion(c(0, 0.05))) +
   scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(0, 2)) + 
   geom_hline(yintercept = 1) +
   theme_bw() +
   theme(legend.position = "bottom")
@@ -2676,13 +2668,13 @@ fig_covid_Rt <- df_covid_Rt %>%
 # CV-chosen Rt with CB
 rt_ci_covid3 <- as.data.table(rt_ci_covid3) %>% 
   mutate(degree = "3", lambda = cv_mod_covid3$lambda.1se) %>% 
-  mutate(Date = cancovid$date) 
+  mutate(Date = rtestim::cancovid$date) 
 rt_ci_covid2 <- as.data.table(rt_ci_covid2) %>% 
   mutate(degree = "2", lambda = cv_mod_covid2$lambda.1se) %>% 
-  mutate(Date = cancovid$date) 
+  mutate(Date = rtestim::cancovid$date) 
 rt_ci_covid1 <- as.data.table(rt_ci_covid1) %>% 
   mutate(degree = "1", lambda = cv_mod_covid1$lambda.1se) %>% 
-  mutate(Date = cancovid$date) 
+  mutate(Date = rtestim::cancovid$date) 
 df_covid_ci <- rbind(rt_ci_covid1, rt_ci_covid2, rt_ci_covid3)
 
 
@@ -2700,18 +2692,19 @@ fig_covid_ci <- df_covid_ci %>%
     fill = "gray", alpha = 0.5
   ) +
   geom_hline(yintercept = 1, linetype = "dotted") +
+  coord_cartesian(ylim = c(0, 2)) + 
   scale_x_date(date_breaks = "12 months", date_labels = "%Y", expand = expansion(c(0, 0.05))) +
   scale_y_continuous(expand = expansion(c(0, 0.05))) + 
   labs(x = "Year", y = "") +
   theme_bw()
 
-Covid_BC_Rt <- ggpubr::ggarrange(fig_covid_Rt, fig_covid_ci,
+CanCovid_Rt_all <- ggpubr::ggarrange(fig_covid_Rt, fig_covid_ci,
                          ncol = 2, nrow = 1, 
                          common.legend = TRUE, legend = "bottom"
 )
-print(Covid_BC_Rt)
+print(CanCovid_Rt_all)
 
-ggsave(here::here("fig/covid_full_res.png"), Covid_BC_Rt, width = 6.5, height = 5)
+ggsave(here::here("fig/covid_full_res.png"), CanCovid_Rt_all, width = 6.5, height = 5)
 ```
 
 ```{r Fig8-display-flu1918-data, eval=FALSE, include=FALSE}

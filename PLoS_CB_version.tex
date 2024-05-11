@@ -448,8 +448,7 @@ incidence data.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% our approach %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-We propose an estimator for retrospective estimation of effective reproduction number, 
-instantaneous reproduction number specifically,  
+We propose an effective (instantaneous, specifically) reproduction number estimator, 
 called \RtEstim\ that requires only incidence data. Our model makes the
 conditional Poisson assumption, similar to much of the prior work described
 above, but is empirically more robust to misspecification. This estimator is 
@@ -463,25 +462,34 @@ logarithm of $\calR_t$, we naturally accommodate the positivity requirement, in
 contrast to related methods, can
 handle large or small incidence measurements, and are automatically (reasonably)
 robust to outliers without additional constraints. A small illustration using
-three years of Covid-19 case data in Canada is shown in \autoref{fig:intro-fig} \citep{CovidTimelineCanada}. 
-We use the estimated serial interval (Gamma) distributions by Xu et al. \citep{xu2023assessing} for 
-each variant dominating a specific time period, specifically Ancestral lineage 
-(mean$=5.1 $, sd$=4.0$), Alpha (mean$=3.5$, sd$=4.5$), Delta (mean$=3.5$, sd$=2.9$), 
-and Omicron (mean$=3.0$, sd$=2.1$) variants over time, estimated by \cite{duotang_2023}.
+three years of Covid-19 case data in Canada is shown in \autoref{fig:intro-fig} 
+\citep{CovidTimelineCanada}. We get the viral evolution and spread information 
+from the \texttt{duotang} project provided by \cite{duotang_2023} and compute the 
+probabilities of having each variant at each timepoint using multinomial logistic 
+regression. The variant with the highest probabilities is deemed to dominate 
+the specific timepoint. There are four dominant variants throughout the epidemic, 
+Ancestral lineage, Alpha, Delta, and Omicron over time.
+We use the estimated serial interval distributions of the four variants by 
+Xu et al. \citep{xu2023assessing}, specifically Ancestral lineage (mean$=5.1$, 
+sd$=4.0$), Alpha (mean$=3.5$, sd$=4.5$), Delta (mean$=3.5$, sd$=2.9$), and Omicron 
+(mean$=3.0$, sd$=2.1$) variants. 
 
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=.9\textwidth]{fig/intro-fig-new.png}
   \caption{A demonstration of effective reproduction number estimation 
-  by \RtEstim\ and the corresponding predicted incident cases for the Covid-19 epidemic 
-  in Canada during the period from March 28, 2020 to June 28, 2023. 
-  In the top panel, the blue curve is the estimated piecewise
-  quadratic $\calR_t$ and the colorful ribbon is the corresponding 95\% confidence band. 
-  The ribbon is dyed by four colors representing the variants whose serial interval distributions
-  are used to estimate $\calR_t$.
-  The black curve in the bottom panel is the observed Covid-19 daily confirmed 
-  cases, and the orange curve is the predicted incident cases
-  corresponding to the estimated $\calR_t$. }
+  by \RtEstim\ and the corresponding predicted incident cases for the Covid-19 
+  epidemic in Canada during the period from January 23, 2020 to June 28, 2023. 
+  In the top panel, the blue curve is the estimated piecewise quadratic $\calR_t$ 
+  and the colorful ribbon is the corresponding 95\% confidence band. 
+  The ribbon is dyed by four colors representing the variants whose serial interval 
+  distributions are used to estimate $\calR_t$. The y-axis is truncated for 
+  a better illustration; the estimated $\calR_t$ is larger than $2$ at the 
+  first 54 timepoints, and the largest one, which is at the first timepoint, 
+  is $10.77$. The black curve in the bottom panel is the observed Covid-19 
+  daily confirmed cases, and the orange curve is the predicted incident cases
+  corresponding to the estimated $\calR_t$. The three vertical dashed lines 
+  represent the beginning of a new dominant variant.}
   \label{fig:intro-fig}
 \end{figure}
 
@@ -501,11 +509,10 @@ The manuscript proceeds as follows. We first introduce the methodology of
 trend filtering estimator. We explain how this method could be interpreted from
 the Bayesian perspective, connecting it to previous work in this context. We
 provide illustrative experiments comparing our estimator to other Bayesian alternatives. 
-We then apply our \RtEstim\ and the alternatives on the Covid-19 pandemic incidence in
-British Columbia and the 1918 influenza pandemic incidence in the United States. 
-Finally, we conclude with a discussion of the advantages and limitations of our 
-approach and describe practical considerations for effective reproduction number
-estimation.
+We then apply our \RtEstim\ on the Covid-19 pandemic incidence in Canada and 
+the 1918 influenza pandemic incidence in the United States. Finally, we conclude 
+with a discussion of the advantages and limitations of our approach and describe 
+practical considerations for effective reproduction number estimation.
 
 
 \section{Methods}
@@ -836,6 +843,8 @@ simulation and real-data application are \texttt{EpiEstim 2.2-4},
 
 \subsection{Synthetic experiments}
 
+\subsubsection{Problem design}
+
 We simulate four scenarios of the time-varying effective reproduction number,
 intended to mimic different epidemics. The first two scenarios are rapidly 
 controlled by intervention, where the $\calR(t)$ consists
@@ -851,8 +860,6 @@ The first three scenarios and the last scenario are motivated by
 We name the four scenarios as \textit{(1) piecewise constant}, \textit{(2) 
 piecewise exponential}, \textit{(3) piecewise linear}, and \textit{(4) periodic} 
 lines or curves respectively. 
-
-
 
 In all cases, the times of observation are regular, and epidemics are of
 length $n=300$. Specifically, in Scenario 1, $\calR_t = 2, 0.8$ before and after
@@ -876,32 +883,55 @@ continuous, periodic curve generated by the function
 \end{equation} 
 evaluated at equally spaced points $t\in [0,10]$. 
 These $\calR_t$ scenarios are illustrated in \autoref{fig:samples}.
+We compute the expected incidence $\Lambda_t$
+using the renewal equation, and generate the incident infections from the
+Poisson distribution $y_t\sim \textrm{Pois}(\Lambda_t)$. 
+To verify the performance of our model under the violation of the distributional assumption,
+we also generate incident cases using the negative Binomial distribution
+with dispersion size $\rho=5$, i.e., $y_t\sim \textrm{NB}(\mu=\Lambda_t,
+\rho=5)$. The probability mass function can be written as 
+\begin{equation}
+  \begin{split}
+    p(y_t|\Lambda_t,\rho) = \frac{\Gamma(y_t+\rho)}{\Gamma(\rho)y_t!} \Big(\frac{\rho}{\rho+\Lambda_t}\Big)^{\rho} \Big(\frac{\Lambda_t}{\rho+\Lambda_t}\Big)^{y_t},  
+  \end{split}
+\end{equation}
+where $y_t = 0,1,2,\cdots, t=1,\cdots,n$ and the variance is
+ $\sigma_t^2 = \Lambda_t + \frac{\Lambda_t^2}{\rho}$, which follows the 
+ definition in \cite{gressani2022epilps}.
+The variance equals the mean appended by another term of the squared mean over a
+relatively small dispersion size, so the squared mean can dominate the term and
+result in sufficient overdispersion level in the generated samples. 
+We visualize the dispersion level (using the ratio of standard deviation over mean) 
+of synthetic epidemics in Figure A.2.1 in Appendix for Poisson and negative 
+Binomial incidence separately to have a better idea on the overdispersion level 
+of the negative Binomial distributions (with size 5) compared the Poisson 
+distributions with the same mean. 
 
 We use serial interval (SI) distributions of measles (with mean $14.9$ and standard 
 deviation $3.9$) at Hagelloch, Germany in 1861 \citep{groendyke2011bayesian} and 
 SARS (with mean $8.4$ and standard deviation $3.8$) at Hong Kong in 2003 
-\citep{cori2009temporal}, inspired by \cite{cori2013new}, to generate synthetic 
+\citep{lipsitch2003transmission}, inspired by \cite{cori2013new}, to generate synthetic 
 epidemics. We initialize all epidemics with $y_1=2$ cases and generate for $t=2,\ldots,300$. 
-We compute the expected incidence $\Lambda_t$
-using the renewal equation, and generate the incident infections from the
-Poisson distribution $y_t\sim \textrm{Pois}(\Lambda_t)$. 
-The synthetic measles epidemics tend to have smaller incident cases, and the SARS 
-epidemics tend to have larger incidence. The intuition behind this is since the 
-mean of serial interval of SARS is smaller with a similar standard deviation 
-compared to the counterpart of measles, SARS epidemics have an averaged shorter period 
-between primary and secondary onsets of symptoms of the infected individuals, and 
-then they can result in a larger increase in incidence within the same period of time. 
-To verify the
-performance of our model under the violation of this distributional assumption,
-we also generate incident infections using the negative Binomial distribution
-with dispersion size 5, i.e., $y_t\sim \textrm{NB}(\textrm{mean}=\Lambda_t,\
-\textrm{size}=5)$, which gives a reasonably large overdispersion. 
-For each problem setting (including a SI distribution, a $\calR_t$ scenario, 
+The synthetic measles epidemics have smaller incident cases in general, and the SARS 
+epidemics have larger incidence. The intuition behind this is a smaller mean
+of serial interval with a similar standard deviation leads to an averaged shorter period 
+of the onsets of symptoms between the primary and secondary infected individuals, which 
+results in a greater growth of incidence within the same period of time. 
+We also consider shorter flu epidemics with 50 timepoints with piecewise linear $\calR_t$ 
+considering both incidence distributional assumptions. The motivation is to compare our method and 
+other aforementioned alternatives with EpiNow2 which takes much longer time to converge 
+for long epidemics (taking almost 2 hours to converge for a measles epidemic 
+with 300 timepoints) than other methods.  
+Besides using the correct SI distributions to estimate $\calR_t$, we also consider 
+the scenarios where SI is mildly or majorly misspecified. 
+More details on experimental settings and results for shorter epidemics and misspecification 
+of SI distributions will be given in Sections A.2.1 and A.3 in Appendix respectively. 
+
+For each problem setting (including a SI distribution, an $\calR_t$ scenario, 
 and an incidence distribution), we generate 50 random samples, resulting in 
 $800$ total synthetic epidemics. 
 An example of measles and SARS epidemics for each effective reproduction number scenario
 with an incidence distribution is displayed in \autoref{fig:samples}. 
-We also visualize the (over)dispersion level of the following synthetic epidemics in Appendix. 
 
 \begin{figure}[!ht]
   \centering
@@ -913,12 +943,13 @@ We also visualize the (over)dispersion level of the following synthetic epidemic
   \label{fig:samples}
 \end{figure}
 
-We compare \RtEstim\ to \EpiEstim, \EpiLPS, and \texttt{EpiFilter}. \EpiEstim\ estimates
+\subsubsection{Algorithm design}
+
+We compare \RtEstim\ to \EpiEstim, \EpiLPS, and \EpiFilter. \EpiEstim\ estimates
 the posterior distribution of the effective reproduction number given a Gamma
 prior and Poisson distributed observations
 over a trailing window, under the assumption that the effective reproduction number is
-constant during that window. A larger window averages out more
-fluctuations,
+constant during that window. A larger window averages out more fluctuations,
 leading to smoother estimates, whereas, a shorter sliding window is more
 responsive to sudden spikes or declines. We tried the weekly sliding
 window, as well as a monthly window. However, since neither considerably
@@ -928,36 +959,98 @@ based on the Laplace approximation to the conditional posterior with negative
 Binomial likelihood. \texttt{EpiFilter} is also a Bayesian approach that smooths 
 $\calR_t$ at each timepoint given all observed incidence, improved upon the filtering methods
 that filter $\calR_t$ given the observations prior to and on time $t$.
-We apply \RtEstim\ with four degrees, (1) piecewise constant $k=0$, (2) piecewise linear \& cubic $k=1,3$,
-(3) piecewise linear $k=1$ and (4) piecewise cubic polynomials $k=3$, to solve all settings.
-In each case, we examine a grid of 50 $\lambda$ values, selecting the best using 10-fold
-cross validation. For all models and problems, we use the same serial interval
-distribution for estimation that was used to create the data. 
-Taking different hyper parameters into consideration, we solve each problem using 7 methods in total.
 
-% discusse `degree' of all methods; more details in Discussion section
-Throughout the four $\calR_t$ scenarios, the degrees of \RtEstim\ can be correctly or wrongly specified. 
-On one hand, our method can take the advantage of a correctly specified degree 
-of piecewise polynomials compared to other methods, since the competitors only consider
-one fixed degree of smoothness and do not allow a user-specified degree. 
-(We will discuss more in Section \ref{sec:disc}.) 
-On the other hand, we will illustrate that a wrongly specified degree can still 
-result in relatively accurate $\calR_t$ estimates in the following experimental results. 
+We apply \RtEstim\ with four degrees, piecewise constant $k=0$, piecewise linear $k=1$, 
+piecewise quadratic $k=2$, and piecewise cubic $k=3$ polynomials, to solve all settings.
+We run 10-fold cross validation (CV) to choose the best tuning parameter
+from the candidate set of size $50$, i.e., $\boldsymbol{\lambda} = \{\lambda_1,
+\cdots, \lambda_{50}\}$, for long epidemics, and $5$-fold CV for short epidemics. 
+Specifically, we divide all samples (except the first and last entries) into, 
+e.g., $10$ folds evenly and randomly, and build models on each subset of samples 
+by leaving a fold out using each choice of the tuning parameter. We select the 
+tuning parameter that gives the lowest averaged deviance between the 
+estimated incidence and the observed samples averaged over all folds. 
 
+We specify the parameters of the alternative methods, using the ones which were 
+applied to their own experimental settings and so are deemed as the ``best'' tuned 
+ones, in our experiments. Due to the limitations of the software implementations that
+some necessary hyperparameters are not allowed to choose, we can only specify 
+the supported ones. 
+This limitation does not only restrict the choices on tuning parameters which impacts 
+the model fitting, but also those for optimization (as mentioned above). 
+For example, in EpiLPS, one must specify the number of basis functions as well as 
+$5$ prior parameters. EpiFilter needs a grid of possible $\calR_t$ values, 
+along with the a fixed value for the diffusion noise, and a prior value for 
+$\calR_t$. \EpiNow2\ has many prior parameters (depending on the particular model 
+used) and does not compute a Bayes Factor or other model selection criterion. 
+Had we attempted to tune some or all of these parameters, we would need to 
+implement cross validation from scratch for each, as none of these provide 
+ways to choose them. 
+Here are the hyperparameters used in modelling for each alternative method. 
+We consider both weekly and monthly sliding windows in \EpiEstim, 
+40 basis functions in \EpiLPS\ with the NelderMead method to maximize the 
+hyperparameter posterior distribution. We input 2000 grid size in \EpiFilter\ 
+with 0.1 diffusion noise and uniform prior on $\calR_t$ with mean 
+1/2000, and use the smoothed $\calR_t$ given all observed incidence as the final 
+estimates. 
 
-To measure estimation accuracy, we compare $\widehat{\calR}$ to $\calR$ using
-the Kullback-Leibler (KL) divergence. We use the KL divergence for the
-Poisson distribution (summed over across all $t$) to measure the accuracy
-of the $\calR_t$ estimates 
-\begin{equation}
-  D_{KL}(\calR \parallel \widehat{\calR}) = \sum_{t=1}^n w_t \lr{\calR_t
+For the $\calR_t$ estimation using all models for each problem, we use the same serial 
+interval distribution, that was used to generate synthetic data. Taking different 
+hyperparameters into consideration, we solve each problem using 8 methods including 
+\EpiEstim\ with weekly or monthly sliding windows, \EpiLPS, \EpiFilter, and 
+\RtEstim\ with piecewise constant, linear, quadratic, or cubic curves. 
+% discuss `degree' of all methods
+Throughout the four $\calR_t$ scenarios, the degrees of \RtEstim\ can be correctly or 
+wrongly specified. Our method can take the advantage of a correctly specified 
+degree of piecewise polynomials compared to other methods, while the competitors only 
+consider one fixed degree of smoothness which may not coincide with the ``true'' 
+(assumed) degree of $\calR_t$.
+Meanwhile, by using different degrees to solve the same problem, we will illustrate 
+that a wrongly specified degree can still result in accurate $\calR_t$ estimation 
+in our experiments. 
+
+\RtEstim\ estimates can appear to be piecewise polynomials with a selected degree 
+$k$. % where the changing points of polynomial segments are completely data driven. 
+When faced with real data, the choice of $k$ should be done either (1)
+based on the analyst's preference for the result (e.g., ``I want to find
+large jumps, so $k=0$'') or (2) in a data-driven manner, as a component of the
+estimation process. Our software enables both cases, and the second case can be 
+implemented by simply fitting for different $k$ and choosing the set $k,\lambda$ 
+that has smallest CV score. Thus, all necessary choices can be accomplished based 
+solely on the data. Our software is a departure from existing methods in that 
+we \emph{allow} this choice and provide simple data-driven methods to accomplish it. 
+\EpiEstim\ has no such facility (although, implicitly, one must somehow choose the 
+size of the rolling window). \EpiFilter\ effectively uses cubic splines (similar to 
+$k=3$, but simply continuous rather than piecewise continuous). Similarly, \EpiLPS\ 
+specifically chooses the cubic B-spline basis, which is similar to degree $k=3$. 
+\EpiNow2\ allows various choices through Gaussian Process kernels, and while one 
+can put priors on the parameters of the kernel, the choice of kernel is required. 
+In our experience, using $k > 3$ is nearly indistinguishable from $k=3$, though it 
+is allowed. So if the analyst somehow imagines ``$\mathcal{R}_t$ is best described 
+by a 10$^{th}$ order piecewise polynomial'' then the software can easily accommodate 
+this desire. 
+
+\subsubsection{Accuracy measurement}
+
+To measure estimation accuracy, we compare the estimated $\widehat{\calR}$ to 
+``true'' $\calR$ using the Kullback-Leibler (KL) divergence. The KL divergence for the
+Poisson distribution (summed over across all $t$) which measures the accuracy
+of the $\calR_t$ estimates is defined as
+\begin{equation} \label{eq:kl}
+  D_{KL}(\calR \parallel \widehat{\calR}) = \sum_{t=1}^N \eta_t \lr{\calR_t
   \log\left(\frac{\calR_t} {\widehat{\calR}_t}\right) + \widehat{\calR}_t -
 {\calR}_t},
 \end{equation}
-where $\calR = \left\{ \calR_t \right\}_{t=1}^n$ and $w_t = \eta_t
-/ \sum_t \eta_t$ is the rescaled total infectiousness. To fairly compare across
-methods, we drop the estimates during the first week because estimates from
-\EpiEstim\ do not begin until $t=8$ (using a weekly window). KL divergence is
+where $\calR = \left\{ \calR_t \right\}_{t=1}^N$ and $\eta_t$ is the total 
+infectiousness. We use the scaled (mean) KL divergence: 
+$\overline{D_{KL}}(\calR \parallel \widehat{\calR}) := D_{KL}(\calR \parallel \widehat{\calR}) / N$,
+where $N$ is the length of the estimated $\widehat{\calR}$ sequence.
+To fairly compare across methods, we drop the estimates during the first week 
+because estimates from \EpiEstim\ do not begin until $t=8$ (using a weekly window). 
+The details on the derivation of the KL divergence in \eqref{eq:kl} is deferred to
+Section A.1 in Appendix.
+
+KL divergence is
 more appropriate for measuring accuracy because it connects directly to the
 Poisson likelihood used to generate the data, whereas standard measures like the
 mean-squared error correspond to Gaussian likelihood. Using Poisson likelihood
@@ -968,88 +1061,119 @@ supplementary document.
 
 \subsection{Results for synthetic data}
 
-\RtEstim\ overall outperforms \EpiEstim\ and \EpiLPS\ in the experimental study.
-\autoref{fig:kl-res-measles} and \autoref{fig:kl-res-sars} visualizes 
-the KL divergence across the seven models. Under
-both Poisson and negative Binomial distributions, \RtEstim\ is easily the most
-accurate for Scenarios 1 and 3: the median of KL divergence is much lower and
-the boxes frequently fail to overlap indicating better performance than the
-other two methods across all 50 simulations. The advantage is less pronounced
-for the negative Binomial configuration, but still obvious.
-\RtEstim\ and \EpiLPS\ have similar performance in Scenarios 2 and 4. For the
-Poisson case, \RtEstim\ and \EpiLPS\ both have very small KL scores, which are
-very close to zero. In Scenario 4, \RtEstim\ is slightly better for Poisson and
-\EpiLPS\ is better for negative Binomial, but the boxes largely overlap each
-other. \EpiLPS\ has a slightly lower median and a smaller IQR in Scenario 2 for
-the negative Binomial case. Both smoothness choices for \RtEstim\ in Scenario 2
-perform similarly across noise distributions, implying good performance under 
-model misspecification. We will examine a single realization of each
+\RtEstim\ overall outperforms the other competitors in the experimental study.
+\autoref{fig:kl-res-measles} and \autoref{fig:kl-res-sars} visualize  
+the KL divergence across the seven methods. For low incidence in measles epidemics, 
+\RtEstim\ is the most accurate for all $\calR_t$ scenarios given both Poisson 
+and negative Binomial incidence. The best performance of \RtEstim\ has the 
+lowest median and has low or no overlap with other methods. 
+For Scenario 1, \EpiFilter\ is a competitive alternative given Poisson incidence, 
+which has similar median to the best performance of our \RtEstim\ and with a 
+small variation. While given negative Binomial incidence, \EpiFilter\ loses its 
+advantage and even has the largest medians in Scenarios 1 and 2.
+The large incidence in SARS epidemics imposes more difficulty of $\calR_t$ estimation 
+for all methods. The best performance of our method is quite robust in the scale 
+of incidence given Poisson data, since the KL values are of the similar scale for 
+two types of epidemics. Given negative Binomial incidence, \EpiLPS\ shows robustness 
+in the scale of incident cases in Scenarios 2 and 4. Our \RtEstim\ has similar KL divergence 
+values as \EpiLPS, where the counterpart boxes overlap to a large degree.
+%\RtEstim\ has the lowest medians with a small overlap with other methods in the 
+%epidemics of low incidence; while, for large incidence, \EpiLPS\ is very close or 
+%even better compared to the best performance of our method. 
+%\RtEstim\ and \EpiLPS\ have similar performance in Scenarios 2 and 4. For the
+%Poisson case, \RtEstim\ and \EpiLPS\ both have very small KL scores, which are
+%very close to zero. In Scenario 4, \RtEstim\ is slightly better for Poisson and
+%\EpiLPS\ is better for negative Binomial, but the boxes largely overlap each
+%other. \EpiLPS\ has a slightly lower median and a smaller IQR in Scenario 2 for
+%the negative Binomial case. Both smoothness choices for \RtEstim\ in Scenario 2
+%perform similarly across noise distributions, implying good performance under 
+%model misspecification. 
+We will examine a single realization of each
 experiment to investigate these global conclusions in more detail.
 
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=.99\textwidth]{fig/fig_kl_week_measles.png}
-  \caption{Boxplot of KL divergence between the estimated 
+  \caption{Boxplot of mean KL divergence between the estimated 
   $\hat{\calR}_t$ and the true $\calR_t$ across 50 synthetic measles epidemics for 
   each approach given Poisson incidence \textit{(in top panels)} and negative 
-  Binomial incidence \textit{(in bottom panels)} respectively.  
-  Outliers are excluded.} 
+  Binomial incidence \textit{(in bottom panels)} respectively. 
+  The mean KL divergence ignores the first weeks in all experiments, since EpiEstim 
+  with the weekly sliding window does not provide estimates for the first week.
+  Outliers beyond $1.5*$IQR of each box are excluded, and full illustration in 
+  provided in the Figure A.3.1 in Appendix.} 
   \label{fig:kl-res-measles}
 \end{figure}
 
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=.99\textwidth]{fig/fig_kl_week_sars.png}
-  \caption{Boxplot of KL divergence between the estimated 
+  \caption{Boxplot of mean KL divergence between the estimated 
   $\hat{\calR}_t$ and the true $\calR_t$ across 50 synthetic SARS epidemics for 
   each approach given Poisson incidence \textit{(in top panels)} and negative 
-  Binomial incidence \textit{(in bottom panels)} respectively.  
-  Outliers are excluded.} 
+  Binomial incidence \textit{(in bottom panels)} respectively. 
+  The mean KL divergence ignores the first weeks in all experiments, 
+  since EpiEstim with the weekly sliding window does not provide estimates 
+  for the first week. Outliers beyond $1.5*$IQR of each box are excluded, 
+  and full illustration in provided in the Figure A.3.1 in Appendix.} 
   \label{fig:kl-res-sars}
 \end{figure}
 
-\autoref{fig:pois-est-measles} show one realization for the estimated effective reproduction
-number under the Poisson generative model for all four scenarios. Compared to
-\EpiEstim\ and \EpiLPS, which have rather severe difficulties at the beginning
-of the time series, \RtEstim\ estimates are more accurate---they nearly
-overlap with the true values---without suffering from the initialization
-problem. Scenario
-1 is the simplest case with only one knot and two constant segments. Besides the
+\autoref{fig:pois-est-measles} shows one realization for the estimated effective 
+reproduction number under the Poisson generative model in measles synthetic 
+epidemics for all four scenarios. An expanded visualization with each estimated 
+$\calR_t$ curve displayed in a separate panel is provided in Figure A.6.1 in Appendix. 
+Compared to \EpiEstim\ and \EpiLPS, which have rather severe difficulties at the beginning
+of the time series, \RtEstim\ and \EpiFilter\ estimates are more accurate 
+without suffering from the initialization problem. Scenario 1 is the simplest 
+case with only one knot and two constant segments. Besides the 
 edge problem, \EpiEstim\ and \EpiLPS\ produce ``smooth'' estimated curves that
 are continuous at the changepoint, which results in large mistakes in that
 neighbourhood. Since the piecewise constant \RtEstim\ estimator does not force
-any smoothness in $\calR_t$, it easily captures the sharp change. 
+any smoothness in $\calR_t$, it easily captures the sharp change. It nearly overlaps with the true values. 
 Scenario 2 is relatively easy for all methods, except at the changepoint 
-occurring at the end of the exponential growth. Although the truth is
-likely best represented with a discontinuous piecewise cubic curve, the actual
-curvature is so gentle that linear estimation ($k=1$) appears potentially
-reasonable. However,
-\RtEstim\ has difficulty recovering the acute rise in the
-growth phase because it enforces continuity at the changepoint. 
+occurring at the end of the exponential growth. It is a common problem for all methods 
+to estimate the first stage of exponential growth. \EpiEstim\ and \EpiLPS\ tend to 
+start with unreasonably large estimates and decreases rapidly. \RtEstim\ also suffers 
+from the difficulty to estimate the first few timepoints, especially in the piecewise 
+constant case. All methods are more or less inaccurate at the beginning of the epidemic in 
+both Scenarios 3 and 4, and recover the underlying curves quite well, except EpiEstim with monthly
+sliding windows, which tends to have a delay in the changes. 
+\autoref{fig:nb-est-measles} shows a realization of the estimated $\calR_t$ given
+negative Binomial incidence in SARS epidemics for each setting. 
+All methods more or less performs worse in this setting, due to larger incidence 
+and overdispersed data. The challenges to recover the start of epidemics are harder 
+in this setting for all methods. \EpiFilter\ has much more wiggly estimates than 
+the estimates of other methods. Our \RtEstim\ estimates are close to the best performance
+in the first three $\calR_t$ scenarios, while face the challenge to recover the curve in the 
+periodic scenario. 
 
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=.99\textwidth]{fig/fig_res_pois_measles.png}
-  \caption{Example of effective reproduction number estimation for measles epidemics with Poisson observations.}
+  \caption{Example of effective reproduction number estimation for measles 
+    epidemics with Poisson observations. An expanded visualization with each estimated 
+    $\calR_t$ curve displayed in a separate panel is provided in Figure A.6.1 
+    in Appendix. }
   \label{fig:pois-est-measles}
 \end{figure}
 
-To investigate the performance when the Poisson assumption (imposed by both
-\RtEstim\ and \EpiEstim) is violated, we also examine estimation accuracy with
-negative Binomial data. \autoref{fig:nb-est-measles} displays a realization, analogous
-to the previous case, for all methods and scenarios. \RtEstim\ has more
-difficulty relative to the Poisson setting, especially at the beginning of the
-outbreak. This is most pronounced in Scenario 4, where \RtEstim\ is overly
-smooth, except in the last wave. In Scenario 2, \RtEstim\ successfully captures
-the changepoint, but suffers from the same discontinuity problem as in the
-Poisson setting. In Scenario 3, the piecewise linear version of \RtEstim\
-recovers the curvature of $\calR_t$ well, but is less accurate than in the
-Poisson case.
+%To investigate the performance when the Poisson assumption (imposed by both
+%\RtEstim\ and \EpiEstim) is violated, we also examine estimation accuracy with
+%negative Binomial data. \autoref{fig:nb-est-measles} displays a realization, analogous
+%to the previous case, for all methods and scenarios. \RtEstim\ has more
+%difficulty relative to the Poisson setting, especially at the beginning of the
+%outbreak. This is most pronounced in Scenario 4, where \RtEstim\ is overly
+%smooth, except in the last wave. In Scenario 2, \RtEstim\ successfully captures
+%the changepoint, but suffers from the same discontinuity problem as in the
+%Poisson setting. In Scenario 3, the piecewise linear version of \RtEstim\
+%recovers the curvature of $\calR_t$ well, but is less accurate than in the
+%Poisson case. 
 
 \begin{figure}[!ht]
   \centering
   \includegraphics*[width=.99\textwidth]{fig/fig_res_NB_sars.png}
-  \caption{Example of effective reproduction number estimation for measles epidemics with negative
+  \caption{Example of effective reproduction number estimation for SARS epidemics with negative
   Binomial observations.}
   \label{fig:nb-est-measles}
 \end{figure}
@@ -1064,28 +1188,21 @@ experiment. Additional results on timing comparisons are deferred to the
 supplementary document. 
 
 
-\subsection{Real-data results: Covid-19 incident cases in British Columbia}
+\subsection{Real-data results: Covid-19 incident cases in Canada}
 
-We implement \RtEstim\ on Covid-19 confirmed incident cases in British Columbia
-(B.C.) as reported on May 18, 2023 (visualized in \autoref{fig:covid-data}) by
-the B.C.\ Centre for Disease Control \citep{covidbc}. 
-Since other methods cannot incorporate time-varying serial interval distributions, 
-we use the weighted probabilities of serial interval distributions of four dominated variants 
-used in \autoref{fig:intro-fig} as the serial interval distribution here.
+We implement \RtEstim\ on Covid-19 confirmed incident cases in Canada (visualized in 
+\autoref{fig:intro-fig}). 
+We use the weighted probabilities of serial interval distributions of four dominated 
+variants used in \autoref{fig:intro-fig} as the serial interval distribution here for the
+comparison with other methods, which cannot incorporate time-varying serial interval distributions. 
 We compute their percentages of dominated days throughout the pandemic as the weights in computation, 
 specifically Ancestral lineage ($32.6\%$), Alpha ($8.5\%$), Delta ($16.0\%$), and Omicron($42.9\%$). 
-
-\begin{figure}[!ht]
-  \centering
-  \includegraphics[width=0.9\textwidth]{fig/covid_dat.png}
-  \caption{Covid-19 daily confirmed incident cases between March 1st, 
-  2020 and April 15th, 2023 in British Columbia, Canada.} 
-  \label{fig:covid-data}
-\end{figure} 
+The estimates of our method is displayed in \autoref{fig:covid-rt}, and the estimates of 
+all competitors are deferred to Figures A.8.1 and A.8.2 in Appendix. 
 
 Considering the first, second, and third polynomial degrees, $\widehat{\calR}_t$
-for Covid-19 in British Columbia (illustrated in \autoref{fig:covid-rt}) is
-always less than $3$ except at the very early stage, which means that one
+for Covid-19 in Canada is
+always less than $2$ except at the very early stage, which means that one
 distinct infected individuals on average infects less than three other
 individuals in the population. Examining three different settings for $k$, the
 temporal evolution of $\widehat{\calR}$ (across all regularization levels
@@ -1100,12 +1217,17 @@ divergence in \autoref{fig:covid-rt}.
   \centering
   \includegraphics[width=0.9\linewidth]{fig/covid_full_res.png}
   \caption{Estimated effective reproduction number based on Covid-19 daily
-  confirmed incident cases between March 1st, 2020 and April 15th, 2023 in
-  British Columbia, Canada. The left panels show estimates corresponding to 50
+  confirmed incident cases between January 23rd, 2020 and June 28th, 2023 in
+  Canada. The left panels show estimates corresponding to 50
   tuning parameters. The right panels show the CV-tuned estimate along with
   approximate 95\% confidence bands. The top, middle and bottom panels show the
   estimated $\calR_t$ using the Poisson trend filtering in \eqref{eq:rt-ptf}
-  with degrees $k=1,2,3$ respectively.} 
+  with degrees $k=1,2,3$ respectively. All estimates are fitted using a constant
+  serial interval distribution, which is the weighted sum of probabilities of 
+  the 4 dominant variants per timepoint used in \autoref{fig:intro-fig}. 
+  All panels are truncated in y-axes for better illustration. The CV-tuned 
+  $\calR_t$ estimates rapidly decreases at the early stage from $3.37,5.16$ 
+  for $k=2,3$ respectively.} 
   \label{fig:covid-rt}
 \end{figure} 
 
@@ -1114,7 +1236,7 @@ The estimated effective reproduction numbers are relatively unstable before Apri
 Omicron variant. The estimated effective reproduction numbers fall below 1 during two time
 periods---roughly from April, 2021 to July, 2021 and from January,
 2022 to April, 2022. The first trough coincides with the introduction of
-Covid-19 vaccines in British Columbia. The second trough, shortly after the
+Covid-19 vaccines in Canada. The second trough, shortly after the
 largest peak may be due to variety of factors resulting in the depletion of the
 susceptible population such as increased self-isolation in response to media
 coverage of the peak or immunity incurred via recent infection. Since April,
@@ -1227,16 +1349,19 @@ assumes that a relatively constant proportion of true infections is reported.
 However, if this proportion varies with time (say, due to changes in surveillance
 practices or testing recommendations), the estimates may be biased over this
 window. A good example is in early January 2022, during the height of the
-Omicron wave, British Columbia moved from testing all symptomatic individuals to
+Omicron wave, Canada moved from testing all symptomatic individuals to
 testing only those in at-risk groups. The result was a sudden change that would
 render $\calR_t$ estimates on either side of this timepoint incommensurable.
 
 
-As currently implemented, \RtEstim\ uses a fixed serial interval throughout the
-period of study, but as factors such as population immunity vary, the serial
-interval may vary as well \citep{nash2023estimating}.  
-Another issue relates to equating serial and generation intervals (also
-mentioned above). The serial interval distribution is generally wider than that
+Our \RtEstim\ implementation can take a fixed serial interval throughout the
+period of study (as implemented in simulation and in the real epidemics) or 
+varying serial interval distributions at different timepoints (as implemented 
+in Fig \autoref{fig:intro-fig} for Covid-19 data in Canada). In reality, the serial
+interval may vary due to changes in the factors such as population immunity 
+\citep{nash2023estimating}. An issue regarding the serial interval distribution 
+relates to equating serial and generation intervals (also mentioned above). 
+The serial interval distribution is generally wider than that 
 of the generation interval, because the serial interval involves the convolution
 of two distributions, and is unlikely to actually follow a named distribution
 like Gamma, though it may be reasonably well approximated by one. Our
@@ -1299,12 +1424,12 @@ tuning parameter selection via cross validation.
 %\paragraph*{Fig 6.}
 %\label{fig:covid-data}
 %{\bf Covid-19 daily confirmed incident cases between March 1st, 
-%2020 and April 15th, 2023 in British Columbia, Canada.}
+%2020 and April 15th, 2023 in Canada.}
 %
 %\paragraph*{Fig 7.}
 %\label{fig:covid-rt}
 %{\bf Estimated effective reproduction numbers for Covid19 daily confirmed 
-%counts between March 1st, 2020 and April 15th, 2023 in British Columbia, Canada.} 
+%counts between March 1st, 2020 and April 15th, 2023 in Canada.} 
 %The left panels demonstrate estimates corresponding to 50 tuning parameters. 
 %The right panels display the CV-tuned estimates with 95\% confidence intervals. 
 %The top, medium and bottom panels illustrate the estimated reproduction numbers 
