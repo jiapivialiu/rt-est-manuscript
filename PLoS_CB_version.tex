@@ -594,7 +594,9 @@ occur on a given day, as indicated by exposure to the pathogen. The assumptions
 described above (homogeneous mixing,
 similar susceptibility and social behaviours, etc.) are therefore consequential.
 That said, \eqref{eq:renew-equation} also provides some comfort about deviations
-from these assumptions. We discuss three types of deviation here.
+from these assumptions. Under certain conditions, failing to account for the 
+reporting delay will minimally impact the accuracy of any $\mathcal{R}_t$ estimator 
+that is based on \eqref{eq:renew-equation}. We discuss three types of deviation here.
 First, if $y_t$ is scaled by a constant (in time) describing
 the reporting ratio, then it will cancel from both sides when we take the ratio
 of secondary and primary infection when calculating the effective reproduction 
@@ -786,7 +788,16 @@ We estimate model accuracy over the candidate set through $K$-fold cross
 validation (CV) to choose the best tuning parameter. Specifically, we divide
 $\bfy$ (except the first and last observations) roughly evenly and randomly into
 $K$ folds, estimate $\calR_t$ for all $\boldsymbol{\lambda}$ leaving one fold
-out, and then predict the held-out observations. Model accuracy can be measured
+out, and then predict the held-out observations. 
+An alternative splitting of observations is regular splitting, where we assign every
+$k\th$ observation into the same fold. Note that our approach is most closely
+related to non-parametric regression rather than time series forecasting. That
+said, under some conditions, one can guarantee that $K$-fold is valid for risk
+estimation in time series. The sufficient conditions are quite strong, but the
+guarantees are also stronger than would be required for model selection
+consistency \citep{BERGMEIR201870}. 
+
+Model accuracy can be measured
 by multiple metrics such as mean squared error $\mathrm{MSE}(\widehat{y},\ y) =
 n^{-1}\snorm{\widehat{y} - y}_2^2$ or mean absolute error
 $\mathrm{MAE}(\widehat{y},\ y) = n^{-1}\snorm{\widehat{y} - y}_1$, but we prefer
@@ -1133,19 +1144,29 @@ experiment to investigate these global conclusions in more detail.
 reproduction number under the Poisson generative model in measles synthetic 
 epidemics for all four scenarios. An expanded visualization with each estimated 
 $\calR_t$ curve displayed in a separate panel is provided in Figure A.6.1 in the supplementary document. 
+Ignoring the start of the epidemics, all methods look accurate and recover the 
+underlying curves quite well, except \EpiEstim\ with monthly sliding windows, where 
+the trajectories are shifted to the right. 
 Compared to \EpiEstim\ and \EpiLPS, which have rather severe difficulties at the beginning
-of the time series with unreasonably large estimates at the beginning and decreases rapidly, 
+of the time series with extremely large estimates at the beginning and decreases rapidly, 
 \RtEstim\ and \EpiFilter\ estimates are more accurate without suffering from the 
-initialization problem. Besides the edge problem, \EpiEstim\ and \EpiLPS\ produce 
-``smooth'' estimated curves that are continuous at the changepoint, which results 
-in large mistakes in that neighbourhood. Since the piecewise constant \RtEstim\ 
-estimator does not force any smoothness in $\calR_t$, it easily captures the 
-sharp change and nearly overlaps with the true values. \RtEstim\ also suffers from 
-the difficulty to estimate the first few timepoints, especially in the periodic 
-case, where all methods miss to capture the first peak with an accurate value. 
-Ignoring the start of the epidemics, all methods look accurate and recover 
-the underlying curves quite well, except \EpiEstim\ with monthly sliding windows, 
-where the trajectories are shifted to the right. 
+initialization problem. 
+The edge problem in \EpiEstim\ and \EpiLPS\ might be due to the parameters
+used in their priors, say the prior mean of $\calR_t$ is initialized to be large, and the incidence
+data could not correct it during the beginning of the epidemic.
+\RtEstim\ can also have edge problem though, it is less severe in lower orders.
+Besides the edge problem, \EpiEstim\ (especially, with the 
+monthly sliding window) and \EpiLPS\ produce ``smooth'' estimated curves that are 
+continuous at the changepoints in Scenarios 1-3, which results in large mistakes in these neighbourhoods. 
+Since the piecewise constant \RtEstim\ estimator does not force any smoothness 
+in $\calR_t$, it easily captures the sharp change and nearly overlaps with the 
+true values in Scenario 1, and \RtEstim\ with other degrees also well capture 
+the correct changepoints. Similar as other methods, \RtEstim\ also suffers from the difficulty to estimate 
+the first few timepoints, especially in the periodic scenario, 
+where all methods miss to capture the first peak with an accurate value. 
+\EpiFilter\ recover the $\calR_t$ curves well in general, but are more wiggly 
+than other methods. 
+
 
 \begin{figure}[!ht]
   \centering
@@ -1389,6 +1410,20 @@ types of incidence data (hospitalizations or deaths), a modified generation
 interval distribution would be necessary, and further assumptions would be
 required as well. Or else, one would first need to deconvolve deaths to
 infection onset before using our software.
+
+
+Accurate statistical coverage of a function is a difficult problem, and the
+types of (frequentist) guarantees that can be made are not always what one
+would want \citep{genovese2008adaptive}. We examine the coverage of our 
+approximate confidence interval in simulation. (Details are deferred to Section A.6 
+in the supplementary document). Empirically, our observations for our method, as well 
+as all others we have seen, follow a similar (undesirable) pattern: when 
+$\mathcal{R}_t$ is stable, they \emph{over cover} dramatically (even implausibly 
+narrow intervals have 100\% coverage); but when $\mathcal{R}_t$ changes abruptly, 
+they \emph{under cover} (coverage drops to nearly 0\%). 
+Theoretically, whether these intervals should be expected to provide $(1-\alpha)\%$ 
+coverage simultaneously over all time while being narrow enough to provide useful
+uncertainty quantification is neither easy nor settled. 
 
 
 Nonetheless, our methodology is implemented in a lightweight \R\ package 
