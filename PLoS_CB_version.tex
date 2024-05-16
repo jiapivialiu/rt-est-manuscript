@@ -239,6 +239,7 @@
 \def\bbP{\mathbb{P}}
 \def\bbZ{\mathbb{Z}}
 \renewcommand{\top}{\mathsf{T}}
+\renewcommand{\hat}{\widehat}
 \def\diff{\mathsf{d}}
 \def\th{^{\textnormal{th}}}
 \def\first{$1^{\textnormal{st}}$}
@@ -259,7 +260,7 @@
 % Title must be 250 characters or less.
 \begin{flushleft}
 {\Large
-\textbf\newline{RtEstim: Effective reproduction number estimation with trend filtering} % Please use "sentence case" for title and headings (capitalize only the first word in a title (or heading), the first word in a subtitle (or subheading), and any proper nouns).
+\textbf\newline{\RtEstim: Time-varying reproduction number estimation with trend filtering} % Please use "sentence case" for title and headings (capitalize only the first word in a title (or heading), the first word in a subtitle (or subheading), and any proper nouns).
 }
 \newline
 % Insert author names, affiliations and corresponding author email (do not include titles, positions, or degrees).
@@ -385,68 +386,66 @@ be robust to model misspecification.
 Many existing approaches for instantaneous reproduction number estimation are
 Bayesian: they estimate the posterior distribution of $\calR_t$ conditional on
 the observations. One of the first such approaches is the software \EpiEstim\
-\cite{cori2020package}, described by Cori et al. \cite{cori2013new}. This method is
-prospective, in that it uses only observations available up to time $t$ in order
-to estimate $\calR_t$ for each $i = 1,\ldots, t$. An advantage of \EpiEstim\ is
-its straightforward statistical model: new incidence data follows the Poisson
-distribution conditional on past incidence combined with the conjugate gamma
-prior distribution for $\calR_t$ with fixed hyperparameters. Additionally, the
-serial interval distribution, the distribution of the period between onsets of
-primary and secondary infections in a population, is fixed and known. For this
-reason, \EpiEstim\ requires little domain expertise for use, and it is
-computationally fast. Thompson et al. \cite{thompson2019improved} modified this method to
-distinguish imported cases from local transmission and simultaneously estimate
-the serial interval distribution . Nash et al. \cite{nash2023estimating} further extended
-\EpiEstim\ by using ``reconstructed'' daily incidence data to handle irregularly
-spaced observations. Recently, Abbott et al. \cite{abbott2020estimating} proposed a Bayesian
-latent variable framework, \EpiNow2\ \cite{EpiNow2}, which leverages
+\cite{cori2020package}, described by Cori et al.~\cite{cori2013new}. This method
+is prospective, in that it uses only observations available up to time $t$ in
+order to estimate $\calR_t$ for each $i = 1,\ldots, t$. An advantage of
+\EpiEstim\ is its straightforward statistical model: new incidence data follows
+the Poisson distribution conditional on past incidence combined with the
+conjugate gamma prior distribution for $\calR_t$ with fixed hyperparameters.
+Additionally, the serial interval distribution, the distribution of the period
+between onsets of primary and secondary infections in a population, is fixed and
+known. For this reason, \EpiEstim\ requires little domain expertise for use, and
+it is computationally fast. Thompson et al.~\cite{thompson2019improved} modified
+this method to distinguish imported cases from local transmission and
+simultaneously estimate the serial interval distribution. Nash et
+al.~\cite{nash2023estimating} further extended \EpiEstim\ by using
+``reconstructed'' daily incidence data to handle irregularly spaced
+observations. 
+
+Recently, Abbott et al.~\cite{abbott2020estimating} proposed a
+Bayesian latent variable framework, \EpiNow2~\cite{EpiNow2}, which leverages
 incident cases, deaths or other available streams simultaneously along with
 allowing additional delay distributions (incubation period and onset to
-reporting delays) in modelling. Lison et al. \cite{lison2024generative} proposed 
-an extension that handles missing data by imputation followed by a truncation adjustment. 
-These modifications are intended
-to increase accuracy at the most recent (but most uncertain) timepoints, to aid 
-policymakers. Parag et al. \cite{parag2021improved} also proposed a Bayesian approach, 
-\EpiFilter, based on the (discretized) Kalman filter and smoother. 
-\EpiFilter\ also estimates the posterior of $\calR_t$ given a Gamma 
-prior and Poisson distributed incident cases. Compared to \EpiEstim, 
-however, \texttt{EpiFilter} estimates $\calR_t$ retrospectively using all 
-available incidence data both before and after time $t$, with the goal of being 
-more robust in low-incidence periods. Gressani et al. \cite{gressani2022epilps} proposed a 
-Bayesian P-splines approach, \EpiLPS, that assumes negative binomial distributed 
-observations. Trevisin et al. \cite{trevisin2023spatially} also proposed a Bayesian model estimated 
-with particle filtering to incorporate spatial structures. 
-Bayesian approaches estimate the posterior distribution of the instantaneous
-reproduction numbers and possess the advantage that credible intervals may be
-easily computed. They incorporate the prior knowledge on parameters to 
-modelling, while some techniques are also used to eliminate the power of prior parameters on 
-the posterior estimates to make the estimates more plausible, e.g., 
-Thompson et al. \cite{thompson2019improved} assumes a relatively large prior mean of $\calR_t$ 
-(appreciably larger than 1), and if the estimate is less than $1$, researchers will 
-know it is a direct result from data, instead of the choice of prior parameters.
-Some Bayesian approaches, however, are computationally expensive, since they 
-require more intensive computational routines, especially when observed
-data sequences are long or hierarchical structures are complex, e.g., 
-\cite{abbott2020estimating}. While, some Bayesian methods with more efficient structures, 
-especially the ones with only conjugate priors, can be computationally efficient,
-e.g., \cite{cori2013new}. Below, we compare the accuracy of our method to the aforementioned Bayesian models,
-\EpiEstim, \EpiLPS, \EpiFilter, and \EpiNow2, which provides accessible softwares or scripts. 
+reporting delays) in modelling. Lison et al.~\cite{lison2024generative} proposed
+an extension that handles missing data by imputation followed by a truncation
+adjustment. These modifications are intended to increase accuracy at the most
+recent (but most uncertain) timepoints, to aid policymakers. Parag et
+al.~\cite{parag2021improved} also proposed a Bayesian approach, \EpiFilter,
+based on the (discretized) Kalman filter and smoother. \EpiFilter\ also
+estimates the posterior of $\calR_t$ given a Gamma prior and Poisson distributed
+incident cases. Compared to \EpiEstim, however, \EpiFilter\ estimates $\calR_t$
+retrospectively using all available incidence data both before and after time
+$t$, with the goal of being more robust in low-incidence periods. Gressani et
+al.~\cite{gressani2022epilps} proposed a Bayesian P-splines approach, \EpiLPS,
+that assumes negative binomial distributed observations. Trevisin et
+al.~\cite{trevisin2023spatially} also proposed a Bayesian model estimated with
+particle filtering to incorporate spatial structures. Bayesian approaches
+estimate the posterior distribution of the instantaneous reproduction numbers
+and possess the advantage that credible intervals may be easily computed. They
+also can incorporate prior knowledge on parameters. Another potential advantage
+is that a relatively large prior on the mean of $\calR_t$ can be used to guard
+against erroneously concluding that an epidemic is shrinking
+\cite{thompson2019improved}. However, a downside is that the induced bias can
+persist for long periods of time. Bayesian approaches that do not use conjugate
+priors, or that incorporate multilevel modelling, can be computationally
+expensive, especially when observed data sequences are long or hierarchical
+structures are complex, e.g., \cite{abbott2020estimating}. 
 
 
-There are also frequentist approaches for $\calR_t$ estimation.
-Abry et al. proposed regularizing the smoothness of $\calR_t$ through
-penalized regression with second-order temporal regularization, additional
-spatial penalties, and with Poisson loss \cite{abry2020spatial}. Pascal et al. extended
-this procedure by introducing another penalty on outliers \cite{pascal2022nonsmooth}.
-Pircalabelu et al. proposed a spline-based model relying on the
-assumption of exponential-family distributed incidence \cite{pircalabelu2023spline}. 
-Ho et al. estimates $\calR_t$ while monitoring the time-varying level of overdispersion \cite{ho2023accounting}.
-There are other spline-based approaches such as
+There are also frequentist approaches for $\calR_t$ estimation. Abry et
+al.~\cite{abry2020spatial} proposed regularizing the smoothness of $\calR_t$
+through penalized regression with second-order temporal regularization,
+additional spatial penalties, and with Poisson loss. Pascal et
+al.~\cite{pascal2022nonsmooth} extended this procedure by introducing another
+penalty on outliers. Pircalabelu et al.~\cite{pircalabelu2023spline} proposed a
+spline-based model relying on the assumption of exponential-family distributed
+incidence. Ho et al.~\cite{ho2023accounting} estimates $\calR_t$ while
+monitoring the time-varying level of overdispersion. There are other
+spline-based approaches such as
 \cite{azmon2014estimation,gressani2021approximate}, autoregressive models with
 random effects \cite{jin2023epimix} that are robust to low incidence, and
-generalized autoregressive moving average (GARMA) models
-\cite{hettinger2023estimating} that are robust to measurement errors in
-incidence data. 
+generalized autoregressive moving average models \cite{hettinger2023estimating}
+that are robust to measurement errors in incidence data. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% our approach %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -465,15 +464,16 @@ contrast to related methods \cite{abry2020spatial,pascal2022nonsmooth}, can
 handle large or small incidence measurements, and are automatically (reasonably)
 robust to outliers without additional constraints. 
 
-A small illustration using three years of Covid-19 case data in Canada \cite{CovidTimelineCanada} 
-is shown in \autoref{fig:intro-fig}, where we consider a time-varying
-serial interval distribution. Specifically, we get the viral evolution and spread data 
-from the \texttt{duotang} project \cite{duotang_2023} and compute the 
-probabilities of having each variant at each timepoint using the multinomial logistic 
-regression. The variant with the highest probability is deemed as the \textit{dominant} variant
-at a specific timepoint. There are four dominant variants throughout the epidemic, 
-Ancestral lineage, Alpha, Delta, and Omicron over time with mean $5.1,3.5,3.5,3.0$ and 
-standard deviation $4.0,4.5,2.9,2.1$ respectively, estimated by Xu et al. \cite{xu2023assessing}. 
+A small illustration using three years of Covid-19 case data in Canada
+\cite{CovidTimelineCanada} is shown in \autoref{fig:intro-fig}, where we
+consider a time-varying serial interval distribution. Specifically, we get the
+viral evolution and spread data from the \texttt{duotang} project
+\cite{duotang_2023} and compute the probabilities of having each variant at each
+timepoint using the multinomial logistic regression. The variant with the
+highest probability is deemed as the \textit{dominant} variant at a specific
+timepoint. There are four dominant variants throughout the epidemic, Ancestral
+lineage, Alpha, Delta, and Omicron over time with means 5.1, 3.5, 3.5, 3.0 and
+standard deviations 4.0, 4.5, 2.9, 2.1 respectively, estimated by Xu et al.~\cite{xu2023assessing}. 
 
 \begin{figure}[!ht]
   \centering
@@ -538,22 +538,22 @@ say, $(0,1], (1,2], \cdots$. It results in the sequence $\{p_{t,i}\}_{i=0}^\inft
 corresponding to observations $y_t$ for each $t$ and yields the
 discretized version of \eqref{eq:pre-renew-equation},
 \begin{equation} \label{eq:renew-equation}
-  \bbE[y_t \mid y_1,\ldots,y_{t-1}]=\calR_t\eta_t=\calR_t\sum_{i = 1}^\infty p{t,i} y_{t-i}.
+  \bbE[y_t \mid y_1,\ldots,y_{t-1}]=\calR_t\eta_t=\calR_t\sum_{i = 1}^\infty p_{t,i} y_{t-i}.
 \end{equation}
 Many approaches to estimating $\calR_t$ rely on \eqref{eq:renew-equation} as
 motivation for their procedures, among them, \EpiEstim\ \cite{cori2013new} 
 and \texttt{EpiFilter} \cite{parag2021improved}. 
 
 
-In most cases, it is safe to assume that infectiousness disappears beyond 
-$\tau$ timepoints ($p(t,i) = 0$ for $i > \tau$), resulting in the truncated integral 
-of the generation interval distribution $\int_0^\tau p(t,i)\diff i = 1$ for each $t$.
-Generation time, however, is usually unobservable and tricky to estimate, so
-common practice is to approximate it by the serial interval: the period between
-the symptom onsets of primary and secondary infections. If the infectiousness
-profile after symptom onset is independent of the incubation period (the period
-from the time of infection to the time of symptom onset), then this
-approximation is justifiable: the serial interval distribution and the
+In most cases, it is safe to assume that infectiousness disappears beyond $\tau$
+timepoints ($p(t,i) = 0$ for $i > \tau$), resulting in the truncated integral of
+the generation interval distribution $\int_0^\tau p(t,i)\diff i = 1$ for each
+$t$. Generation time, however, is usually unobservable and tricky to estimate,
+so common practice is to approximate it by the serial interval: the period
+between the symptom onsets of primary and secondary infections. If the
+infectiousness profile after symptom onset is independent of the incubation
+period (the period from the time of infection to the time of symptom onset),
+then this approximation is justifiable: the serial interval distribution and the
 generation interval distribution share the same mean. However, other properties
 may not be similarly shared, and, in general, the generation interval
 distribution is a convolution of the serial interval distribution with the
@@ -561,23 +561,21 @@ distribution of the difference between independent draws from the delay
 distribution from infection to symptom onset. See, for example,
 \cite{gostic2020practical} for a fuller discussion of the dangers of this
 approximation. Nonetheless, treating these as interchangeable is common
-\cite{cori2013new,park2021forward} and doing otherwise is beyond the scope of this work. 
-Additionally, we take the generation interval (and, therefore, the 
-serial interval) either as constant over time $t$, i.e., the probability $p(i)$ 
-depends only on the gap between primary and secondary infections and not on 
-the time $t$ when the secondary infection occurs, or as time-varying, i.e., 
-the probability $p(t,i)$ also depends on the time of (the symptom onset of)
-the secondary infection. For our methods, we 
-assume that the serial interval can be accurately estimated from auxiliary 
-data (say by contact tracing, or previous epidemics) and we take it as 
-fixed, as is common in existing studies, e.g., 
+\cite{cori2013new,park2021forward} and doing otherwise is beyond the scope of
+this work. We will allow the delay distribution to be either constant over time
+$t$---the probability $p(i)$ depends only on the gap between primary and
+secondary infections and not on the time $t$ when the secondary infection
+occurs---or to  be time-varying: $p(t,i)$ also depends on the time of the
+secondary infection. For our methods, we assume that the serial interval can be
+accurately estimated from auxiliary data (say by contact tracing, or previous
+epidemics) and we take it as fixed, as is common in existing studies,
 \cite{cori2013new,abry2020spatial,pascal2022nonsmooth}.
 
 
 The renewal equation in \eqref{eq:renew-equation} relates observable data
-streams (incident cases) occurring at different timepoints to the instantaneous reproduction
-number given the serial interval. The fact that it depends only on the observed
-incident counts makes it reasonable to estimate $\calR_t$. However, 
+streams (incident cases) occurring at different timepoints to the instantaneous
+reproduction number given the serial interval. The fact that it depends only on
+the observed incident counts makes it reasonable to estimate $\calR_t$. However,
 data collection idiosyncrasies can obscure this relationship. Diagnostic testing
 targets symptomatic individuals, omitting asymptomatic primary infections which
 can lead to future secondary infections. Testing practices, availability, and
@@ -588,24 +586,22 @@ eventual submission to public health \cite{pellis2021challenges}. For these
 reasons, reported cases are lagging indicators of the course of the pandemic.
 Furthermore, they do not represent the actual number of new infections that
 occur on a given day, as indicated by exposure to the pathogen. The assumptions
-described above (homogeneous mixing,
-similar susceptibility and social behaviours, etc.) are therefore consequential.
-That said, \eqref{eq:renew-equation} also provides some comfort about deviations
-from these assumptions. Under certain conditions, failing to account for the 
-reporting delay will minimally impact the accuracy of any $\mathcal{R}_t$ estimator 
-that is based on \eqref{eq:renew-equation}. We discuss three types of deviation here.
-First, if $y_t$ is scaled by a constant (in time) describing
-the reporting ratio, then it will cancel from both sides when we take the ratio
-of secondary and primary infection when calculating the instantaneous reproduction 
-number. Second, even if such a scaling varies in time, as long as it varies slowly relative
-to the set of $p_i$ that are larger than 0, \eqref{eq:renew-equation} will be a
-reasonably accurate approximation, so that $\calR_t$ can still be estimated well
-from reported incidence data. Finally, even a sudden change in reporting ratio
-occurs at time $t_1$, it would only result in 
-large errors in $\calR_t$ in the neighbourhood of $t_1$ (where the size of this 
-neighbourhood is determined indirectly by the effective support of $\{p_{t,i}\}$). 
-This robustness to certain types of data reporting issues partially justifies 
-using \eqref{eq:renew-equation} to calculate $\calR_t$.
+described above (homogeneous mixing, similar susceptibility and social
+behaviours, etc.) are therefore consequential. That said,
+\eqref{eq:renew-equation} also provides some comfort about deviations from these
+assumptions. Under certain conditions, failing to account for the reporting
+behaviours will minimally impact the accuracy of any $\mathcal{R}_t$ estimator
+that is based on \eqref{eq:renew-equation}. We discuss three types of deviation
+here. First, if $y_t$ is scaled by a constant $a$ describing the reporting
+ratio, then because it appears on both sides of \eqref{eq:renew-equation},
+$\calR_t$ will be unchanged. Second, if such a scaling $a_t$ varies in time, as
+long as it varies slowly relative to $p_i$ ---that is, if $a_t / \sum_{i = 1}^t
+a_i p_i \approx 1$---then $\calR_t$ can still be estimated well from reported
+incidence data. Finally, even a sudden change in reporting ratio occurs at time
+$t_1$, it would only result in large errors in $\calR_t$ at times near $t_1$
+(where the size of this neighbourhood is determined indirectly by the effective
+support of $\{p_{t,i}\}$). On the other hand, time-varying reporting delays
+would be much more detrimental \cite{EALES2024100742,park2024estimating}.
 
 
 \subsection{Poisson trend filtering estimator} 
@@ -645,12 +641,12 @@ reproduction numbers. This constraint will decrease the estimation variance, and
 hopefully lead to more accurate estimation of $\calR$, as long as the smoothness
 assumption is reasonable. Smoothness assumptions are common (see e.g.,
 \cite{gostic2020practical,parag2021improved}), but the type of
-smoothness assumption is critical. Cori et al. imposes smoothness
-indirectly by estimating $\calR_t$ with moving windows of past observations \cite{cori2013new}. The
+smoothness assumption is critical. Cori et al.\ imposes smoothness
+indirectly by estimating $\calR_t$ with moving windows of past observations. The
 Kalman filter procedure of \cite{parag2021improved} would enforce in 
 $\ell_2$-smoothness ($\int_0^n {(\widehat{\calR}''(t))}^{2}\diff t < C$ for some 
 constant $C$), although the computational implementation results in $\widehat{\calR}$
-taking values over a discrete grid. Pascal et al. produces
+taking values over a discrete grid. Pascal et al.\ produces
 piecewise linear $\widehat{\calR}_t$, which turns out to be closely related to a
 special case of our methodology \cite{pascal2022nonsmooth}. Smoother estimated curves will provide
 high-level information about the entire epidemic, obscuring small local changes
@@ -664,7 +660,7 @@ we explicitly penalize the divided differences (discrete derivatives) of
 neighbouring values of $\log(\calR_t)$. 
 Let $\theta := \log(\calR) \in \bbR^n$, so that $\Lambda_t =
 \eta_t \exp(\theta_t)$, and $\log(\eta_t \calR_t) = \log(\eta_t) +
-\theta_t$. For evenly spaced incident case, we
+\theta_t$. For evenly spaced incidence data, we
 write our estimator as the solution to the optimization problem
 \begin{equation} 
   \label{eq:rt-ptf}
@@ -672,11 +668,12 @@ write our estimator as the solution to the optimization problem
   = \Argmin{\theta\in\bbR^n} \eta^\top \exp(\theta) - \bfy^\top \theta + \lambda 
   \snorm{D^{(k+1)} \theta}_1,
 \end{equation}
-where $\exp(\cdot)$ applies elementwise and $\snorm{\boldsymbol{a}}_1 := \sum_{i=1}^n |a_i|$ is the $\ell_1$ norm.
-Here, $D^{(k+1)} \in \bbZ^{(n-k-1)\times n}$ is the $(k+1)\th$ order divided
-difference matrix for any $k \in \{0,\ldots,n-1\}$ with $D^{(n)}:=\boldsymbol{0}^{1\times n}$.
-$D^{(1)} \in \{-1,0,1\}^{(n-1)\times n}$ is the divided difference matrix for $k=0$. 
-It is a sparse matrix with diagonal band of the form:
+where $\exp(\cdot)$ applies elementwise and $\snorm{\boldsymbol{a}}_1 :=
+\sum_{i=1}^n |a_i|$ is the $\ell_1$ norm. Here, $D^{(k+1)} \in
+\bbZ^{(n-k-1)\times n}$ is the $(k+1)\th$ order divided difference matrix for
+any $k \in \{0,\ldots,n-1\}$ with the convention that $D^{(0)} = \mathbf{0}_{n
+\times n}$. The divided difference matrix for $k=0$, $D^{(1)} \in \{-1,0,1\}^{(n-1)\times n}$, is a sparse matrix with diagonal band of
+the form:
 \begin{equation} 
   \label{eq:d1mat}
   D^{(1)} = 
@@ -687,10 +684,9 @@ It is a sparse matrix with diagonal band of the form:
     & & & -1 & 1 
   \end{pmatrix}.
 \end{equation}
-$D^{(k+1)}$ for $k\geq 1$ is defined recursively as $D^{(k+1)} := D^{(1)} D^{(k)}$, where 
-$D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times (n-k)}$ takes the form defined in \eqref{eq:d1mat}. 
-More description on the recursive definition of divided difference matrix for trend filtering
-can be found in \cite{tibshirani2014adaptive,tibshirani2022divided}.
+For $k\geq 1$, $D^{(k+1)}$ can be defined recursively as $D^{(k+1)} := D^{(1)}
+D^{(k)}$, where $D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times (n-k)}$ has the form
+\eqref{eq:d1mat} but with modified dimensions.
 
 The tuning parameter (hyperparameter) $\lambda$ balances data
 fidelity with desired smoothness. When $\lambda=0$, the problem in
@@ -731,7 +727,7 @@ for $k=0$.
 
 Due to the penalty structure, this estimator is locally adaptive,
 meaning that it can potentially capture local changes such as the initiation of
-control measures. Abry et al. and Pascal et al. considered only the
+control measures. Abry et al.\ and Pascal et al.\ considered only the
 \second-order divided difference of $\calR_t$ rather than its logarithm 
 \cite{abry2020spatial,pascal2022nonsmooth}. In
 comparison to their work, our estimator (i) allows for arbitrary degrees of
@@ -762,20 +758,20 @@ threshold, so define $\lambda_{\textrm{max}}$ to be the smallest $\lambda$ that
 produces $\theta\in\mathcal{N}(D)$. It turns out that this value can be written
 explicitly as $\lambda_{\textrm{max}} = \snorm{\lr{D^{\dagger}}^{\top} \lr{\eta
 - y}}_{\infty},$ where $D^{\dagger}$ is the (left) generalized inverse of $D$
-satisfying $D^{\dagger} D = I$ and $\snorm{a}_{\infty} := \mathrm{max}_{i=1}^n\{|a_i|\}$ is the infinity norm. 
-Therefore, we use $\lambda_1 =
-\lambda_{\textrm{max}}$ and then choose the minimum $\lambda_M$ to be
-$r\lambda_{max}$ for some $r \in (0,1)$ (typically $r=10^{-5}$). Given any
+satisfying $D^{\dagger} D = I$ and $\snorm{a}_{\infty} :=
+\mathrm{max}_{i}|a_i|$ is the infinity norm. Therefore, we use
+$\lambda_1 = \lambda_{\max}$ and choose the minimum $\lambda_M$ to
+be $r\lambda_{\max}$ for some $r \in (0,1)$ (typically $r=10^{-4}$). Given any
 $M\geq 3$, we generate a sequence of $\lambda$ values to be equally spaced on
 the log-scale between $\lambda_1$ and $\lambda_M$. 
 
-To compute the sequence efficiently, the model is estimated sequentially by
-visiting each component of $\boldsymbol{\lambda}$ in order. The estimates
-produced for a larger $\lambda$ are used as the initial values (warm starts) for
-the next smaller $\lambda$. By solving through the entire sequence of tuning
-parameters, we have a better chance to achieve a better trade-off between bias
-and variance, and accordingly, improved accuracy relative to procedures
-examining one fixed value of $\lambda$.
+To compute the sequence of solutions efficiently, the model is estimated
+sequentially by visiting each component of $\boldsymbol{\lambda}$ in order. The
+estimates produced for a larger $\lambda$ are used as the initial values (warm
+starts) for the next smaller $\lambda$. By solving through the entire sequence
+of tuning parameters, we improve computational efficiency and also enable one to
+trade between bias and variance, resulting in improved accuracy relative to
+procedures examining a single fixed tuning parameter.
 
 
 \subsection{Choosing a final $\lambda$}
@@ -861,7 +857,7 @@ The \R\ scripts for \EpiFilter\ are used \cite{kpzoo2020}.
 
 \subsection{Synthetic experiments}
 
-\subsubsection{Problem design}
+\subsubsection{Design for the synthetic data}
 
 We simulate four scenarios of the time-varying instantaneous reproduction number,
 intended to mimic different epidemics. The first two scenarios are rapidly 
@@ -899,46 +895,37 @@ continuous, periodic curve generated by the function
   \calR(t) = 0.2 \big(\lr{\sin(\pi t/12) + 1} + \lr{2 \sin\lr{5 \pi t / 12} + 2} 
   + \lr{3 \sin(5\pi t / 6) + 3}\big),
 \end{equation} 
-evaluated at equally spaced points $t\in [0,10]$. 
-These $\calR_t$ scenarios are illustrated in \autoref{fig:samples}.
-We compute the expected incidence $\Lambda_t$
-using the renewal equation, and generate the incident infections from the
-Poisson distribution $y_t\sim \textrm{Pois}(\Lambda_t)$. 
-To verify the performance of our model under the violation of the distributional assumption,
-we also generate incident cases using the negative binomial distribution
-with dispersion size $\rho=5$, i.e., $y_t\sim \textrm{NB}(\mu_t=\Lambda_t,
-\rho=5)$. The probability mass function can be written as 
-\begin{equation}
-  \begin{split}
-    p(y_t|\Lambda_t,\rho) = \frac{\Gamma(y_t+\rho)}{\Gamma(\rho)y_t!} \Big(\frac{\rho}{\rho+\Lambda_t}\Big)^{\rho} \Big(\frac{\Lambda_t}{\rho+\Lambda_t}\Big)^{y_t},  
-  \end{split}
-\end{equation}
-where $y_t = 0,1,2,\cdots, t=1,\cdots,n$ and the variance is
- $\sigma_t^2 = \Lambda_t + \frac{\Lambda_t^2}{\rho}$, which follows the 
- definition in \cite{gressani2022epilps}.
-The variance equals the mean appended by another term of the squared mean over a
-relatively small dispersion size, so the squared mean can dominate the term and
-result in sufficient overdispersion level in the generated samples. 
-We visualize the dispersion level (using the ratio of standard deviation over mean) 
-of synthetic epidemics in Figure A.2.1 in the supplementary document to have a better idea on the overdispersion level 
-of the negative binomial distributions (with size 5) compared the Poisson 
-distributions with the same mean. 
+evaluated at equally spaced points $t\in [0,10]$. These $\calR_t$ scenarios are
+illustrated in \autoref{fig:samples}. We compute the expected incidence
+$\Lambda_t$ using the renewal equation, and generate the incident infections
+from the Poisson distribution with mean $\bbE[y_t] = \Lambda_t$. To verify the
+performance of our model under violations of the model's distributional
+assumption, we also generate incident cases using the negative binomial
+distribution with dispersion parameter $\rho = 5$ such that the mean is $\bbE[y_t]
+= \Lambda_t$ and the variance is $\textrm{Var}[y_t] = \Lambda_t(1 + \Lambda_t /
+\rho)$ (following, for example, \cite{gressani2022epilps}). Because, $(1 +
+\Lambda_t / \rho)> 1$ for any $\rho \geq 0$, this parameterization
+results in overdispersion relative to the Poisson distribution, with smaller
+values of $\rho$ leading to greater overdispersion. For context on the actual
+dispersion of these synthetic experiments, Figure A.2.1 in the Supplement
+displays the ratio of the time-varying standard deviation to the mean. 
 
-We use serial interval (SI) distributions of measles (with mean $14.9$ and standard 
-deviation $3.9$) at Hagelloch, Germany in 1861 \cite{groendyke2011bayesian} and 
-SARS (with mean $8.4$ and standard deviation $3.8$) at Hong Kong in 2003 
-\cite{lipsitch2003transmission}, inspired by \cite{cori2013new}, to generate synthetic 
-epidemics. We initialize all epidemics with $y_1=2$ cases and generate for $t=2,\ldots,300$. 
-The synthetic measles epidemics have smaller incident cases in general, and the SARS 
-epidemics have larger incidence. The intuition behind this is a smaller mean
-of serial interval with a similar standard deviation leads to an averaged shorter period 
-of the onsets of symptoms between the primary and secondary infected individuals, which 
-results in a greater growth of incidence within the same period of time. 
-We also consider shorter flu epidemics with 50 timepoints with piecewise linear $\calR_t$ (Scenario 3)
-considering both incidence distributional assumptions. The motivation is to compare our method and 
-other alternatives with EpiNow2 which takes much longer time to converge 
-for long epidemics (almost 2 hours to converge for a measles epidemic 
-with 300 timepoints) than other methods.  
+We use serial interval (SI) distributions of measles (with mean $14.9$ and
+standard deviation $3.9$) at Hagelloch, Germany in 1861
+\cite{groendyke2011bayesian} and SARS (with mean $8.4$ and standard deviation
+$3.8$) at Hong Kong in 2003 \cite{lipsitch2003transmission}, inspired by
+\cite{cori2013new}, to generate synthetic epidemics. We initialize all epidemics
+with $y_1=2$ cases and generate for $t=2,\ldots,300$. The synthetic measles
+epidemics have smaller incident cases in general, and the SARS epidemics have
+larger incidence. The intuition behind this is a smaller mean of serial interval
+with a similar standard deviation leads to an averaged shorter period of the
+onsets of symptoms between the primary and secondary infected individuals, which
+results in a greater growth of incidence within the same period of time. We also
+consider shorter flu epidemics with 50 timepoints with piecewise linear
+$\calR_t$ (Scenario 3) considering both incidence distributional assumptions.
+The motivation is to compare our method and other alternatives with EpiNow2
+which takes much longer time to converge for long epidemics (almost 2 hours to
+converge for a measles epidemic with 300 timepoints) than other methods.  
 Besides using the correct SI distributions to estimate $\calR_t$, we also consider 
 the scenarios where SI is mildly or majorly misspecified. 
 More details on experimental settings and results for shorter epidemics and misspecification 
@@ -960,113 +947,89 @@ with an incidence distribution is displayed in \autoref{fig:samples}.
   \label{fig:samples}
 \end{figure}
 
-\subsubsection{Algorithm design}
+\subsubsection{Algorithmic choices}
 
 We compare \RtEstim\ to \EpiEstim, \EpiLPS, and \EpiFilter. \EpiEstim\ estimates
-the posterior distribution of the instantaneous reproduction number given a Gamma
-prior and Poisson distributed observations
-over a trailing window, under the assumption that the instantaneous reproduction number is
-constant during that window. A larger window averages out more fluctuations,
-leading to smoother estimates, whereas, a shorter sliding window is more
-responsive to sudden spikes or declines. We tried the weekly sliding
-window, as well as a monthly window. However, since neither considerably
-outperforms the other across all scenarios, we defer the monthly results to the
-supplementary document. \EpiLPS\ is another Bayesian approach that estimates P-splines 
-based on the Laplace approximation to the conditional posterior with negative
-binomial likelihood. \texttt{EpiFilter} is also a Bayesian approach that smooths 
-$\calR_t$ at each timepoint given all observed incidence, improved upon the filtering methods
-that filter $\calR_t$ given the observations prior to and on time $t$.
+the posterior distribution of the instantaneous reproduction number given a
+Gamma prior and Poisson distributed observations over a trailing window, under
+the assumption that the instantaneous reproduction number is constant during
+that window. A larger window averages out more fluctuations, leading to smoother
+estimates, whereas, a shorter sliding window is more responsive to sudden spikes
+or declines. We tried the weekly sliding window, as well as a monthly window.
+However, since neither considerably outperforms the other across all scenarios,
+we defer the monthly results to the supplementary document. \EpiLPS\ is another
+Bayesian approach that estimates P-splines based on the Laplace approximation to
+the conditional posterior with negative binomial likelihood. \texttt{EpiFilter}
+is also a Bayesian approach that filters $\calR_t$ at each timepoint given all
+using only incidence prior to $t$, using a particle filtering procedure on a
+discrete grid of possible $\calR_t$ values.
 
-We apply \RtEstim\ with four degrees, piecewise constant $k=0$, piecewise linear $k=1$, 
-piecewise quadratic $k=2$, and piecewise cubic $k=3$ polynomials, to solve all problem settings.
-We run 10-fold cross validation (CV) to choose the best tuning parameter
-from the candidate set of size $50$, i.e., $\boldsymbol{\lambda} = \{\lambda_1,
-\cdots, \lambda_{50}\}$, for long epidemics, and $5$-fold CV for short epidemics 
-(deferred to Sections A.3.2 and A.4.2 in the supplementary document). 
-Specifically, we divide all samples (except the first and last entries) into
-$10$ folds evenly and randomly, and build models on each subset of samples 
-by leaving a fold out using each choice of the tuning parameter. We select the 
-tuning parameter that gives the lowest averaged deviance between the 
-estimated incidence and the observed samples averaged over all folds. 
+In each setting, we apply \RtEstim\ with four choices of $k=0,1, 2, 3$ resulting
+in different shapes of the estimated $\calR_t$---piecewise constant, piecewise
+linear, piecewise quadratic, and piecewise cubic---respectively. We use 10-fold
+cross validation (CV) to choose the parameter $\lambda$ that minimizes
+out-of-sample prediction risk from a candidate
+set of size $50$, i.e., $\boldsymbol{\lambda} = \{\lambda_1, \cdots,
+\lambda_{50}\}$, for long epidemics, and $5$-fold CV for short epidemics
+(results for this case are deferred to Sections A.3.2 and A.4.2 in the
+Supplementary). Specifically, we divide all samples (except the first and last
+entries) into $10$ folds evenly and randomly, and build models on each subset of
+samples by leaving a fold out using each choice of the tuning parameter. We
+select the tuning parameter that gives the lowest averaged deviance between the
+estimated incidence and the held-out samples averaged over all folds. 
 
-We specify the parameters of the alternative methods, using the ones which were 
-applied to their own experimental settings and so are deemed as the ``best'' tuned 
-ones, in our experiments. Due to the limitations of the software implementations that
-some necessary hyperparameters are not allowed to choose, we can only specify 
-the supported ones. 
-This limitation does not only restrict the choices on tuning parameters which impacts 
-the model fitting, but also those for optimization (as mentioned above). 
-For example, in EpiLPS, one must specify the number of basis functions as well as 
-$5$ prior parameters. EpiFilter needs a grid of possible $\calR_t$ values, 
-along with the a fixed value for the diffusion noise, and a prior value for 
-$\calR_t$. \EpiNow2\ has many prior parameters (depending on the particular model 
-used) and does not compute a Bayes Factor or other model selection criterion. 
-Had we attempted to tune some or all of these parameters, we would need to 
-implement cross validation from scratch for each, as none of these provide 
-ways to choose them. 
-Here are the hyperparameters used in modelling for each alternative method. 
-We consider both weekly and monthly sliding windows in \EpiEstim, 
-40 basis functions in \EpiLPS\ with the NelderMead method to maximize the 
-hyperparameter posterior distribution. We input 2000 grid size in \EpiFilter\ 
-with 0.1 diffusion noise and uniform prior on $\calR_t$ with mean 
-1/2000, and use the smoothed $\calR_t$ given all observed incidence as the final 
-estimates. 
+For the alternative methods, we generally use those that were applied to their
+own experimental settings. We consider both weekly and monthly sliding windows
+in \EpiEstim. \EpiLPS\ uses 40 $P$-spline basis functions and optimizes using
+the Nelder-Mead procedure. For \EpiFilter, we specify a grid with 2000 cells,
+use 0.1 for the size of the diffusion noise, and use the ``smoothed'' $\calR_t$
+(conditional on all data) as the final estimate. 
 
-For the $\calR_t$ estimation using all models for each problem, we use the same serial 
-interval distribution, that was used to generate synthetic data. Taking different 
-hyperparameters into consideration, we solve each problem using 8 methods including 
-\EpiEstim\ with weekly or monthly sliding windows, \EpiLPS, \EpiFilter, and 
-\RtEstim\ with piecewise constant, linear, quadratic, or cubic curves. 
-% discuss `degree' of all methods
-Throughout the four $\calR_t$ scenarios, the degrees of \RtEstim\ can be correctly or 
-wrongly specified. Our method can take the advantage of a correctly specified 
-degree of piecewise polynomials compared to other methods, while the competitors only 
-consider one fixed degree of smoothness which may not coincide with the ``true'' 
-(assumed) degree of $\calR_t$.
-Meanwhile, by using different degrees to solve the same problem, we will illustrate 
-that a wrongly specified degree can still result in accurate $\calR_t$ estimation 
-in our experiments. 
+For the $\calR_t$ estimation using all models for each problem, we use the same
+serial interval distribution, that was used to generate synthetic data. Taking
+different hyperparameters into consideration, we solve each problem using 8
+methods including \EpiEstim\ with weekly or monthly sliding windows, \EpiLPS,
+\EpiFilter, and \RtEstim\ with piecewise constant, linear, quadratic, or cubic
+curves. 
 
-\RtEstim\ estimates can appear to be piecewise polynomials with a selected degree 
-$k$. % where the changing points of polynomial segments are completely data driven. 
-When faced with real data, the choice of $k$ should be done either (1)
-based on the analyst's preference for the result (e.g., ``I want to find
-large jumps, so $k=0$'') or (2) in a data-driven manner, as a component of the
-estimation process. Our software enables both cases, and the second case can be 
-implemented by simply fitting for different $k$ and choosing the set $k,\lambda$ 
-that has smallest CV score. Thus, all necessary choices can be accomplished based 
-solely on the data. Our software is a departure from existing methods in that 
-we \emph{allow} this choice and provide simple data-driven methods to accomplish it. 
-\EpiEstim\ has no such facility (although, implicitly, one must somehow choose the 
-size of the rolling window). \EpiFilter\ effectively uses cubic splines (similar to 
-$k=3$, but simply continuous rather than piecewise continuous). Similarly, \EpiLPS\ 
-specifically chooses the cubic B-spline basis, which is similar to degree $k=3$. 
-\EpiNow2\ allows various choices through Gaussian Process kernels, and while one 
-can put priors on the parameters of the kernel, the choice of kernel is required. 
-In our experience, using $k > 3$ is nearly indistinguishable from $k=3$, though it 
-is allowed. So if the analyst somehow imagines ``$\mathcal{R}_t$ is best described 
-by a 10$^{th}$ order piecewise polynomial'' then the software can easily accommodate 
-this desire. 
+The choice of $k$ explicitly controls the function space to which the solution
+will belong \cite{tibshirani2022divided}, providing the analyst with a
+mathematical understanding of the result. When faced with real data, the choice
+of $k$ for \RtEstim\ should be done either (1) based on the analyst's preference
+for the result structure (e.g., ``I want to find large jumps, so $k=0$'') or (2)
+in a data-driven manner, as a component of the estimation process.  Our software
+enables both cases, and the second case can be implemented by simply fitting for
+different $k$ and choosing the set $k,\lambda$ that has smallest CV score. Thus,
+all necessary choices can be accomplished based solely on the data, a departure
+from existing methods in that we both allow this choice and provide simple
+data-driven methods to accomplish it.
 
 \subsubsection{Accuracy measurement}
 
-To measure estimation accuracy, we compare the estimated $\widehat{\calR}$ to 
-``true'' $\calR$ using the Kullback-Leibler (KL) divergence. The KL divergence for the
-Poisson distribution (summed over across all $t$) which measures the accuracy
-of the $\calR_t$ estimates is defined as
+To measure estimation accuracy, we compare the estimated $\widehat{\calR}$ to
+``true'' $\calR$ using the Kullback-Leibler (KL) divergence. KL is useful in
+this context for a few reasons. First, it correctly handles the non-negativity
+constraint on $\calR$. Second, KL matches the negative log-likelihood used in
+\eqref{eq:mle}. Third, it captures the curved geometry of the probability spaces
+implied by the Poisson distribution accurately. And fourth, as in the equation
+below, it has a convenient functional form depending only on $\calR$ and $\eta$.
+For the Poisson distribution (summed across all $t$) the KL divergence is defined as
 \begin{equation} \label{eq:kl}
   D_{KL}(\calR \parallel \widehat{\calR}) = \sum_{t=1}^N \eta_t \lr{\calR_t
   \log\left(\frac{\calR_t} {\widehat{\calR}_t}\right) + \widehat{\calR}_t -
 {\calR}_t},
 \end{equation}
-where $\calR = \left\{ \calR_t \right\}_{t=1}^N$ and $\eta_t$ is the total 
-infectiousness. We use the scaled (mean) KL divergence: 
-$\overline{D_{KL}}(\calR \parallel \widehat{\calR}) := D_{KL}(\calR \parallel \widehat{\calR}) / N$,
-where $N$ is the length of the estimated $\widehat{\calR}$ sequence.
-To fairly compare across methods, we drop the estimates during the first week 
-because estimates from \EpiEstim\ are not available until $t=8$ (using a weekly sliding window). 
-The details on the derivation of the KL divergence in \eqref{eq:kl} is provided in
-Section A.1 in the supplementary document.
+where $\calR = \left\{ \calR_t \right\}_{t=1}^N$ and $\eta_t$ is the total
+infectiousness. We use the average KL divergence: $\overline{D}_{KL}(\calR
+\parallel \widehat{\calR}) := D_{KL}(\calR \parallel \widehat{\calR}) / N$.
+Details on the derivation of the KL divergence in \eqref{eq:kl} is provided in
+Section A.1 in the supplementary document. To fairly compare across methods, we
+drop the first week of data, for a few reasons. Estimates from \EpiEstim\ are
+not available until $t=8$ (using a weekly sliding window). Additionally, some
+procedures purposely impose strong priors that $\R_1$ is larger than 1 to avoid
+over confidently asserting that an epidemic is under control. The effect of
+these priors will persist for days or weeks, but one would hope for accurate
+estimates as early in the outbreak as possible.
 
 KL divergence is
 more appropriate for measuring accuracy because it connects directly to the
@@ -1340,32 +1303,30 @@ leads to heterogeneous smoothness across time.
 The property of local adaptivity (heterogenous smoothness) is useful to
 automatically distinguish, for example, seasonal outbreaks from outbreaks driven
 by other factors (behavioural changes, foreign introduction, etc.). Given a
-well-chosen polynomial degree, the growth rates can be quickly detected, 
-potentially advising public health authorities to implement policy changes. The instantaneous
-reproduction numbers can be estimated retrospectively to examine the efficacy of
-such policies, whether they result in $\calR_t$ falling below 1 or the speed of
-their effects. The smoothness of $\calR_t$ curves (including the polynomial 
-degrees and tuning parameters) should be chosen based on the purpose of the 
-study in practice. 
+well-chosen polynomial degree, the growth rates can be quickly detected,
+potentially advising public health authorities to implement policy changes. The
+instantaneous reproduction numbers can be estimated retrospectively to examine
+the efficacy of such policies, whether they result in $\calR_t$ falling below 1
+or the speed of their effects. The smoothness of $\calR_t$ curves (including the
+polynomial degrees and tuning parameters) should be chosen based on the purpose
+of the study in practice. 
 
 
 Our method \RtEstim\ provides a natural way to deal with missing data, for
 example, on weekends and holidays or due to changes in reporting frequency.
-While solving the convex optimization problem, our method can easily 
-handle uneven spacing or irregular reporting. Computing the total
-primary infectiousness is also easily generalized to irregular reporting by
-modifying the discretization of the serial interval distribution. There are many
-other aspects to be considered in choosing the delay distribution to make a more accurate
-estimation \cite{park2024estimating}. 
-Imported cases can be distinguished from the local cases to avoid the biasness 
-in instantaneous reproduction number estimation, for example, \cite{thompson2019improved} 
-assumed the total past infectiousness of combined previous cases scaled by instantaneous 
-reproduction number to be the mean of the local incidence and illustrated that 
-failure of distinguishing the local cases from the imported cases may cause the overestimation 
-of $\calR$ using the MERS data in Saudi Arabia from August 2014 to December 2015. 
-Additionally, because the $\ell_1$ penalty introduces sparsity (operating like a median
-rather than a mean), this procedure is relatively insensitive to outliers
-compared to $\ell_2$ regularization.
+While solving the convex optimization problem, our method can easily handle
+uneven spacing or irregular reporting. Computing the total primary
+infectiousness is also easily generalized to irregular reporting by modifying
+the discretization of the serial interval distribution. There are many other
+aspects to be considered in choosing the delay distribution to improve accuracy
+\cite{park2024estimating}. Additionally, because the $\ell_1$ penalty introduces
+sparsity (operating like a median rather than a mean), this procedure is
+relatively insensitive to spurious outliers compared to $\ell_2$ regularization.
+Another natural extension is to distinguish imported cases from the local cases
+in the procedure, following the suggestions of \cite{thompson2019improved}. By
+including imported cases only in $\eta_t$ rather than in both $y_t$ and
+$\eta_t$, we exclude individuals who were infected elsewhere, lowering
+$\calR_t$, but correctly reflecting the number of new primary infectees.
 
 
 There are a number of limitations that may influence the quality of
@@ -1391,10 +1352,10 @@ render $\calR_t$ estimates on either side of this timepoint incommensurable.
 
 Our \RtEstim\ implementation can take a fixed serial interval throughout the
 period of study (as implemented in simulation and in the real epidemics) or 
-varying serial interval distributions at different timepoints (as implemented 
+use time-varying serial interval distributions (as implemented 
 in \autoref{fig:intro-fig} for Covid-19 data in Canada). In reality, the serial
 interval may vary due to changes in the factors such as population immunity 
-\cite{nash2023estimating}. An issue regarding the serial interval distribution 
+\cite{nash2023estimating}. One issue regarding the serial interval distribution 
 relates to equating serial and generation intervals (also mentioned above). 
 The serial interval distribution is generally wider than that 
 of the generation interval, because the serial interval involves the convolution
@@ -1410,26 +1371,24 @@ infection onset before using our software.
 
 
 Accurate statistical coverage of a function is a difficult problem, and the
-types of (frequentist) guarantees that can be made are not always what one
-would want \cite{genovese2008adaptive}. We examine the coverage of our 
-approximate confidence interval in simulation. (Details are deferred to Section A.6 
-in the supplementary document). Empirically, our observations for our method, as well 
-as all others we have seen, follow a similar (undesirable) pattern: when 
-$\mathcal{R}_t$ is stable, they \emph{over cover} dramatically (even implausibly 
-narrow intervals have 100\% coverage); but when $\mathcal{R}_t$ changes abruptly, 
-they \emph{under cover} (coverage drops to nearly 0\%). 
-Theoretically, whether these intervals should be expected to provide $(1-\alpha)\%$ 
-coverage simultaneously over all time while being narrow enough to provide useful
-uncertainty quantification is neither easy nor settled. 
+types of (frequentist) guarantees that can be made are not always what one would
+want \cite{genovese2008adaptive}. We examine the coverage of our approximate
+confidence interval in simulation. (Details are deferred to Section A.6 in the
+supplementary document). Empirically, our observations for our method, as well
+as all others we have seen, follow a similar (undesirable) pattern: when
+$\mathcal{R}_t$ is stable, they over cover dramatically (even implausibly narrow
+intervals have 100\% coverage); but when $\mathcal{R}_t$ changes abruptly, they
+under cover. Theoretically, whether these intervals should be expected to
+provide $(1-\alpha)\%$ coverage simultaneously over all time while being narrow
+enough to provide useful uncertainty quantification is neither easy nor settled. 
 
 
-Nonetheless, our methodology is implemented in a lightweight \R\ package 
-\texttt{rtestim} and computed efficiently, especially for large-scale data, 
-with a proximal Newton solver coded in \cpp. 
-Given available incident case data, prespecified serial interval
-distribution, and a choice of degree $k$, \RtEstim\ is able to produce
-accurate estimates of instantaneous reproduction number and provide efficient
-tuning parameter selection via cross validation. 
+Nonetheless, our methodology is implemented in a lightweight \R\ package
+\texttt{rtestim} and computed efficiently, especially for large-scale data, with
+a proximal Newton solver coded in \cpp. Given available incident case data,
+prespecified serial interval distribution, and a choice of degree $k$, \RtEstim\
+is able to produce accurate estimates of instantaneous reproduction number and
+provide efficient tuning parameter selection via cross validation. 
 
 
 %\section*{Supporting information}
