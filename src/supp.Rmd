@@ -217,6 +217,7 @@ We visualize the selected key results of the accuracy comparison using long synt
 epidemics in Section 3.2 in the manuscript. Other main experimental results are displayed in 
 Section \@ref(sec:exp-accuracy).
 
+\clearpage
 # Supplementary experimental results on accuracy comparison {#sec:exp-accuracy}
 
 ## Long epidemics
@@ -265,7 +266,7 @@ weeks in Fig 3 and Fig 4 in the manuscript, where we exclude the outliers.
 A full visualization including the outliers is in Figure 
 \@ref(fig:display-KL-weekly-long). 
 
-Figure \@ref(fig:display-KL-monthly-long) compares \EpiEstim with ***monthly*** 
+Figure \@ref(fig:display-KL-monthly-long) compares \EpiEstim with _monthly_
 sliding windows with other methods. We average the KL divergence per coordinate 
 excluding the timepoints in the first months for all approaches, since \EpiEstim 
 estimates with the monthly sliding windows are not available until the second months. 
@@ -331,6 +332,7 @@ fig_kl_month_long <- Rt_res_long_month %>% #
 print(fig_kl_month_long)
 ```
 
+\clearpage
 ## Short epidemics
 
 Figures \@ref(fig:display-KL-weekly-flu) and \@ref(fig:display-KL-monthly-flu)
@@ -405,6 +407,7 @@ fig_kl_short_month <- Rt_res_short_month %>%#
 print(fig_kl_short_month)
 ```
 
+\clearpage
 # Experimental results on accuracy under misspecification of serial interval distributions
 
 ## SI misspecification for long epidemics
@@ -481,6 +484,7 @@ fig_kl_full_month_si <- Rt_res_long_month_mis_si %>%
 print(fig_kl_full_month_si)
 ```
 
+\clearpage
 ## SI misspecification for short epidemics
 
 Figures \@ref(fig:display-KL-weekly-mis-si-flu) and 
@@ -538,6 +542,7 @@ fig_kl_short_month_si <- Rt_res_short_month_mis_si %>%
 print(fig_kl_short_month_si)
 ```
 
+\clearpage
 # Time comparisons of all methods
 
 Figures \@ref(fig:display-time-long) show the time comparisons across all methods 
@@ -660,6 +665,7 @@ runtime_epi_flu <- Rt_result %>%
 print(runtime_epi_flu)
 ```
 
+\clearpage
 # Confidence interval coverage
 
 ## Display estimates and confidence intervals for sample epidemics {#sec:samples}
@@ -833,6 +839,7 @@ fig_res_full_nb_sars <- res_dat_long %>%
 print(fig_res_full_nb_sars)
 ```
 
+\clearpage
 ## Experimental settings on coverage level comparison of confidence intervals
 
 We focus on a specific $\calR_t$ scenario, the piecewise linear case, and only 
@@ -859,6 +866,7 @@ kbl(df_ci_exp, booktabs = T,
 ```
 
 
+\clearpage
 ## Experimental results on interval coverage comparison
 
 Figures \@ref(fig:ci-coverage-measles) and \@ref(fig:ci-coverage-sars) displays 
@@ -1030,7 +1038,7 @@ print(ci_percent_sars)
 ```
 
 We also output the interval score [@Bracher_2021] 
-$$score_{\alpha}(\calR,u,l) = \frac{1}{n} \sum_{t=1}^n (u_t-l_t) + \frac{2}{\alpha}(l_t-\calR_t)\boldsymbol{1}_{(\calR_t<l_t)} + \frac{2}{\alpha}(\calR_t-u_t)\boldsymbol{1}_{(\calR_t>u_t)},$$ 
+$$\textrm{IS}_{\alpha}(\calR,u,l) = \frac{1}{n} \sum_{t=1}^n (u_t-l_t) + \frac{2}{\alpha}(l_t-\calR_t)\boldsymbol{1}_{(\calR_t<l_t)} + \frac{2}{\alpha}(\calR_t-u_t)\boldsymbol{1}_{(\calR_t>u_t)},$$ 
 where $\alpha=0.05$ is the significance level, $l,u$ are the lower and upper 
 bounds, $\calR_t$ is the true instantaneous reproduction number, and 
 $\mathbf{1}_{X}$ is the indicator function of the condition $X$.
@@ -1076,7 +1084,7 @@ ci_score_sars <- CI_result %>%
 print(ci_score_sars)
 ```
 
-
+\clearpage
 # Data examples and alternative visualizations of Figs 5 and 6
 
 ## More visualization of example epidemics
@@ -1131,6 +1139,7 @@ fig_res_NB_measles <- res_dat_long %>%
 print(fig_res_NB_measles)
 ```
 
+\clearpage
 ## Alternative view of difference between fitted and true Rt estimates
 
 We also provide an alternative view of Fig 5 \& Fig 6 in the manuscript by 
@@ -1222,6 +1231,7 @@ fig_res_nb_sars_alter <- res_dat_long %>%
 print(fig_res_nb_sars_alter)
 ```
 
+\clearpage
 # Application of RtEstim and all competitors on real epidemics 
 
 We apply all methods on Covid19 incidence in Canada, and the estimated are displayed 
