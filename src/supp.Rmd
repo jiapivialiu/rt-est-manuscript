@@ -1,5 +1,6 @@
 ---
-title: "Supplementary details of time-varying reproduction number estimation with trend filtering"
+title: "Supplement for"
+subtitle: "\\texttt{RtEstim}: time-varying reproduction number estimation with trend filtering"
 author: "Jiaping Liu, Zhenglun Cai, Paul Gustafson, and Daniel J. McDonald"
 date: ""
 output: 
@@ -30,7 +31,7 @@ link-citations: true
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 knitr::opts_chunk$set(fig.pos = "!ht", out.extra = "", fig.align="center")
 library(rtestim)
 library(EpiEstim)
@@ -61,51 +62,20 @@ distributions $y\sim Pois(\eta \hat{\calR})$ and $y\sim Pois(\eta \calR)$,
 where $y,\calR\in\bbN_0^n$ are natural numbers including 0, $\eta\in\bbR^n$, 
 and $f_0(y;\eta,\calR) = \prod_{t=1}^n \frac{(\eta_t\calR_t)^{y_t} e^{-\eta_t\calR_t}}{y_t!}$,
 $f_1(y;\eta,\hat{\calR}) = \prod_{t=1}^n \frac{(\eta_t\hat{\calR}_t)^{y_t} e^{-\eta_t\hat{\calR}_t}}{y_t!}$ are the corresponding density mass functions 
-for independent $y_t,t=1,\cdots,n$. 
-Then, the KL divergence between them is defined as 
-\begin{equation*}
-  \begin{split}
-    D_{KL}(\calR || \hat{\calR}) &= D_{KL}(f_0(y;\eta,\calR) || f_1(y;\eta,\hat{\calR})) \\
-    &= \sum_{y\in\bbN_0^n} f_0(y;\eta,\calR) \log \frac{f_0(y;\eta,\calR)}{f_1(y;\eta,\hat{\calR})} \\
-    &= \sum_{y\in\bbN_0^n} \prod_{t=1}^{n} \frac{(\eta_t\calR_t)^{y_t}e^{-\eta_t\calR_t}}{y_t!} 
-      \log\prod_{t=1}^{n} \frac{\calR_t^{y_t} e^{-\eta_t\calR_t}}{\hat{\calR}_t^{y_t} e^{-\eta_t\hat{\calR}_t}} \text{ for independent $y_t$, $t=1,...,n$}\\
-    &= \sum_{y_n=0}^{\infty}\cdots \sum_{y_1=0}^{\infty} 
-      \prod_{t=1}^{n} \frac{(\eta_t\calR_t)^{y_t}e^{-\eta_t\calR_t}}{y_t!} 
-      \sum_{t=1}^n \Big(y_t\log \frac{\calR_t}{\hat{\calR}_t} - \eta_t(\calR_t - \hat{\calR}_t)\Big) \\
-    &= \sum_{y_n=0}^{\infty}\frac{(\eta_n\calR_n)^{y_n}e^{-\eta_n\calR_n}}{y_n!}\cdots 
-      \sum_{y_1=0}^{\infty}\frac{(\eta_1\calR_1)^{y_1}e^{-\eta_1\calR_1}}{y_1!} 
-      \Big(y_1\log \frac{\calR_1}{\hat{\calR}_1} + \sum_{t=2}^n y_t\log \frac{\calR_t}{\hat{\calR}_t} - 
-      \sum_{t=1}^n \eta_t(\calR_t - \hat{\calR}_t) \Big) \\
-    &= \sum_{y_n=0}^{\infty}\frac{(\eta_n\calR_n)^{y_n}e^{-\eta_n\calR_n}}{y_n!}\cdots
-      \sum_{y_2=0}^{\infty}\frac{(\eta_2\calR_2)^{y_2}e^{-\eta_2\calR_2}}{y_2!} 
-      \Big( \eta_1\calR_1\log\frac{\calR_1}{\hat{\calR}_1} + \sum_{t=2}^n y_t\log 
-      \frac{\calR_t}{\hat{\calR}_t} - \sum_{t=1}^n \eta_t(\calR_t - \hat{\calR}_t)\Big) \\
-    &= \sum_{y_n=0}^{\infty}\frac{(\eta_n\calR_n)^{y_n}e^{-\eta_n\calR_n}}{y_n!} 
-      \Big(\sum_{t=1}^{n-1} \eta_t\calR_t\log \frac{\calR_t}{\hat{\calR}_t} + y_n\log 
-      \frac{\calR_n}{\hat{\calR}_n} - \sum_{t=1}^n \eta_t(\calR_t - \hat{\calR}_t) \Big) \\
-    &= \sum_{t=1}^n \eta_t\lr{\calR_t \log\frac{\calR_t}{\hat{\calR}_t} + \hat{\calR}_t - \calR_t},
-  \end{split}
-\end{equation*}
-where 
-\begin{equation*}
-  \begin{split}
-    &\sum_{y_1=0}^{\infty}\frac{(\eta_1\calR_1)^{y_1}e^{-\eta_1\calR_1}}{y_1!} 
-      \Big(y_1\log \frac{\calR_1}{\hat{\calR}_1} + \sum_{t=2}^n y_t\log \frac{\calR_t}{\hat{\calR}_t} - 
-      \sum_{t=1}^n \eta_t(\calR_t - \hat{\calR}_t) \Big) \\
-    = & \lr{\sum_{y_1=1}^{\infty}\frac{(\eta_1\calR_1)^{y_1-1}e^{-\eta_1\calR_1}}{(y_1-1)!} 
-      \eta_1\calR_1\log \frac{\calR_1}{\hat{\calR}_1} } + 
-      \sum_{t=2}^n y_t\log \frac{\calR_t}{\hat{\calR}_t} - 
-      \sum_{t=1}^n \eta_t(\calR_t - \hat{\calR}_t), \\
-      & \text{ as } \sum_{y_1=0}^{\infty}\frac{(\eta_1\calR_1)^{y_1}e^{-\eta_1\calR_1}}{y_1!} = 1 
-      \text{ and }  \frac{(\eta_1\calR_1)^{y_1}e^{-\eta_1\calR_1}}{y_1!} y_1
-      \log \frac{\calR_1}{\hat{\calR}_1} = 0 \text{ when } y_1 = 0\\
-    = & \eta_1\calR_1\log \frac{\calR_1}{\hat{\calR}_1} + 
-      \sum_{t=2}^n y_t\log \frac{\calR_t}{\hat{\calR}_t} - 
-      \sum_{t=1}^n \eta_t(\calR_t - \hat{\calR}_t), \text{ as } \sum_{y_1=1}^{\infty}\frac{(\eta_1\calR_1)^{y_1-1}e^{-\eta_1\calR_1}}{(y_1-1)!} = 1.
-  \end{split}
-\end{equation*}
+for independent $y_t,t=1,\cdots,n$. Because this is a natural exponential family
+with log-partition function $\exp(\cdot)$ and parameter $\log(\eta_t\calR_t)$,
+then, the KL divergence between them can be written interms of the Bregman 
+divergence for $\exp$, e.g. @WainwrightJordan2008,
+\begin{align*}
+    D_{KL}(\calR \parallel \hat{\calR}) &= D_{KL}(f_0(y;\eta,\calR) \parallel f_1(y;\eta,\hat{\calR})) \\
+    &= D_{KL}\left(\prod_{t=1}^n f_0(y_t;\eta_t,\calR_t) \parallel \prod_{t=1}^n f_1(y_t;\eta_t,\hat{\calR}_t)\right)\\
+    &= \sum_{t=1}^n D_{KL}\left(f_0(y_t;\eta_t,\calR_t) \parallel f_1(y_t;\eta_t,\hat{\calR}_t)\right),\text{ ($y_t$ are independent, conditional on $\calR_t,\eta_t$)}\\
+    &= \sum_{t=1}^n \exp(\log(\eta_t\hat{\calR}_t)) - \exp(\log(\eta_t\calR_t)) - \exp(\log(\eta_t\calR_t))\log\frac{\eta_t\hat{\calR}_t}{\eta_t\hat{\calR}_t}, \text{ (definition of Bregman divergence)} \\
+    &= \sum_{t=1}^n \eta_t\hat{\calR}_t) - \eta_t\calR_t) - \log\frac{\hat{\calR}_t}{\hat{\calR}_t} \eta_t\calR_t\\
+    &= \sum_{t=1}^n \eta_t\lr{\calR_t \log\frac{\calR_t}{\hat{\calR}_t} + \hat{\calR}_t - \calR_t}.\\
+\end{align*}
 We use mean KL divergence (denoted, 
-$\overline{D_{KL}}(\calR || \hat{\calR}) := D_{KL}(\calR || \hat{\calR}) / n$, 
+$\overline{D}_{KL}(\calR \parallel \hat{\calR}) := D_{KL}(\calR \parallel \hat{\calR}) / n$, 
 which is the KL divergence divided by the sequence length) in experiments for 
 accuracy comparison.
 
@@ -589,7 +559,7 @@ for most of the experiments, which means the running time for each time of model
 is very fast, and on average can be less than 0.02 seconds. The other two methods 
 only run once for a fixed set of hyperparameters for each experiment. 
 
-```{r display-time-long, echo = FALSE, fig.height = 5, fig.width = 5, fig.cap = "Running time comparison of all methods for long (measles and SARS) epidemics across all cases. Y-axis is on a logarithmic scale."}
+```{r display-time-long, echo = FALSE, fig.height = 5, fig.width = 8, fig.cap = "Running time comparison of all methods for long (measles and SARS) epidemics across all cases. Y-axis is on a logarithmic scale."}
 runtime_epi_long <- Rt_result %>% #RtEstim with k=1,2,3 sometimes runs much slower
   filter(len != 50, si_type == "measles") |>
   group_by(dist, Rt_case, method) %>%
@@ -1630,8 +1600,10 @@ dat_flu_fitted_long %>%
   guides(color = guide_legend(title = NULL, byrow=TRUE))
 ```
 
+\clearpage
 
-#* References
+
+# References
 
 <!-- The following R chunks reproduce figures in the main manuscript. -->
 
