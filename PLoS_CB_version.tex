@@ -350,37 +350,38 @@ parameters and can be selected using a built-in cross validation procedure.
 \label{sec:intro}
 
 The effective reproduction number (or effective reproductive number) at time
-$\textit{t}$ is defined to be the expected number of secondary infections produced 
-by a primary infection throughout the course of the entire infection if conditions 
-remain the same at the specific time. Effective reproduction number is a key quantity 
-for understanding infectious disease dynamics including the potential size of an
-outbreak and the required stringency of control measures \cite{nishiura2009effective,fraser2007estimating}. 
-The instantaneous reproduction number is a type of effective reproduction number focusing on how past 
-infection contribute to the transmission at a specific timepoint; while, the case 
-reproduction number, which is another type of effective reproduction number,
-focuses on the transmission of the same cohort of individuals with the same date 
-of infection or symptom onset \cite{gostic2020practical}. Tracking the time
-series of this quantity is useful for understanding whether or not
-future infections are likely to increase or decrease from the current state \cite{anderson1991infectious}. Let
-$\calR(t)$ denote the \textbf{instantaneous} reproduction number at time $t$. Practically, as
-long as $\calR(t) < 1$, infections will decline gradually, eventually resulting
-in a disease-free equilibrium, whereas when $\calR(t) > 1$, infections will
-continue to increase, resulting in endemic equilibrium. While $\calR(t)$ is
-fundamentally a continuous time quantity, it can be related to data only at
-discrete points in time $t = 1,\ldots,n$. This sequence of instantaneous
-reproduction numbers over time is not observable, but, nonetheless, is easily
-interpretable and retrospectively describes the course of an epidemic.
-Therefore, a number of procedures exist to estimate $\calR_t$ from different
-types of observed incidence data such as cases, deaths, or hospitalizations,
-while relying on various domain-specific assumptions, e.g., 
-\cite{wallinga2004different,hao2020reconstruction,goldstein2023semiparametric,goldstein2024incorporating}. 
-Importantly, accurate
-estimation of instantaneous reproduction numbers relies heavily on the quality of
-the available data, and, due to the limitations of data collection, such as
-underreporting and lack of standardization, estimation methodologies rely on
-various assumptions to compensate. Because model assumptions may not be easily
-verifiable from data alone, it is also critical for any estimation procedure to
-be robust to model misspecification. 
+$\textit{t}$ is defined to be the expected number of secondary infections
+produced by a primary infection throughout the course of the entire infection if
+conditions remain the same at the specific time. Effective reproduction number
+is a key quantity for understanding infectious disease dynamics including the
+potential size of an outbreak and the required stringency of control measures
+\cite{nishiura2009effective,fraser2007estimating}. The instantaneous
+reproduction number is a type of effective reproduction number focusing on how
+past infection contribute to the transmission at a specific timepoint; while,
+the case reproduction number, which is another type of effective reproduction
+number, focuses on the transmission of the same cohort of individuals with the
+same date of infection or symptom onset \cite{gostic2020practical}. Tracking the
+time series of this quantity is useful for understanding whether or not future
+infections are likely to increase or decrease from the current state
+\cite{anderson1991infectious}. Let $\calR(t)$ denote the instantaneous
+reproduction number at time $t$. Practically, as long as $\calR(t) < 1$,
+infections will decline gradually, eventually resulting in a disease-free
+equilibrium, whereas when $\calR(t) > 1$, infections will continue to increase,
+resulting in endemic equilibrium. While $\calR(t)$ is fundamentally a continuous
+time quantity, it can be related to data only at discrete points in time $t =
+1,\ldots,n$. This sequence of instantaneous reproduction numbers over time is
+not observable, but, nonetheless, is easily interpretable and retrospectively
+describes the course of an epidemic. Therefore, a number of procedures exist to
+estimate $\calR_t$ from different types of observed incidence data such as
+cases, deaths, or hospitalizations, while relying on various domain-specific
+assumptions, e.g.,
+\cite{wallinga2004different,hao2020reconstruction,goldstein2023semiparametric,goldstein2024incorporating}.
+Importantly, accurate estimation of instantaneous reproduction numbers relies
+heavily on the quality of the available data, and, due to the limitations of
+data collection, such as underreporting and lack of standardization, estimation
+methodologies rely on various assumptions to compensate. Because model
+assumptions may not be easily verifiable from data alone, it is also critical
+for any estimation procedure to be robust to model misspecification. 
 
 
 Many existing approaches for instantaneous reproduction number estimation are
@@ -1081,7 +1082,7 @@ experiment to investigate these global conclusions in more detail.
   binomial incidence \textit{(in bottom panels)} respectively. 
   The mean KL divergence ignores the first weeks in all experiments, since EpiEstim 
   with the weekly sliding window does not provide estimates for the first week.
-  Outliers beyond $1.5*$IQR of each box are excluded, and full illustration in 
+  Outliers beyond $1.5\times$IQR of each box are excluded, and full illustration in 
   provided in the Figure A.3.1 in the supplementary document.} 
   \label{fig:kl-res-measles}
 \end{figure}
@@ -1090,12 +1091,12 @@ experiment to investigate these global conclusions in more detail.
   \centering
   \includegraphics[width=.99\textwidth]{fig/fig_kl_week_sars.png}
   \caption{Boxplot of mean KL divergence between the estimated 
-  $\hat{\calR}_t$ and the true $\calR_t$ across 50 synthetic \textbf{SARS} epidemics for 
+  $\hat{\calR}_t$ and the true $\calR_t$ across 50 synthetic SARS epidemics for 
   each approach given Poisson incidence \textit{(in top panels)} and negative 
   binomial incidence \textit{(in bottom panels)} respectively. 
   The mean KL divergence ignores the first weeks in all experiments, 
   since EpiEstim with the weekly sliding window does not provide estimates 
-  for the first week. Outliers beyond $1.5*$IQR of each box are excluded, 
+  for the first week. Outliers beyond $1.5\times$IQR of each box are excluded, 
   and full illustration in provided in the Figure A.3.1 in the supplementary document.} 
   \label{fig:kl-res-sars}
 \end{figure}

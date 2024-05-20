@@ -1,6 +1,6 @@
 ---
 title: "Supplement for"
-subtitle: "\\texttt{RtEstim}: time-varying reproduction number estimation with trend filtering"
+subtitle: "\\texttt{RtEstim}: Time-varying reproduction number estimation with trend filtering"
 author: "Jiaping Liu, Zhenglun Cai, Paul Gustafson, and Daniel J. McDonald"
 date: ""
 output: 
@@ -58,7 +58,7 @@ We provide the detailed derivation of the Kullback Leibler (KL) divergence in
 (11) in the manuscript that is used to compare the accuracy of the estimated 
 time-varying instantaneous reproduction number with the true ones. Given the 
 total infectiousness $\eta$, we compare the distance between the Poisson 
-distributions $y\sim Pois(\eta \hat{\calR})$ and $y\sim Pois(\eta \calR)$, 
+distributions $y\sim \textrm{Pois}(\eta \hat{\calR})$ and $y\sim \textrm{Pois}(\eta \calR)$, 
 where $y,\calR\in\bbN_0^n$ are natural numbers including 0, $\eta\in\bbR^n$, 
 and $f_0(y;\eta,\calR) = \prod_{t=1}^n \frac{(\eta_t\calR_t)^{y_t} e^{-\eta_t\calR_t}}{y_t!}$,
 $f_1(y;\eta,\hat{\calR}) = \prod_{t=1}^n \frac{(\eta_t\hat{\calR}_t)^{y_t} e^{-\eta_t\hat{\calR}_t}}{y_t!}$ are the corresponding density mass functions 
@@ -67,11 +67,12 @@ with log-partition function $\exp(\cdot)$ and parameter $\log(\eta_t\calR_t)$,
 then, the KL divergence between them can be written interms of the Bregman 
 divergence for $\exp$, e.g. @WainwrightJordan2008,
 \begin{align*}
-    D_{KL}(\calR \parallel \hat{\calR}) &= D_{KL}(f_0(y;\eta,\calR) \parallel f_1(y;\eta,\hat{\calR})) \\
+    &D_{KL}(\calR \parallel \hat{\calR})\\ 
+    &= D_{KL}(f_0(y;\eta,\calR) \parallel f_1(y;\eta,\hat{\calR})) \\
     &= D_{KL}\left(\prod_{t=1}^n f_0(y_t;\eta_t,\calR_t) \parallel \prod_{t=1}^n f_1(y_t;\eta_t,\hat{\calR}_t)\right)\\
     &= \sum_{t=1}^n D_{KL}\left(f_0(y_t;\eta_t,\calR_t) \parallel f_1(y_t;\eta_t,\hat{\calR}_t)\right),\text{ ($y_t$ are independent, conditional on $\calR_t,\eta_t$)}\\
-    &= \sum_{t=1}^n \exp(\log(\eta_t\hat{\calR}_t)) - \exp(\log(\eta_t\calR_t)) - \exp(\log(\eta_t\calR_t))\log\frac{\eta_t\hat{\calR}_t}{\eta_t\hat{\calR}_t}, \text{ (definition of Bregman divergence)} \\
-    &= \sum_{t=1}^n \eta_t\hat{\calR}_t) - \eta_t\calR_t) - \log\frac{\hat{\calR}_t}{\hat{\calR}_t} \eta_t\calR_t\\
+    &= \sum_{t=1}^n \exp\big(\log(\eta_t\hat{\calR}_t)\big) - \exp\big(\log(\eta_t\calR_t)\big) + \exp\big(\log(\eta_t\calR_t)\big)\log\frac{\eta_t\calR_t}{\eta_t\hat{\calR}_t}, \text{ (definition of Bregman divergence)} \\
+    &= \sum_{t=1}^n \eta_t\hat{\calR}_t - \eta_t\calR_t + \eta_t\calR_t \log\frac{\calR_t}{\hat{\calR}_t}\\
     &= \sum_{t=1}^n \eta_t\lr{\calR_t \log\frac{\calR_t}{\hat{\calR}_t} + \hat{\calR}_t - \calR_t}.\\
 \end{align*}
 We use mean KL divergence (denoted, 
