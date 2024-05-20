@@ -1614,7 +1614,7 @@ dat_flu_fitted_long %>%
 \clearpage
 
 
-# References
+# References {.unnumbered}
 
 <!-- The following R chunks reproduce figures in the main manuscript. -->
 
