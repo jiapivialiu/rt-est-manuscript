@@ -5,7 +5,6 @@ prob_list <- list(
                                si_type = c("SARS", "measles"))
 )
 
-
 ## generate data -----------------------
 data_generator <- function(data = NULL, job, Rt_case, len = 300, dist = c("poisson", "NB"), 
                            si_type = "measles", seed = NULL, ...){

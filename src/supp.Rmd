@@ -913,7 +913,7 @@ given negative binomial incidence than given Poisson incidence, which is consist
 to its performance in accuracy of point estimation.
 
 ```{r ci-results, message=FALSE, warning=FALSE, include=FALSE}
-CI_result <- readRDS(here::here("dat/rt_cluster_ci_results108.RDS"))
+CI_result <- readRDS(here::here("dat/CI_result_reduced_all.RDS"))
 CI_result <- CI_result %>%
   mutate(method = fct_recode(
     method,
@@ -966,7 +966,7 @@ Rt_res_ci <- CI_result %>%
   group_by(si_type, dist, Rt_case, method) %>%
   unnest_wider(ci_coverage, names_sep = "")
 
-# replace NAs with negative values
+# replace NAs with negative values (in EpiEstim at the first few timepoints)
 columns_to_replace <- paste0("ci_coverage", 1:300)
 Rt_res_ci_noNAs <- Rt_res_ci %>%
   mutate_at(vars(columns_to_replace), list(~ replace_na(., -1)))
@@ -979,8 +979,8 @@ Rt_res_ci_noNAs <- Rt_res_ci_noNAs %>%
   group_by(dist, method, Rt_case) %>%
   filter(ci_coverage >= 0) 
 
-ci_cover_measles <- Rt_res_ci_noNAs %>% # exclude NAs for certain methods
-  filter(si_type == "measles") %>% # SARS
+ci_cover_measles <- Rt_res_ci_noNAs %>% # exclude NAs
+  filter(si_type == "measles") %>%
   ggplot(aes(y = ci_coverage, x = time_index)) +
   geom_line(aes(col = method)) + 
   facet_grid(dist ~ Rt_case, scales = "free") +
@@ -993,8 +993,8 @@ print(ci_cover_measles)
 ```
 
 ```{r ci-coverage-sars, echo=FALSE, fig.cap="Averaged coverage of CI per coordinate with SARS epidemics.", fig.height=5, fig.width=6.5, message=FALSE, warning=FALSE}
-ci_cover_sars <- Rt_res_ci_noNAs %>% # exclude NAs for certain methods
-  filter(si_type == "SARS") %>% # SARS
+ci_cover_sars <- Rt_res_ci_noNAs %>% 
+  filter(si_type == "SARS") %>% 
   ggplot(aes(y = ci_coverage, x = time_index)) +
   geom_line(aes(col = method)) + 
   facet_grid(dist ~ Rt_case, scales = "free") +

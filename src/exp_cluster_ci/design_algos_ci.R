@@ -3,7 +3,6 @@ algo_list <- list(
   algo_design = data.table::CJ(
     method = c("EpiEstim(week)", "EpiEstim(month)", "EpiLPS", "EpiFilter", 
                "RtEstim(k=0)", "RtEstim(k=1)", "RtEstim(k=2)", "RtEstim(k=3)")
-    #alpha = c(0.05, 0.1)
   )
 )
 
