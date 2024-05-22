@@ -10,7 +10,6 @@
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 \usepackage{lipsum}
-% \usepackage{graphicx}
 \graphicspath{ {./images/} }
 \usepackage[margin=2.5cm,nohead]{geometry}
 \usepackage{authblk}
@@ -58,25 +57,17 @@ British Columbia}
 
 
 \clearpage
-%\pagenumbering{arabic}
-%\setcounter{page}{1}
 
-% research proposal
 \input{doc/introduction}  
 \input{doc/methods}
 \input{doc/results}
 \input{doc/discussion}
-
-%\section*{Acknowledgement}
-
 
 \addcontentsline{toc}{section}{References}
 
 \bibliographystyle{doc/rss.bst}
 \bibliography{doc/ptf}
 
-%\appendix
-%\titleformat{\chapter}{\normalfont\huge\bfseries}{Appendix \thechapter}{1em}{}
 
 \includepdf[pages=-]{src/supp.pdf}
 
