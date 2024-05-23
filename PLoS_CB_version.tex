@@ -329,7 +329,7 @@ package \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
 % Author Summary not valid for PLOS ONE submissions.   
 \section*{Author summary}
 
-Effective reproduction number estimation presents many challenges due to data
+Instantaneous reproduction number estimation presents many challenges due to data
 collection, modelling assumptions, and computational burden. Such limitations
 hinder the accurate estimation of the instantaneous reproduction number. Our
 motivation is to develop a model that produces accurate estimates, is robust to
@@ -352,7 +352,7 @@ parameters and can be selected using a built-in cross validation procedure.
 The effective reproduction number (or effective reproductive number) at time
 $\textit{t}$ is defined to be the expected number of secondary infections
 produced by a primary infection throughout the course of the entire infection if
-conditions remain the same at the specific time. Effective reproduction number
+conditions remain the same at the specific time. The effective reproduction number
 is a key quantity for understanding infectious disease dynamics including the
 potential size of an outbreak and the required stringency of control measures
 \cite{nishiura2009effective,fraser2007estimating}. The instantaneous
@@ -1080,10 +1080,10 @@ experiment to investigate these global conclusions in more detail.
   $\hat{\calR}_t$ and the true $\calR_t$ across 50 synthetic \textbf{measles} epidemics for 
   each approach given Poisson incidence \textit{(in top panels)} and negative 
   binomial incidence \textit{(in bottom panels)} respectively. 
-  The mean KL divergence ignores the first weeks in all experiments, since EpiEstim 
+  The mean KL divergence excludes the first week in all experiments, since EpiEstim 
   with the weekly sliding window does not provide estimates for the first week.
-  Outliers beyond $1.5\times$IQR of each box are excluded, and full illustration in 
-  provided in the Figure A.3.1 in the supplementary document.} 
+  Outliers beyond $1.5\times$IQR of each box are excluded, and full illustration is 
+  provided in Figure A.3.1 in the supplementary document.} 
   \label{fig:kl-res-measles}
 \end{figure}
 
@@ -1094,10 +1094,10 @@ experiment to investigate these global conclusions in more detail.
   $\hat{\calR}_t$ and the true $\calR_t$ across 50 synthetic SARS epidemics for 
   each approach given Poisson incidence \textit{(in top panels)} and negative 
   binomial incidence \textit{(in bottom panels)} respectively. 
-  The mean KL divergence ignores the first weeks in all experiments, 
+  The mean KL divergence excludes the first week in all experiments, 
   since EpiEstim with the weekly sliding window does not provide estimates 
   for the first week. Outliers beyond $1.5\times$IQR of each box are excluded, 
-  and full illustration in provided in the Figure A.3.1 in the supplementary document.} 
+  and full illustration is provided in Figure A.3.1 in the supplementary document.} 
   \label{fig:kl-res-sars}
 \end{figure}
 
@@ -1382,6 +1382,10 @@ intervals have 100\% coverage); but when $\mathcal{R}_t$ changes abruptly, they
 under cover. Theoretically, whether these intervals should be expected to
 provide $(1-\alpha)\%$ coverage simultaneously over all time while being narrow
 enough to provide useful uncertainty quantification is neither easy nor settled. 
+An alternative technique, which we infer in future work, to our technique is
+to use the data fission method proposed by \cite{leiner2023data}, which provides 
+post-selection inference for trend filtering with the flexibility to change the 
+number of knots after the knots are adaptively chosen in model selection. 
 
 
 Nonetheless, our methodology is implemented in a lightweight \R\ package
@@ -1425,8 +1429,312 @@ and the Digital Research Alliance of Canada (alliancecan.ca).
 % style file and paste the contents of your .bbl file
 % here. See http://journals.plos.org/plosone/s/latex for 
 % step-by-step instructions.
-% 
-\bibliography{doc/ptf}
+%
+\begin{thebibliography}{10}
+
+  \bibitem{nishiura2009effective}
+  Nishiura H, Chowell G.
+  \newblock The effective reproduction number as a prelude to statistical
+    estimation of time-dependent epidemic trends.
+  \newblock Mathematical and statistical estimation approaches in epidemiology.
+    2009; p. 103--121.
+  
+  \bibitem{fraser2007estimating}
+  Fraser C.
+  \newblock Estimating individual and household reproduction numbers in an
+    emerging epidemic.
+  \newblock PloS one. 2007;2(8):e758.
+  
+  \bibitem{gostic2020practical}
+  Gostic KM, McGough L, Baskerville EB, Abbott S, Joshi K, Tedijanto C, et~al.
+  \newblock Practical considerations for measuring the effective reproductive
+    number, \emph{R}$_t$.
+  \newblock PLoS Computational Biology. 2020;16(12):e1008409.
+  
+  \bibitem{anderson1991infectious}
+  Anderson RM, May RM.
+  \newblock Infectious diseases of humans: dynamics and control.
+  \newblock Oxford university press; 1991.
+  
+  \bibitem{wallinga2004different}
+  Wallinga J, Teunis P.
+  \newblock Different epidemic curves for severe acute respiratory syndrome
+    reveal similar impacts of control measures.
+  \newblock American Journal of epidemiology. 2004;160(6):509--516.
+  
+  \bibitem{hao2020reconstruction}
+  Hao X, Cheng S, Wu D, Wu T, Lin X, Wang C.
+  \newblock Reconstruction of the full transmission dynamics of COVID-19 in
+    Wuhan.
+  \newblock Nature. 2020;584(7821):420--424.
+  
+  \bibitem{goldstein2023semiparametric}
+  Goldstein IH, Parker DM, Jiang S, Minin VM.
+  \newblock Semiparametric inference of effective reproduction number dynamics
+    from wastewater pathogen surveillance data.
+  \newblock arXiv preprint arXiv:230815770. 2023;.
+  
+  \bibitem{goldstein2024incorporating}
+  Goldstein IH, Wakefield J, Minin VM.
+  \newblock Incorporating testing volume into estimation of effective
+    reproduction number dynamics.
+  \newblock Journal of the Royal Statistical Society Series A: Statistics in
+    Society. 2024;187(2):436--453.
+  
+  \bibitem{cori2020package}
+  Cori A, Cauchemez S, Ferguson NM, Fraser C, Dahlqwist E, Demarsh PA, et~al..
+    {EpiEstim}: estimate time varying reproduction numbers from epidemic curves;
+    2020.
+  
+  \bibitem{cori2013new}
+  Cori A, Ferguson NM, Fraser C, Cauchemez S.
+  \newblock A new framework and software to estimate time-varying reproduction
+    numbers during epidemics.
+  \newblock American Journal of Epidemiology. 2013;178(9):1505--1512.
+  
+  \bibitem{thompson2019improved}
+  Thompson RN, Stockwin JE, van Gaalen RD, Polonsky JA, Kamvar ZN, Demarsh PA,
+    et~al.
+  \newblock Improved inference of time-varying reproduction numbers during
+    infectious disease outbreaks.
+  \newblock Epidemics. 2019;29:100356.
+  
+  \bibitem{nash2023estimating}
+  Nash RK, Bhatt S, Cori A, Nouvellet P.
+  \newblock Estimating the epidemic reproduction number from temporally
+    aggregated incidence data: A statistical modelling approach and software
+    tool.
+  \newblock PLoS Computational Biology. 2023;19(8):e1011439.
+  
+  \bibitem{abbott2020estimating}
+  Abbott S, Hellewell J, Thompson RN, Sherratt K, Gibbs HP, Bosse NI, et~al.
+  \newblock Estimating the time-varying reproduction number of {SARS-CoV-2} using
+    national and subnational case counts.
+  \newblock Wellcome Open Research. 2020;5:112.
+  
+  \bibitem{EpiNow2}
+  Abbott S, Funk S, Hickson J, Badr HS, Monticone P, Ellis P, et~al..
+    epiforecasts/{EpiNow2}: 1.4.0 release; 2023.
+  
+  \bibitem{lison2024generative}
+  Lison A, Abbott S, Huisman J, Stadler T.
+  \newblock Generative {B}ayesian modeling to nowcast the effective reproduction
+    number from line list data with missing symptom onset dates.
+  \newblock PLoS Computational Biology. 2024;20(4):e1012021.
+  
+  \bibitem{parag2021improved}
+  Parag KV.
+  \newblock Improved estimation of time-varying reproduction numbers at low case
+    incidence and between epidemic waves.
+  \newblock PLoS Computational Biology. 2021;17(9):e1009347.
+  
+  \bibitem{gressani2022epilps}
+  Gressani O, Wallinga J, Althaus CL, Hens N, Faes C.
+  \newblock EpiLPS: A fast and flexible {B}ayesian tool for estimation of the
+    time-varying reproduction number.
+  \newblock PLoS Computational Biology. 2022;18(10):e1010618.
+  
+  \bibitem{trevisin2023spatially}
+  Trevisin C, Bertuzzo E, Pasetto D, Mari L, Miccoli S, Casagrandi R, et~al.
+  \newblock Spatially explicit effective reproduction numbers from incidence and
+    mobility data.
+  \newblock Proceedings of the National Academy of Sciences.
+    2023;120(20):e2219816120.
+  
+  \bibitem{abry2020spatial}
+  Abry P, Pustelnik N, Roux S, Jensen P, Flandrin P, Gribonval R, et~al.
+  \newblock Spatial and temporal regularization to estimate {COVID-19}
+    reproduction number \emph{R(t)}: Promoting piecewise smoothness via convex
+    optimization.
+  \newblock PLoS ONE. 2020;15(8):e0237901.
+  
+  \bibitem{pascal2022nonsmooth}
+  Pascal B, Abry P, Pustelnik N, Roux S, Gribonval R, Flandrin P.
+  \newblock Nonsmooth convex optimization to estimate the {C}ovid-19 reproduction
+    number space-time evolution with robustness against low quality data.
+  \newblock IEEE Transactions on Signal Processing. 2022;70:2859--2868.
+  
+  \bibitem{pircalabelu2023spline}
+  Pircalabelu E.
+  \newblock A spline-based time-varying reproduction number for modelling
+    epidemiological outbreaks.
+  \newblock Journal of the Royal Statistical Society Series C: Applied
+    Statistics. 2023;72(3):688--702.
+  
+  \bibitem{ho2023accounting}
+  Ho F, Parag KV, Adam DC, Lau EH, Cowling BJ, Tsang TK.
+  \newblock Accounting for the Potential of Overdispersion in Estimation of the
+    Time-varying Reproduction Number.
+  \newblock Epidemiology. 2023;34(2):201--205.
+  
+  \bibitem{azmon2014estimation}
+  Azmon A, Faes C, Hens N.
+  \newblock On the estimation of the reproduction number based on misreported
+    epidemic data.
+  \newblock Statistics in Medicine. 2014;33(7):1176--1192.
+  
+  \bibitem{gressani2021approximate}
+  Gressani O, Faes C, Hens N.
+  \newblock An approximate {B}ayesian approach for estimation of the
+    instantaneous reproduction number under misreported epidemic data.
+  \newblock Biometrical Journal. 2022;65(6):2200024.
+  
+  \bibitem{jin2023epimix}
+  Jin S, Dickens BL, Lim JT, Cook AR.
+  \newblock {EpiMix}: A novel method to estimate effective reproduction number.
+  \newblock Infectious Disease Modelling. 2023;8(3):704--716.
+  
+  \bibitem{hettinger2023estimating}
+  Hettinger G, Rubin D, Huang J.
+  \newblock Estimating the instantaneous reproduction number with imperfect data:
+    a method to account for case-reporting variation and serial interval
+    uncertainty.
+  \newblock arXiv preprint arXiv:230212078. 2023;.
+  
+  \bibitem{CovidTimelineCanada}
+  Berry I, O'Neill M, Sturrock SL, Wright JE, Acharya K, Brankston G, et~al.
+  \newblock A sub-national real-time epidemiological and vaccination database for
+    the {COVID}-19 pandemic in Canada.
+  \newblock Scientific Data. 2021;8(1).
+  \newblock doi:{10.1038/s41597-021-00955-2}.
+  
+  \bibitem{duotang_2023}
+  Coronavirus Variants Rapid Response Network Computational~Analysis M, Group
+    EOC. CoVaRR-NET/duotang: Release for Zenodo Archive; 2023.
+  \newblock Available from: \url{https://doi.org/10.5281/zenodo.10367461}.
+  
+  \bibitem{xu2023assessing}
+  Xu X, Wu Y, Kummer AG, Zhao Y, Hu Z, Wang Y, et~al.
+  \newblock Assessing changes in incubation period, serial interval, and
+    generation time of SARS-CoV-2 variants of concern: a systematic review and
+    meta-analysis.
+  \newblock BMC medicine. 2023;21(1):374.
+  
+  \bibitem{park2021forward}
+  Park SW, Sun K, Champredon D, Li M, Bolker BM, Earn DJ, et~al.
+  \newblock Forward-looking serial intervals correctly link epidemic growth to
+    reproduction numbers.
+  \newblock Proceedings of the National Academy of Sciences.
+    2021;118(2):e2011548118.
+  
+  \bibitem{pitzer2021impact}
+  Pitzer VE, Chitwood M, Havumaki J, Menzies NA, Perniciaro S, Warren JL, et~al.
+  \newblock The impact of changes in diagnostic testing practices on estimates of
+    {COVID-19} transmission in the {U}nited {S}tates.
+  \newblock American Journal of Epidemiology. 2021;190(9):1908--1917.
+  
+  \bibitem{hitchings2021usefulness}
+  Hitchings MD, Dean NE, Garc{\'\i}a-Carreras B, Hladish TJ, Huang AT, Yang B,
+    et~al.
+  \newblock The usefulness of the test-positive proportion of severe acute
+    respiratory syndrome coronavirus 2 as a surveillance tool.
+  \newblock American Journal of Epidemiology. 2021;190(7):1396--1405.
+  
+  \bibitem{pellis2021challenges}
+  Pellis L, Scarabel F, Stage HB, Overton CE, Chappell LH, Fearon E, et~al.
+  \newblock Challenges in control of {COVID-19}: short doubling time and long
+    delay to effect of interventions.
+  \newblock Philosophical Transactions of the Royal Society B.
+    2021;376(1829):20200264.
+  
+  \bibitem{EALES2024100742}
+  Eales O, Riley S.
+  \newblock Differences between the true reproduction number and the apparent
+    reproduction number of an epidemic time series.
+  \newblock Epidemics. 2024;46:100742.
+  \newblock doi:{https://doi.org/10.1016/j.epidem.2024.100742}.
+  
+  \bibitem{park2024estimating}
+  Park SW, Akhmetzhanov AR, Charniga K, Cori A, Davies NG, Dushoff J, et~al.
+  \newblock Estimating epidemiological delay distributions for infectious
+    diseases.
+  \newblock medRxiv. 2024; p. 2024--01.
+  
+  \bibitem{kim2009ell_1}
+  Kim SJ, Koh K, Boyd S, Gorinevsky D.
+  \newblock $\ell_1$ trend filtering.
+  \newblock SIAM Review. 2009;51(2):339--360.
+  
+  \bibitem{tibshirani2014adaptive}
+  Tibshirani RJ.
+  \newblock Adaptive piecewise polynomial estimation via trend filtering.
+  \newblock The Annals of Statistics. 2014;42(1):285--323.
+  
+  \bibitem{tibshirani2022divided}
+  Tibshirani RJ.
+  \newblock Divided differences, falling factorials, and discrete splines:
+    Another look at trend filtering and related problems.
+  \newblock Foundations and Trends{\textregistered} in Machine Learning.
+    2022;15(6):694--846.
+  
+  \bibitem{sadhanala2024exponential}
+  Sadhanala V, Bassett R, Sharpnack J, McDonald DJ.
+  \newblock Exponential family trend filtering on lattices.
+  \newblock Electronic Journal of Statistics. 2024;18(1):1749--1814.
+  
+  \bibitem{BERGMEIR201870}
+  Bergmeir C, Hyndman RJ, Koo B.
+  \newblock A note on the validity of cross-validation for evaluating
+    autoregressive time series prediction.
+  \newblock Computational Statistics \& Data Analysis. 2018;120:70--83.
+  \newblock doi:{https://doi.org/10.1016/j.csda.2017.11.003}.
+  
+  \bibitem{vaiter2017degrees}
+  Vaiter S, Deledalle C, Fadili J, Peyr{\'e} G, Dossal C.
+  \newblock The degrees of freedom of partly smooth regularizers.
+  \newblock Annals of the Institute of Statistical Mathematics. 2017;69:791--832.
+  
+  \bibitem{Cori2022}
+  Cori A, Kamvar Z, Stockwin J, Jombart T, Dahlqwist E, FitzJohn R, et~al..
+    {EpiEstim v2.2-4: A tool to estimate time varying instantaneous reproduction
+    number during epidemics}; 2022.
+  \newblock \url{https://github.com/mrc-ide/EpiEstim}.
+  
+  \bibitem{Gressani2021}
+  Gressani O. {EpiLPS: {A} {F}ast and {F}lexible {B}ayesian {T}ool for
+    {E}stimating {E}pidemiological {P}arameters.}; 2021.
+  \newblock \url{https://epilps.com/}.
+  
+  \bibitem{kpzoo2020}
+  Parag KV. {EpiFilter}; 2020.
+  \newblock \url{https://github.com/kpzoo/EpiFilter?tab=readme-ov-file}.
+  
+  \bibitem{groendyke2011bayesian}
+  Groendyke C, Welch D, Hunter DR.
+  \newblock Bayesian inference for contact networks given epidemic data.
+  \newblock Scandinavian Journal of Statistics. 2011;38(3):600--616.
+  
+  \bibitem{lipsitch2003transmission}
+  Lipsitch M, Cohen T, Cooper B, Robins JM, Ma S, James L, et~al.
+  \newblock Transmission dynamics and control of severe acute respiratory
+    syndrome.
+  \newblock science. 2003;300(5627):1966--1970.
+  
+  \bibitem{frost1919influenza}
+  Frost WH, Sydenstricker E.
+  \newblock {I}nfluenza in {M}aryland: preliminary statistics of certain
+    localities.
+  \newblock Public Health Reports (1896-1970). 1919; p. 491--504.
+  
+  \bibitem{taubenberger20061918}
+  Taubenberger JK, Morens DM.
+  \newblock 1918 {I}nfluenza: the mother of all pandemics.
+  \newblock Emerging Infectious Diseases. 2006;17(1):69--79.
+  
+  \bibitem{genovese2008adaptive}
+  Genovese C, Wasserman L.
+  \newblock {Adaptive confidence bands}.
+  \newblock The Annals of Statistics. 2008;36(2):875 -- 905.
+  \newblock doi:{10.1214/07-AOS500}.
+  
+  \bibitem{leiner2023data}
+  Leiner J, Duan B, Wasserman L, Ramdas A.
+  \newblock Data fission: splitting a single data point.
+  \newblock Journal of the American Statistical Association. 2023; p. 1--12.
+  
+  \end{thebibliography}
+  
+%\bibliography{doc/ptf}
 
  
 

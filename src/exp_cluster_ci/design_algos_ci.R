@@ -45,11 +45,6 @@ problem_solver <- function(data, method, instance, alpha = 0.05, ...) {
       return(config)
     }
   }
-  fill_NAs <- function(Rt_fitted, n) {
-    non_nas <- which(!is.na(Rt_fitted))
-    m <- length(non_nas)
-    return(c(rep(-1, n-m), Rt_fitted[non_nas]))
-  }
   
   epiFilter <- function(Rgrid, m, eta, pR0, nday, Lday, Iday, a){
     
@@ -171,9 +166,9 @@ problem_solver <- function(data, method, instance, alpha = 0.05, ...) {
     )
     l <- which(colnames(fit$R) == paste0("Quantile.",alpha/2,"(R)"))
     u <- which(colnames(fit$R) == paste0("Quantile.",1 - alpha/2,"(R)"))
-    lower_ci <- fill_NAs(fit$R[,l], len) 
-    upper_ci <- fill_NAs(fit$R[,u], len)
-    Rt_fitted <- fill_NAs(fit$R$`Mean(R)`, len)
+    lower_ci <- fit$R[,l] 
+    upper_ci <- fit$R[,u]
+    Rt_fitted <- fit$R$`Mean(R)`
   } else if (method == "EpiLPS") {
     fit <- EpiLPS::estimR(
       incidence = incidence, si = si, K = 40, 
@@ -182,9 +177,9 @@ problem_solver <- function(data, method, instance, alpha = 0.05, ...) {
     l <- which(colnames(fit$RLPS) == paste0("Rq", alpha/2)) # alpha can only by 0.05, 0.1, 0.5
     u <- which(colnames(fit$RLPS) == paste0("Rq", 1 - alpha/2))
     
-    Rt_fitted <- fill_NAs(fit$RLPS$R, len)
-    lower_ci <- fill_NAs(fit$RLPS[,l], len)
-    upper_ci <- fill_NAs(fit$RLPS[,u], len)
+    Rt_fitted <- fit$RLPS$R
+    lower_ci <- fit$RLPS[,l]
+    upper_ci <- fit$RLPS[,u]
   } else if (method == "EpiFilter") {
     m <- 2000
     pR0 = (1 / m) * rep(1, m)
@@ -223,7 +218,7 @@ problem_solver <- function(data, method, instance, alpha = 0.05, ...) {
   
   compute_interval_score <- function(Rt, l, u, alpha) {
     ci_score <- (u - l) + 2 / alpha * (l - Rt) * (Rt < l) + 2 / alpha * (Rt - u) * (Rt > u) 
-    ci_score <- mean(ci_score)
+    ci_score <- mean(ci_score, na.rm = T)
     return(ci_score)
   }
   
@@ -231,8 +226,8 @@ problem_solver <- function(data, method, instance, alpha = 0.05, ...) {
   lst[["fitted_Rt"]] <- Rt_fitted
   lst[["lower_bound"]] <- lower_ci
   lst[["upper_bound"]] <- upper_ci
-  lst[["ci_coverage"]] <- ci_coverage
-  lst[["ci_percentage"]] <- mean(ci_coverage)
+  lst[["ci_coverage"]] <- ci_coverage 
+  lst[["ci_percentage"]] <- mean(ci_coverage, na.rm = T)
   lst[["ci_score"]] <- compute_interval_score(Rt, lower_ci, upper_ci, alpha)
   return(lst)
 }
