@@ -1033,12 +1033,12 @@ implied by the Poisson distribution accurately. And fourth, as in the equation
 below, it has a convenient functional form depending only on $\calR$ and $\eta$.
 For the Poisson distribution the KL divergence is defined as
 \begin{equation} \label{eq:kl}
-  D_{KL}(\calR \parallel \widehat{\calR}) = \sum_{t=1}^N \eta_t \lr{\calR_t
+  D_{KL}(\calR \parallel \widehat{\calR}) = \sum_{t=1}^n \eta_t \lr{\calR_t
   \log\left(\frac{\calR_t} {\widehat{\calR}_t}\right) + \widehat{\calR}_t -
 {\calR}_t}.
 \end{equation}
 We use the average KL divergence: $\overline{D}_{KL}(\calR \parallel
-\widehat{\calR}) := D_{KL}(\calR \parallel \widehat{\calR}) / N$. Details on the
+\widehat{\calR}) := D_{KL}(\calR \parallel \widehat{\calR}) / n$. Details on the
 derivation of \eqref{eq:kl} is provided in Section A.1 of the Supplement. KL
 divergence is more appropriate for measuring accuracy because it connects
 directly to the Poisson likelihood used to generate the data, whereas standard
