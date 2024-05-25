@@ -1,22 +1,42 @@
 ---
-title: "Supplementary details on experiments of effective reproduction number estimation with trend filtering"
+title: "Supplement for"
+subtitle: "\\texttt{RtEstim}: Time-varying reproduction number estimation with trend filtering"
 author: "Jiaping Liu, Zhenglun Cai, Paul Gustafson, and Daniel J. McDonald"
 date: ""
 output: 
-  pdf_document: 
-    includes:
-      in_header: 
-        - "header.tex"
-        - "defs.tex"
+  bookdown::pdf_document2: 
     number_sections: true
-    fig_caption: yes
+    fig_caption: true
+    df_print: kable
+    toc: true
+    keep_tex: true
 header-includes:
-  - \usepackage{caption}
-  - \captionsetup[figure]{labelformat=empty}
+  - \input{header}
+  - \input{defs}
+  - \def\meas{\texttt{measles}}
+  - \def\sars{\texttt{SARS}}
+  - \def\flu{\texttt{flu}}
+  - \def\meass{\texttt{adj\_measles}}
+  - \def\flus{\texttt{adj\_flu}}
+  - \def\RtEstim{\texttt{RtEstim}}
+  - \def\EpiEstim{\texttt{EpiEstim}}
+  - \def\EpiLPS{\texttt{EpiLPS}}
+  - \def\EpiFilter{\texttt{EpiFilter}}
+  - \def\EpiNow2{\texttt{EpiNow2}}
+  - \renewcommand{\thesection}{A.\arabic{section}}
+  - \counterwithin{figure}{section}
+  - \usepackage{lipsum}
+  - \pagenumbering{arabic}
+  - \usepackage{tocloft}
+  - \setlength\cftsecnumwidth{3em}
+  - \setlength\cftsubsecnumwidth{3em}
+bibliography: ptf.bib  
+link-citations: true
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+knitr::opts_chunk$set(fig.pos = "!ht", out.extra = "", fig.align="center")
 library(rtestim)
 library(EpiEstim)
 library(EpiLPS)
@@ -28,995 +48,2742 @@ library(ggplot2)
 library(forcats)
 library(lubridate)
 library(ggpubr)
+library(forcats)
+library(kableExtra)
+source(here::here("src/exp_cluster/generate_data.R"))
+source(here::here("src/exp_cluster_ci/design_algos_ci.R"))
+source(here::here("src/exp_cluster/epiFilter.R"))
+source(here::here("src/exp_cluster/epiSmoother.R"))
 ```
 
-# Supplementary details on experimental settings of RtEstim for Section 3.1
+# Derivation of Kullback Leibler divergence for accuracy comparison
 
-We run 10-fold cross validation (CV) to choose the best tuning parameter
-from the candidate set of size $50$, i.e., $\boldsymbol{\lambda} = \{\lambda_1,
-\cdots, \lambda_{50}\}$. Specifically, we divide all samples (except the 
-first and last entries) into ten folds evenly and randomly, and build models on 
-each sample set by leaving a fold out across all hyperparameters. We select the 
-tuning parameter that gives the lowest averaged ***deviance*** between the 
-estimated incidence and the observed samples averaged over all folds. 
+We provide the detailed derivation of the Kullback Leibler (KL) divergence in 
+Eq. (11) in the manuscript that is used to compare the accuracy of the estimated 
+time-varying instantaneous reproduction number with the true ones. Given the 
+total infectiousness $\eta$, we compare the distance between the Poisson 
+distributions $y\sim \textrm{Pois}(\eta \hat{\calR})$ and $y\sim \textrm{Pois}(\eta \calR)$, 
+where $y,\calR\in\bbN_0^n$ are natural numbers including 0, $\eta\in\bbR^n$, 
+and $f_0(y;\eta,\calR) = \prod_{t=1}^n \frac{(\eta_t\calR_t)^{y_t} e^{-\eta_t\calR_t}}{y_t!}$,
+$f_1(y;\eta,\hat{\calR}) = \prod_{t=1}^n \frac{(\eta_t\hat{\calR}_t)^{y_t} e^{-\eta_t\hat{\calR}_t}}{y_t!}$ are the corresponding density mass functions 
+for independent $y_t,t=1,\cdots,n$. Because this is a natural exponential family
+with log-partition function $\exp(\cdot)$ and parameter $\log(\eta_t\calR_t)$,
+then, the KL divergence between them can be written in terms of the Bregman 
+divergence for $\exp$, e.g. @WainwrightJordan2008,
+\begin{align*}
+    &D_{KL}(\calR \parallel \hat{\calR})\\ 
+    &= D_{KL}(f_0(y;\eta,\calR) \parallel f_1(y;\eta,\hat{\calR})) \\
+    &= D_{KL}\left(\prod_{t=1}^n f_0(y_t;\eta_t,\calR_t) \parallel \prod_{t=1}^n f_1(y_t;\eta_t,\hat{\calR}_t)\right)\\
+    &= \sum_{t=1}^n D_{KL}\left(f_0(y_t;\eta_t,\calR_t) \parallel f_1(y_t;\eta_t,\hat{\calR}_t)\right),\text{ ($y_t$ are independent, conditional on $\calR_t,\hat{\calR}_t,\eta_t$)}\\
+    &= \sum_{t=1}^n \exp\big(\log(\eta_t\hat{\calR}_t)\big) - \exp\big(\log(\eta_t\calR_t)\big) + \exp\big(\log(\eta_t\calR_t)\big)\log\frac{\eta_t\calR_t}{\eta_t\hat{\calR}_t}, \text{ (definition of Bregman divergence)} \\
+    &= \sum_{t=1}^n \eta_t\hat{\calR}_t - \eta_t\calR_t + \eta_t\calR_t \log\frac{\calR_t}{\hat{\calR}_t}\\
+    &= \sum_{t=1}^n \eta_t\lr{\calR_t \log\frac{\calR_t}{\hat{\calR}_t} + \hat{\calR}_t - \calR_t}.\\
+\end{align*}
+We use mean KL divergence (denoted, 
+$\overline{D}_{KL}(\calR \parallel \hat{\calR}) := D_{KL}(\calR \parallel \hat{\calR}) / N$, 
+which is the KL divergence divided by the sequence length) in experiments for 
+accuracy comparison.
 
-# Experimental comparisons between EpiEstim with monthly sliding windows and other methods for Section 3.1
 
-Fig 10 displays the KL divergence values for negative Binomial incidence. 
-Comparing across $\calR_t$ estimates by EpiLPS, RtEstim and
-EpiEstim with ***monthly*** sliding windows, KL divergence computation
-excludes the first month of $\calR_t$ estimates for all approaches, since 
-EpiEstim estimates with the monthly sliding windows are not available until
-the second month. The $y$-axis is displayed on a logarithmic scale for a 
-better visualization, since a few values are much larger than others. 
+# Supplmentary details on experimental settings
 
-The relative performance of EpiEstim with monthly sliding windows, in general, 
-is not as good as its weekly sliding window based on the relative positions of 
-its boxes and the counterparts of the other methods, except for the Scenario 2 
-with negative Binomial incidence. It can be explained by EpiEstim with longer 
-sliding windows assume similarity of neighbouring $\calR_t$ across longer 
-periods, and thus, is smoother and less accurate compared to the one with 
-shorter sliding windows. 
+We compare the accuracy of the estimated instantaneous reproduction numbers using 
+the mean Kullback Leibler (KL) divergence with Poisson distributional assumption 
+on incidence (we say (mean) KL divergence for short in the following) in (11) across 
+our \RtEstim and several alternative 
+methods, including \EpiEstim with weekly and monthly sliding windows, \EpiLPS, 
+\EpiFilter, \EpiNow2, and \RtEstim with degrees k=0,1,2,3, which yields $9$ 
+methods in total. We consider two lengths of epidemics with $n=50$ or $n=300$ 
+timepoints respectively. Since \EpiNow2 takes too long to converge (e.g., for 
+a long \meas epidemic, it takes almost 2 hours on the 
+Cedar cluster provided by Digital Research Alliance of Canada), we only compare it with 
+other methods for short \flu epidemics. 
+
+We consider the serial interval (SI) distributions of \meas and \sars to generate 
+long synthetic epidemics, and \flu for short epidemics, inspired by @cori2013new
+which used SI from real epidemics to illustrate the performance of their method.
+The means and standard deviations of SI distributions are estimated by existing 
+studies; specifically, $(14.9, 3.9)$ for \meas (@groendyke2011bayesian), 
+$(8.4,3.8)$ for \sars (@lipsitch2003transmission), and $(2.6,1.5)$ for 
+\flu (@ferguson2005strategies, @boelle2011transmission). 
+Incident cases in synthetic \meas epidemics are relatively low (within $1000$ at 
+the peak overall), and \sars incident cases are relatively large (between $15000$ 
+and $20000$ at the peak overall). 
+
+We consider a reasonably large 
+overdispersion level of negative binomial incidence with size 5. Figure 
+\@ref(fig:NB-overdispersion) displays the ratio of the variance over 
+mean across different settings 
+using the same set of sample epidemics in Fig 5 and Fig 6, and all figures in 
+Section \@ref(sec:samples). For Poisson, this ratio is constant at 1. However,
+the negative binomial incidence appears results in significant overdispersion. 
+
+```{r NB-overdispersion, echo=FALSE, fig.height=4.4, fig.width=6, fig.cap = "Dispersion level of incidence of sample negative binomial epidemics."}
+dat_example <- readRDS(here::here("dat/data_example.RDS"))
+size <- 5
+dat_example_NB_SMR <- dat_example %>%
+  filter(dist == "Negative Binomial") %>%
+  group_by(Rt_case, si_type) %>%
+  mutate(smr = (mean + mean^2 / size) / mean)
+dat_example_pois_SMR <- dat_example %>%
+  filter(dist == "Poisson") %>%
+  group_by(Rt_case, si_type) %>%
+  mutate(smr = mean / mean)
+dat_example_SMR <- rbind(dat_example_NB_SMR)
+
+# plot the SNR (mean/sd) ratio
+fig_smr <- dat_example_SMR %>%
+  group_by(dist, Rt_case, si_type) %>%
+  ggplot(aes(y = smr, x = time)) + 
+  geom_line(aes(color = si_type)) + 
+  facet_grid(dist ~ Rt_case, scales = "free_y") +
+  scale_color_brewer(palette = "Set1") +
+  labs(y = "Variance / mean", x = "Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_log10(expand = expansion(c(0, 0.05))) + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL))
+print(fig_smr)
+```
+
+In model fitting, we use both true and misspecified serial interval (SI) 
+distributions to test the robustness of our method, compared to other alternatives. 
+The misspecification of serial interval distributions are either 
+"mild" or ``major", where, in the major misspecification, we use a completely different 
+pair of SI parameters, e.g., we use the SI of \sars for generated \meas epidemics,
+and the SI of \meas for generated \flu epidemics. In the mild SI 
+misspecification, we consider slightly adjusted parameters for both \meas and 
+\flu epidemics, where the mean is decreased by $2$ for \meas and increased by $2$ 
+for \flu and the standard deviation is increased by $10\%$, denoted as \flus and 
+\meass respectively. These settings result in 7 pairs of SI distributions 
+(for epidemic generating, model fitting), i.e., (\meas, \meas), (\sars, \sars), 
+(\meas, \meass), (\meas, \sars) for long epidemics and (\flu, \flu), 
+(\flu, \flus), (\flu, \meas) for short epidemics. Figure \@ref(fig:si-dist) 
+displays all SI distributions (\meas, \meass, \sars, \flu, and \flus) used in 
+the experiments. 
+
+```{r si-dist, echo=FALSE, fig.height=4.4, fig.width=6.2, fig.cap = "Density curves of serial interval distributions used in the experiments."}
+dat_si <- data.table(
+  x = 0:40,
+  measles = dgamma(0:40L, shape = 14.5963, scale = 1.0208),
+  SARS = dgamma(0:40L, shape = 4.8864, scale = 1.7190),
+  flu = dgamma(0:40L, shape = 3.0044, scale = 0.8654),
+  measles_ss = dgamma(0:40L, shape = 9.0420, scale = 1.4267),
+  flu_ss = dgamma(0:40L, shape = 7.7723, scale = 0.5918)
+)
+
+dat_si %>%
+  pivot_longer(!x, values_to = "prob", names_to = "epidemic") %>%
+  mutate(epidemic = fct_recode(epidemic,
+    "adjusted flu" = "flu_ss",
+    "adjusted measles" = "measles_ss"
+  )) %>%
+  group_by(epidemic) %>%
+  ggplot(aes(x = x, y = prob)) + 
+  geom_line(aes(col = epidemic)) + 
+  geom_ribbon(aes(ymin = 0, ymax = prob, fill = epidemic), alpha = 0.3) +
+  scale_color_brewer(palette = "Set1") +
+  scale_fill_brewer(palette = "Set1") +
+  labs(y = "Probability", x = "") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  theme_bw() + 
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL), fill = "none")
+```
+
+Table \@ref(tab:df-exp) summarizes the aforementioned experimental setting for 
+accuracy comparison: Poisson and negative binomial (NB) distributions for 
+incidence and four $\calR_t$ scenarios are used for all long epidemics. We only
+consider one $\calR_t$ scenario (Scenario 3: piecewise linear $\calR_t$) for 
+short epidemics. Each experimental setting is replicated $50$ times, which 
+yields $12800$ experiments for long epidemics and $2700$ for short epidemics. 
+
+```{r df-exp, echo=FALSE, message=FALSE, warning=FALSE}
+df_exp <- data.table(
+  len = c(300, 300, 50),
+  si = c("measles", "SARS", "flu"),
+  rt = c("1-4", "1-4", "3"),
+  inci = rep("Poisson, NB", 3),
+  si_pars = c("measles, adj-measles, SARS", "SARS", "flu, adj-flu, measles"),
+  method = c(rep("8 methods", 2), "9 methods")
+)
+
+kbl(df_exp, booktabs = T, caption = "Summary of experimental settings on accuracy comparison.",
+    col.names = c("Length", "SI", "Rt scenario", "Incidence",
+                  "SI for modelling", "Method")) %>%
+  kable_styling(latex_options = c("repeat_header"))
+```
+
+We visualize the selected key results of the accuracy comparison using long synthetic 
+epidemics in Section 3.2 in the manuscript. Other main experimental results are displayed in 
+Section \@ref(sec:exp-accuracy).
+
+\clearpage
+# Supplementary experimental results on accuracy comparison {#sec:exp-accuracy}
+
+## Long epidemics
 
 ```{r load-simulation-results, include=FALSE}
 cbPalette <- c(
-  "#E69F00", "#F0E442", "#009E73", "#CC79A7", "#0072B2", "#56B4E9"
+  "#E69F00", "#F0E442", "#009E73", "#FDBE85", "#D55E00", 
+  "#CC79A7", "#0072B2", "#b44582", "#56B4E9"
 )
-Rt_result <- readRDS(here::here("dat/rt_exp_results.RDS"))
-Rt_result$Rt_case <- as.factor(Rt_result$Rt_case)
-Rt_result$dist <- as.factor(Rt_result$dist)
-Rt_result$method <- as.factor(Rt_result$method)
-n <- dim(Rt_result)[1]
+Rt_result <- readRDS(here::here("dat/Rt_reduced_results_all.RDS")) 
 Rt_result <- Rt_result %>%
-  select(method, Rt_case, dist, runtime, Rt_kl, Rt_kl_month) %>%
+  select(method, Rt_case, dist, runtime, Rt_kl, Rt_kl_month, si_type, si_pars, len) %>%
   mutate(method = fct_recode(method,
     "EpiEstim (weekly)" = "EpiEstim(week)",
     "EpiEstim (monthly)" = "EpiEstim(month)",
     "RtEstim (k=0)" = "RtEstim(k=0)",
     "RtEstim (k=1)" = "RtEstim(k=1)",
+    "RtEstim (k=2)" = "RtEstim(k=2)",
     "RtEstim (k=3)" = "RtEstim(k=3)"
   )) %>%
   mutate(method = fct_relevel(
-    method, "EpiEstim (weekly)", "EpiEstim (monthly)",
-    "EpiLPS", "RtEstim (k=0)", "RtEstim (k=1)",
-    "RtEstim (k=3)"
+    method, 
+    "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS",
+    "EpiFilter", "EpiNow2",
+    "RtEstim (k=0)", "RtEstim (k=1)",
+    "RtEstim (k=2)", "RtEstim (k=3)"
   )) %>%
   mutate(dist = fct_recode(dist,
     "Poisson" = "poisson",
     "Negative Binomial" = "NB"
   )) %>%
   mutate(dist = fct_relevel(dist, "Poisson", "Negative Binomial")) %>%
+  mutate(Rt_case = as.character(Rt_case)) %>% 
   mutate(Rt_case = fct_recode(Rt_case,
     "Scenario 1" = "1",
     "Scenario 2" = "2",
     "Scenario 3" = "3",
     "Scenario 4" = "4"
-  )) %>%
-  mutate(Rt_kl = Rt_kl * n, Rt_kl_month = Rt_kl_month * n)
+  ))
 ```
 
-```{r display-KL-monthly-full-res, echo=FALSE, fig.height=5.5, fig.width=6.2, fig.cap = "Fig 10. KL divergence for EpiEstim with monthly sliding windows and other methods. Y-axis is on a logarithmic scale."}
-fig_kl_full_month <- Rt_result %>%
-  filter(method != "EpiEstim (weekly)") |>
-  mutate(method = fct_relevel(
-    method, "EpiEstim (monthly)",
-    "EpiLPS", "RtEstim (k=0)", "RtEstim (k=1)",
-    "RtEstim (k=3)"
-  )) %>%
-  group_by(Rt_case, dist, method) |>
-  ggplot(aes(x = method, y = Rt_kl_month)) + # sum up KL per coordinate
+We have displayed the accuracy of all methods (where EpiEstim uses weekly 
+sliding window) for \meas and \sars sample epidemics using KL divergence 
+excluding the first week since EpiEstim does not provide estimates in the first 
+week in Fig 3 and Fig 4 in the manuscript, where we exclude the outliers. 
+A full visualization including the outliers is in Figure 
+\@ref(fig:display-KL-weekly-long). 
+
+Figure \@ref(fig:display-KL-monthly-long) compares \EpiEstim with _monthly_
+sliding windows with other methods. We average the KL divergence per coordinate 
+excluding the timepoints in the first month for all approaches, since \EpiEstim 
+estimates with the monthly sliding windows are not available until the second month. 
+The $y$-axis is displayed on a logarithmic scale for a better visualization. 
+
+The relative performance of \EpiEstim with monthly sliding windows, in general, 
+is not as good as its weekly sliding window based on the relative positions of 
+its boxes and the counterparts of the other methods. It can be explained that 
+\EpiEstim with longer sliding windows assume similarity of neighbouring $\calR_t$ 
+across longer periods, and thus, is smoother and less accurate compared to the 
+one with shorter sliding windows. 
+
+```{r display-KL-weekly-long, echo=FALSE, fig.height=6, fig.width=6.2, fig.cap = "The mean KL divergence excluding the first week for measles and SARS epidemics, since EpiEstim with the weekly sliding window does not provide estimates for the first week. Y-axes are on a logarithmic scale."}
+Rt_res_long_week <- Rt_result %>% 
+  filter(len == 300, !method %in% c("EpiEstim (monthly)", "EpiNow2")) %>% 
+  select(Rt_case, dist, method, Rt_kl, si_type, si_pars) %>% 
+  group_by(Rt_case, dist, method)
+
+fig_kl_week_long <- Rt_res_long_week %>% #
+  mutate(mis_si = si_type != si_pars) %>%
+  filter(!mis_si) %>%
+  group_by(Rt_case, dist, method, si_type) |>
+  ggplot(aes(x = method, y = Rt_kl)) + 
   stat_boxplot(aes(col = method)) +
-  facet_grid(dist ~ Rt_case, scales = "free") +
-  scale_y_log10() +
-  scale_colour_manual(values = cbPalette[-1]) +
-  labs(x = "Method", y = "KL divergence") +
+  facet_grid(si_type * dist ~ Rt_case, scales = "free") +
+  scale_y_log10(breaks = c(0.1, 1, 10, 100, 1000), labels = c(0.1, 1, 10, expression(10^2), expression(10^3))) +
+  scale_colour_manual(values = cbPalette[c(1,3,4,6:9)]) +
+  labs(x = "", y = "KL divergence (excluding the first week)") +
   theme_bw() +
-  theme(axis.text.x = element_blank(), legend.position = "bottom") +
-  guides(color = guide_legend(title = NULL))
-print(fig_kl_full_month)
+  theme(axis.text.x = element_blank(), legend.position = "bottom", 
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_kl_week_long)
 ```
 
+```{r display-KL-monthly-long, echo=FALSE, fig.height=6, fig.width=6.2, fig.cap = "The mean KL divergence excluding the first month for measles and SARS epidemics, since EpiEstim with the monthly sliding window does not provide estimates for the first month. Y-axes are on a logarithmic scale."}
+Rt_res_long_month_no_outliers <- Rt_result %>% 
+  filter(len == 300, !method %in% c("EpiEstim (weekly)", "EpiNow2")) %>% 
+  select(Rt_case, dist, method, Rt_kl_month, si_type, si_pars) %>% 
+  group_by(Rt_case, dist, method) %>% 
+  mutate(big_out = Rt_kl_month > fivenum(Rt_kl_month, na.rm = TRUE)[4] +
+    1.5 * IQR(Rt_kl_month, na.rm = TRUE)) %>% 
+  filter(!big_out) %>% 
+  select(!big_out)
 
-# Supplementary results of experiments for Fig 3 in Section 3.2
+Rt_res_long_month <- Rt_result %>% 
+  filter(len == 300, !method %in% c("EpiEstim (weekly)", "EpiNow2")) %>% 
+  select(Rt_case, dist, method, Rt_kl_month, si_type, si_pars) %>% 
+  group_by(Rt_case, dist, method)
 
-The full KL divergence values for Poisson incidence without excluding the 
-outliers are shown in Fig 11. The $y$-axis is displayed on a logarithmic scale 
-for the same reason in Fig 10.
+fig_kl_month_long <- Rt_res_long_month %>% #
+  mutate(mis_si = si_type != si_pars) %>%
+  filter(!mis_si) %>%
+  group_by(Rt_case, dist, method, si_type) |>
+  ggplot(aes(x = method, y = Rt_kl_month)) + 
+  stat_boxplot(aes(col = method)) +
+  facet_grid(si_type * dist ~ Rt_case, scales = "free") +
+  scale_y_log10(breaks = c(0.1, 1, 10, 100, 1000), labels = c(0.1, 1, 10, expression(10^2), expression(10^3))) +
+  scale_colour_manual(values = cbPalette[c(2:4,6:9)]) +
+  labs(x = "", y = "KL divergence (excluding the first month)") +
+  theme_bw() +
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_kl_month_long)
+```
 
-Comparing among $\calR_t$ estimations by EpiLPS, RtEstim and EpiEstim with
-***weekly*** sliding windows, KL divergence computation excludes the first week
-of $\calR_t$ estimates for all approaches. The outliers are mainly EpiLPS and 
-EpiEstim $\calR_t$ estimations in Scenario 2, which is generally an easy problem 
-except for the changepoint at where the two segments are discontinuous. Since 
-EpiEstim produces a continuous $\calR_t$ curve, the changepoint can be difficult 
-to recover and make estimation less accurate.
+\clearpage
+## Short epidemics
 
-```{r display-KL-weekly-full-res, echo=FALSE, fig.height=5.5, fig.width=6.2, fig.cap = "Fig 11. KL divergence for methods with weekly sliding windows. Y-axis is on a logarithmic scale."}
-fig_kl_full_week <- Rt_result %>%
-  filter(method != "EpiEstim (monthly)") |>
+Figures \@ref(fig:display-KL-weekly-flu) and \@ref(fig:display-KL-monthly-flu)
+display the KL divergence for short epidemics aggregated over time
+excluding the first week and month respectively to compare EpiEstim with weekly
+and monthly sliding windows with other methods including \EpiNow2. 
+The difference in accuracy is more obvious given Poisson distributional assumption 
+in incidence. To estimate "true" piecewise linear $\calR_t$, piecewise constant and linear 
+\RtEstim\ (with $k=0,1$) are the most accurate for Poisson incidence, \RtEstim 
+($k=2,3$), \EpiLPS\ and \EpiFilter\ are accurate as well with median KL estimates around 1.
+For negative binomial incidence, the advantage of \RtEstim\ is less obvious, 
+but \RtEstim\ with all degrees still has the lowest median with a small IQR. 
+
+```{r display-KL-weekly-flu, echo=FALSE, fig.height=4, fig.width=6.2, fig.cap = "The average KL divergence excluding the first week for flu epidemics, since EpiEstim with the weekly sliding window does not provide estimates for the first week. Y-axes are on a logarithmic scale."}
+Rt_res_short_week_no_outliers <- Rt_result %>% 
+  filter(len == 50, !method %in% c("EpiEstim (monthly)")) %>% 
+  select(Rt_case, dist, method, Rt_kl, si_type, si_pars) %>% 
+  group_by(Rt_case, dist, method) %>% 
+  mutate(big_out = Rt_kl > fivenum(Rt_kl, na.rm = TRUE)[4] +
+    1.5 * IQR(Rt_kl, na.rm = TRUE)) %>% 
+  filter(!big_out) %>% 
+  select(!big_out)
+Rt_res_short_week <- Rt_result %>% 
+  filter(len == 50, !method %in% c("EpiEstim (monthly)")) %>% 
+  select(Rt_case, dist, method, Rt_kl, si_type, si_pars) %>% 
+  group_by(Rt_case, dist, method)
+
+fig_kl_short_week <- Rt_res_short_week %>% 
+  filter(si_type == "flu", si_pars == "flu") |> 
+  select(Rt_case, dist, method, Rt_kl) |>
   group_by(Rt_case, dist, method) |>
-  ggplot(aes(x = method, y = Rt_kl)) + # sum up KL per coordinate
-  geom_boxplot(aes(col = method)) +
-  facet_grid(dist ~ Rt_case, scales = "free") +
+  ggplot(aes(x = method, y = Rt_kl)) + # averaged over KL per coordinate
+  stat_boxplot(aes(col = method)) +
+  facet_grid(~dist, scales = "free") +
   scale_y_log10() +
   scale_colour_manual(values = cbPalette[-2]) +
-  labs(x = "Method", y = "KL divergence") +
+  labs(x = "", y = "KL divergence (excluding the first week)") +
   theme_bw() +
-  theme(axis.text.x = element_blank(), legend.position = "bottom") +
-  guides(color = guide_legend(title = NULL))
-print(fig_kl_full_week)
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_kl_short_week)
 ```
 
+```{r display-KL-monthly-flu, echo=FALSE, fig.height=4, fig.width=6.2, fig.cap = "The mean KL divergence excluding the first month for flu epidemics, since EpiEstim with the monthly sliding window does not provide estimates for the first month. Y-axes are on a logarithmic scale."}
+Rt_res_short_month_no_outliers <- Rt_result %>% 
+  filter(len == 50, method != "EpiEstim (weekly)") %>% 
+  select(Rt_case, dist, method, Rt_kl_month, si_type, si_pars) %>% 
+  group_by(Rt_case, dist, method) %>% 
+  mutate(big_out = Rt_kl_month > fivenum(Rt_kl_month, na.rm = TRUE)[4] +
+    1.5 * IQR(Rt_kl_month, na.rm = TRUE)) %>% 
+  filter(!big_out) %>% 
+  select(!big_out)
 
-# Time comparisons of methods for Section 3.2
+Rt_res_short_month <- Rt_result %>% 
+  filter(len == 50, method != "EpiEstim (weekly)") %>% 
+  select(Rt_case, dist, method, Rt_kl_month, si_type, si_pars) %>% 
+  group_by(Rt_case, dist, method)
 
-Fig 12 shows the time comparisons across all methods. EpiEstim with both weekly 
-and monthly sliding windows are very fast and converge in less than 0.1 seconds.
-Piecewise constant RtEstim (with k=0) estimates can be generated within 0.1 
-seconds as well. EpiLPS is slightly slower, but still very fast and within 1 
-second for all experiments. Piecewise linear and cubic RtEstim (with $k=1$ and 
-$k=3$ respectively) are slower, but mostly within 10 seconds. 
+fig_kl_short_month <- Rt_res_short_month %>%#
+  filter(si_type == "flu", si_pars == "flu") |> 
+  select(Rt_case, dist, method, Rt_kl_month) |>
+  group_by(Rt_case, dist, method) |>
+  ggplot(aes(x = method, y = Rt_kl_month)) +
+  stat_boxplot(aes(col = method)) +
+  facet_grid(~dist, scales = "free") +
+  scale_colour_manual(values = cbPalette[-1]) +
+  labs(x = "", y = "KL divergence (excluding the first month)") +
+  theme_bw() +
+  scale_y_log10() +
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_kl_short_month)
+```
 
-It is remarkable that our RtEstim computes 50 lambda values with 10-fold CV for 
-each experiment, which results in $550$ times of modelling per experiment 
-(including modelling for all folds). The 
-running times are no more than 10 seconds for most of the experiments, which 
-means the running time for each time of modelling is very fast, and on average 
-can be less than 0.02 seconds. The other two methods only run once for a fixed 
-set of hyperparameters for each experiment. 
+\clearpage
+# Experimental results on accuracy under misspecification of serial interval distributions
 
-```{r display-simulation-time-comparison, echo = FALSE, fig.height = 7, fig.width = 6.6, fig.cap = "Fig 12. Time comparisons of methods (excluding one outlier of `RtEstim (k=1)` in Scenario 2 with negative Binomial incidence). Y-axis is on a logarithmic scale."}
-runtime_fig <- Rt_result %>%
-  filter(runtime <= 80 * 1e6) %>%
+## SI misspecification for long epidemics
+
+Figures \@ref(fig:display-KL-weekly-mis-si-measles) and
+\@ref(fig:display-KL-monthly-mis-si-measles) display KL divergence (excluding 
+the first week and the first month respectively) for all 8 methods with "mild" 
+misspecification (using shaped and scaled \meas SI parameters) and "major" 
+misspecification (using \sars SI parameters) for long \meas epidemics across all 
+settings. \RtEstim\ is reasonably robust to misspecification of SI parameters: 
+median KL error for each problem design is almost always the lowest with the lowest 
+IQR. \EpiLPS\ is a strong competitor given negative binomial incidence, since it
+assumes incidence to follow negative binomial distributions. \EpiFilter\ is also
+quite robust to SI misspecification under Poisson incidence. 
+
+```{r display-KL-weekly-mis-si-measles, echo=FALSE, fig.height=6.5, fig.width=6.2, fig.cap = "The mean KL divergence excluding the first week for measles epidemics with SI misspecification, since EpiEstim with the weekly sliding window does not provide estimates for the first week. Y-axes are on a logarithmic scale."}
+Rt_res_long_week_no_outliers <- Rt_result %>% 
+  filter(len == 300, method != "EpiEstim (monthly)") %>% 
+  select(Rt_case, dist, method, Rt_kl, si_type, si_pars) %>% 
+  group_by(Rt_case, dist, method) %>% 
+  mutate(big_out = Rt_kl > fivenum(Rt_kl, na.rm = TRUE)[4] +
+    1.5 * IQR(Rt_kl, na.rm = TRUE)) %>% 
+  filter(!big_out) %>% 
+  select(!big_out)
+
+Rt_res_long_week <- Rt_result %>% 
+  filter(len == 300, method != "EpiEstim (monthly)") %>% 
+  select(Rt_case, dist, method, Rt_kl, si_type, si_pars) %>% 
+  group_by(Rt_case, dist, method)
+Rt_res_long_week_mis_si <- Rt_res_long_week %>%
+  mutate(mis_si = si_pars != si_type) %>%
+  filter(mis_si) %>%
+  select(!mis_si)
+
+fig_kl_full_week_si <- Rt_res_long_week_mis_si %>%
+  mutate(mis_type = ifelse(si_pars == "SARS", "Major", "Minor")) %>%
+  mutate(mis_type = fct_relevel(mis_type, "Minor", "Major")) %>%
+  group_by(Rt_case, dist, method) |>
+  ggplot(aes(x = method, y = Rt_kl)) + 
+  stat_boxplot(aes(col = method)) +
+  facet_grid(mis_type * dist ~ Rt_case, scales = "free") +
+  scale_y_log10() +
+  scale_colour_manual(values = cbPalette[c(1,3,4,6:9)]) +
+  labs(x = "", y = "KL divergence (excluding the first week)") +
+  theme_bw() +
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_kl_full_week_si)
+```
+
+```{r display-KL-monthly-mis-si-measles, echo=FALSE, fig.height=6.5, fig.width=6.2, fig.cap = "The mean KL divergence excluding the first month for measles epidemics with SI misspecification, since EpiEstim with the monthly sliding window does not provide estimates for the first month. Y-axes are on a logarithmic scale."}
+#Rt_res_long_month <- Rt_result %>% 
+#  filter(len == 300, method != "EpiEstim (weekly)") %>% 
+#  select(Rt_case, dist, method, Rt_kl_month, si_type, si_pars) %>% 
+#  group_by(Rt_case, dist, method)
+Rt_res_long_month_mis_si <- Rt_res_long_month %>%
+  mutate(mis_si = si_pars != si_type) %>%
+  filter(mis_si) %>%
+  select(!mis_si)
+
+fig_kl_full_month_si <- Rt_res_long_month_mis_si %>%
+  mutate(mis_type = ifelse(si_pars == "SARS", "Major", "Minor")) %>%
+  mutate(mis_type = fct_relevel(mis_type, "Minor", "Major")) %>%
+  group_by(Rt_case, dist, method) |>
+  ggplot(aes(x = method, y = Rt_kl_month)) + 
+  stat_boxplot(aes(col = method)) +
+  facet_grid(mis_type * dist ~ Rt_case, scales = "free") +
+  scale_y_log10() +
+  scale_colour_manual(values = cbPalette[c(2:4,6:9)]) +
+  labs(x = "", y = "KL divergence (excluding the first month)") +
+  theme_bw() +
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_kl_full_month_si)
+```
+
+\clearpage
+## SI misspecification for short epidemics
+
+Figures \@ref(fig:display-KL-weekly-mis-si-flu) and 
+\@ref(fig:display-KL-monthly-mis-si-flu) display KL divergence (excluding the 
+first week and the first month respectively) for all 9 methods with "minor" 
+misspecification (using slightly modified \flu SI parameters) and "major" 
+misspecification (using \meas parameters) for short \flu epidemics across all 
+settings, yielding similar conclusions as in short epidemics. We also note that 
+\EpiNow2 is quite robust to major misspecification in SI parameters, while 
+\EpiLPS\ is less satisfactory in major misspecification excluding the first 
+week in KL computation. It might be due to the large estimates at the beginning
+of the epidemics beyond the first week, but eliminated within the first month. 
+
+```{r display-KL-weekly-mis-si-flu, echo=FALSE, fig.height=6, fig.width=6.2, fig.cap = "The mean KL divergence excluding the first week for flu epidemics with SI misspecification, since EpiEstim with the weekly sliding window does not provide estimates for the first week. Y-axes are on a logarithmic scale."}
+Rt_res_short_week_mis_si <- Rt_res_short_week %>%
+  mutate(mis_si = si_pars != si_type) %>%
+  filter(mis_si) %>%
+  select(!mis_si)
+
+fig_kl_short_week_si <- Rt_res_short_week_mis_si %>%
+  mutate(mis_type = ifelse(si_pars == "measles", "Major", "Minor")) %>%
+  mutate(mis_type = fct_relevel(mis_type, "Minor", "Major")) %>%
+  group_by(Rt_case, dist, method) |>
+  ggplot(aes(x = method, y = Rt_kl)) + # averaged over KL per coordinate
+  stat_boxplot(aes(col = method)) +
+  facet_grid(mis_type * dist ~ Rt_case, scales = "free") +
+  scale_y_log10(breaks = c(0.1, 1, 10, 100, 1000, 1e4L), labels = c(0.1, 1, 10, expression(10^2), expression(10^3), expression(10^4))) +
+  scale_colour_manual(values = cbPalette[-2]) +
+  labs(x = "", y = "KL divergence (excluding the first week)") +
+  theme_bw() +
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_kl_short_week_si)
+```
+
+```{r display-KL-monthly-mis-si-flu, echo=FALSE, fig.height=6, fig.width=6.2, fig.cap = "The mean KL divergence excluding the first month for flu epidemics with SI misspecification, since EpiEstim with the monthly sliding window does not provide estimates for the first month. Y-axes are on a logarithmic scale."}
+Rt_res_short_month_mis_si <- Rt_res_short_month %>%
+  mutate(mis_si = si_pars != si_type) %>%
+  filter(mis_si) %>%
+  select(!mis_si)
+
+fig_kl_short_month_si <- Rt_res_short_month_mis_si %>%
+  mutate(mis_type = ifelse(si_pars == "measles", "Major", "Minor")) %>% 
+  mutate(mis_type = fct_relevel(mis_type, "Minor", "Major")) %>%
+  group_by(Rt_case, dist, method) |>
+  ggplot(aes(x = method, y = Rt_kl_month)) + # averaged over KL per coordinate
+  stat_boxplot(aes(col = method)) +
+  facet_grid(mis_type * dist ~ Rt_case, scales = "free") +
+  scale_y_log10(breaks = c(0.1, 1, 10, 100, 1000, 1e4L), labels = c(0.1, 1, 10, expression(10^2), expression(10^3), expression(10^4))) +
+  scale_colour_manual(values = cbPalette[-1]) +
+  labs(x = "", y = "KL divergence (excluding the first month)") +
+  theme_bw() +
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_kl_short_month_si)
+```
+
+\clearpage
+# Time comparisons of all methods
+
+Figures \@ref(fig:display-time-long) show the time comparisons across all methods 
+for long (\meas and \sars) epidemics. 
+\EpiEstim with both sliding windows are very fast and converge in less than 0.1 
+seconds. Piecewise constant \RtEstim (with k=0) estimates can be generated 
+within 0.1 seconds as well. \EpiLPS is slightly slower, but still very fast and 
+within 1 second for all experiments. \EpiFilter\ is in a similar scale of our method
+with higher than $0$ degrees. Piecewise linear and cubic \RtEstim (with 
+$k=1$ and $k=3$ respectively) are slower, but mostly within 10 seconds.
+We also provide an alternative view with the running time of each case in a 
+separate panel in Figures \@ref(fig:display-time-meas) and 
+\@ref(fig:display-time-sars) for \meas and \sars epidemics respectively. 
+We find similar results as in Figure \@ref(fig:display-time-long) in all panels. 
+
+It is remarkable that our \RtEstim computes 50 lambda values with 10-fold CV for 
+each experiment, which results in $550\times$ the number of models estimated per experiment 
+(including modelling for all folds). The running times are no more than 10 seconds 
+for most of the experiments, which means the running time for each time of estimate
+is very fast, and on average can be less than 0.02 seconds. The other methods 
+only run once for a fixed set of hyperparameters for each experiment. 
+
+```{r display-time-long, echo = FALSE, fig.height = 5, fig.width = 6.6, fig.cap = "Running time comparison of all methods for long (measles and SARS) epidemics across all cases. Y-axis is on a logarithmic scale."}
+runtime_epi_long <- Rt_result %>% #RtEstim with k=1,2,3 sometimes runs much slower
+  filter(len != 50, si_type == "measles") |>
   group_by(dist, Rt_case, method) %>%
-  ggplot(aes(x = Rt_case, y = runtime / 1e6)) +
+  ggplot(aes(x = method, y = runtime / 1e6)) +
+  geom_boxplot(aes(col = method)) +
+  scale_colour_manual(values = cbPalette[-5]) +
+  scale_y_log10(breaks = c(0.1, 1, 10, 100, 1000), labels = c(0.1, 1, 10, expression(10^2), expression(10^3))) +
+  labs(y = "Running time in seconds", x = "") +
+  theme_bw() +
+  theme(legend.position = "bottom", axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(runtime_epi_long)
+```
+
+```{r display-time-meas, echo = FALSE, fig.height = 7.5, fig.width = 6.6, fig.cap = "Running time comparison of all methods for measles epidemics with each pair of SI parameters (measles, adjusted measles, and SARS) for modelling per incidence distribution per Rt scenario (excluding outliers for better illustration). Y-axes are on a logarithmic scale."}
+runtime_epi_meas <- Rt_result %>%
+  mutate(dist = fct_recode(dist, "NB" = "Negative Binomial")) %>%
+  mutate(dist = fct_relevel(dist, "Poisson", "NB")) %>%
+  mutate(si_pars = fct_recode(si_pars, "adj_measles" = "measles_ss")) %>%
+  filter(len != 50, si_type == "measles") |>
+  group_by(dist, Rt_case, method, si_pars) %>%
+  mutate(big_out = runtime > fivenum(runtime, na.rm = TRUE)[4] +
+    1.5 * IQR(runtime, na.rm = TRUE)) %>% 
+  filter(!big_out) %>% 
+  select(!big_out) %>% 
+  ggplot(aes(x = method, y = runtime / 1e6)) +
+  geom_boxplot(aes(col = method)) +
+  facet_grid(si_pars * dist ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  scale_y_log10(breaks = c(0.1, 1, 10, 100, 1000), labels = c(0.1, 1, 10, expression(10^2), expression(10^3))) +
+  labs(y = "Running time in seconds", x = "") +
+  theme_bw() +
+  theme(legend.position = "bottom", axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(runtime_epi_meas)
+```
+
+```{r display-time-sars, echo = FALSE, fig.height = 4.5, fig.width = 6.6, fig.cap = "Running time comparison of all methods for SARS epidemics with each choice of SI parameter for modelling per incidence distribution per Rt scenario. Y-axes are on a logarithmic scale."}
+runtime_epi_sars <- Rt_result %>%
+  filter(len != 50, si_type == "SARS") |>
+  group_by(dist, Rt_case, method) %>%
+  ggplot(aes(x = method, y = runtime / 1e6)) +
+  geom_boxplot(aes(col = method)) +
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  scale_y_log10(breaks = c(0.1, 1, 10, 100, 1000), labels = c(0.1, 1, 10, expression(10^2), expression(10^3))) +
+  labs(y = "Running time in seconds", x = "") +
+  theme_bw() +
+  theme(legend.position = "bottom", axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(runtime_epi_sars)
+```
+
+Figure \@ref(fig:display-time-flu-all) displays the running time of all methods 
+for short (\flu) epidemics. All methods except \EpiNow2 can converge with in 
+around 1 second. Figure \@ref(fig:display-time-flu) displays 
+the running times for each setting separately, and finds similar results as in 
+the overall running time comparison. 
+
+```{r display-time-flu-all, echo = FALSE, fig.height = 4.5, fig.width = 6.6, fig.cap = "Time comparisons of methods for short (flu) epidemics across all pairs of SI parameters per incidence distribution. Y-axes are on a logarithmic scale."}
+runtime_epi_flu_all <- Rt_result %>% 
+  filter(len == 50) |>
+  group_by(dist, Rt_case, method) %>%
+  ggplot(aes(x = method, y = runtime / 1e6)) +
   geom_boxplot(aes(col = method)) +
   facet_wrap(vars(dist)) +
   scale_colour_manual(values = cbPalette) +
-  scale_y_log10() +
-  labs(y = "Running time in seconds", x = "Rt scenarios") +
-  labs(color = "Methods") +
+  scale_y_log10(breaks = c(0.1, 1, 10, 100, 1000), labels = c(0.1, 1, 10, expression(10^2), expression(10^3))) +
+  labs(y = "Running time in seconds", x = "") +
   theme_bw() +
-  theme(legend.position = "bottom")
-print(runtime_fig)
+  theme(legend.position = "bottom", axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(runtime_epi_flu_all)
 ```
 
-<!-- The following R chunks are used for reproduce figures in the main manuscript. -->
+```{r display-time-flu, echo = FALSE, fig.height = 6.5, fig.width = 6.6, fig.cap = "Time comparisons of methods for short (flu) epidemics for pieciewise linear Rt (Scenario 3) for different pairs of SI parameters (flu, adjusted flu, and measles) and incidence distributions in different panels. Y-axes are on a logarithmic scale."}
+runtime_epi_flu <- Rt_result %>%
+  filter(len == 50) |>
+  mutate(dist = fct_recode(dist, "NB" = "Negative Binomial")) %>%
+  mutate(dist = fct_relevel(dist, "Poisson", "NB")) %>%
+  mutate(si_pars = fct_recode(si_pars, "adjusted flu" = "flu_ss")) %>%
+  group_by(si_pars, method) %>%
+  ggplot(aes(x = method, y = runtime / 1e6)) +
+  geom_boxplot(aes(col = method)) +
+  facet_grid(dist ~ si_pars, scales = "free") +
+  scale_colour_manual(values = cbPalette) +
+  scale_y_log10(breaks = c(0.1, 1, 10, 100, 1000), labels = c(0.1, 1, 10, expression(10^2), expression(10^3))) +
+  labs(y = "Running time in seconds", x = "") +
+  theme_bw() +
+  theme(legend.position = "bottom", axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(runtime_epi_flu)
+```
 
-```{r Fig1-display-cancovid-example, eval=FALSE, include=FALSE}
+\clearpage
+# Confidence interval coverage
+
+## Estimates and confidence intervals for sample epidemics {#sec:samples}
+
+Fig 5 and Fig 6 in the manuscript provided $\calR_t$ estimates by all methods on 
+sample \meas epidemics with Poisson incidence and \sars epidemics with negative 
+binomial incidence respectively. Figures \@ref(fig:ci-example-measles-pois) and 
+\@ref(fig:ci-example-sars-nb) provide a clearer view of each method with its 
+95\% confidence interval in a separate panel. The full display of sample epidemics
+for other settings are visualized in Figures \@ref(fig:ci-example-measles-nb) and 
+\@ref(fig:ci-example-sars-pois).
+
+All methods (except EpiEstim with the monthly sliding window) fit the epidemics 
+with Poisson incidence well with estimate $\hat{\calR}_t$ close to the true 
+$\calR_t$ and 95\% CI covering the true value at most timepoints. 
+Under negative binomial incidence, \RtEstim with $k=0$ fails to recover the
+curvature in $\calR_t$, especially in the exponential and periodic scenarios.
+\EpiEstim\ with weekly sliding windows and \EpiFilter\ are more wiggly, and 
+\EpiLPS\ has wider confidence intervals given negative binomial incidence 
+compared to Poisson incidence. For large incidence under the negative binomial distribution, 
+\EpiFilter\ is extremely wiggly, and it is difficult for \RtEstim\ (k=0) to recover 
+many changepoints and the curvature especially in exponential and periodic scenarios.
+\EpiLPS\ performs well overall, but returns large estimates at the beginning of
+the epidemics, estimates which remain inflated well after the first week. Overall, our method with different
+degrees can recover the changepoints and graphical curvature of $\calR_t$ in all 
+scenarios, except in the case of the periodic $\calR_t$ curve with large incidence 
+from negative binomial distribution, where \EpiLPS\ has a clear advantage, ignoring the large
+estimates at the early stage. 
+The accuracy across different settings by different methods 
+generally coincides with the findings in the KL divergence estimates. 
+
+
+```{r ci-example, echo = FALSE}
+#res_dat <- readRDS(here::here("dat/data_example_estimates.RDS"))
+#
+#res_Rt <- res_dat %>%
+#  select(incidence:RtEstim3_Rt) %>%
+#  pivot_longer(EpiWeek_Rt:RtEstim3_Rt, names_to = "method", values_to = "Rt_value") %>%
+#  mutate(method = fct_recode(method,
+#    "EpiEstim (weekly)" = "EpiWeek_Rt",
+#    "EpiEstim (monthly)" = "EpiMonth_Rt",
+#    "EpiLPS" = "EpiLPS_Rt",
+#    "EpiFilter" = "EpiFilter_Rt",
+#    "RtEstim (k=0)" = "RtEstim0_Rt",
+#    "RtEstim (k=1)" = "RtEstim1_Rt",
+#    "RtEstim (k=2)" = "RtEstim2_Rt",
+#    "RtEstim (k=3)" = "RtEstim3_Rt"
+#  ))
+#resLo95 <- res_dat %>%
+#  select(time, Rt_case, dist, si_type, EpiWeek_Lo95:RtEstim3_Lo95) %>%
+#  pivot_longer(EpiWeek_Lo95:RtEstim3_Lo95, names_to = "method", values_to = "Lower_bound")  %>%
+#  mutate(method = fct_recode(method,
+#    "EpiEstim (weekly)" = "EpiWeek_Lo95",
+#    "EpiEstim (monthly)" = "EpiMonth_Lo95",
+#    "EpiLPS" = "EpiLPS_Lo95",
+#    "EpiFilter" = "EpiFilter_Lo95",
+#    "RtEstim (k=0)" = "RtEstim0_Lo95",
+#    "RtEstim (k=1)" = "RtEstim1_Lo95",
+#    "RtEstim (k=2)" = "RtEstim2_Lo95",
+#    "RtEstim (k=3)" = "RtEstim3_Lo95"
+#  ))
+#resUp95 <- res_dat %>%
+#  select(time, Rt_case, dist, si_type, EpiWeek_Up95:RtEstim3_Up95) %>%
+#  pivot_longer(EpiWeek_Up95:RtEstim3_Up95, names_to = "method", values_to = "Upper_bound")  %>%
+#  mutate(method = fct_recode(method,
+#    "EpiEstim (weekly)" = "EpiWeek_Up95",
+#    "EpiEstim (monthly)" = "EpiMonth_Up95",
+#    "EpiLPS" = "EpiLPS_Up95",
+#    "EpiFilter" = "EpiFilter_Up95",
+#    "RtEstim (k=0)" = "RtEstim0_Up95",
+#    "RtEstim (k=1)" = "RtEstim1_Up95",
+#    "RtEstim (k=2)" = "RtEstim2_Up95",
+#    "RtEstim (k=3)" = "RtEstim3_Up95"
+#  ))
+##res_dat_long <- ljoin(res_Rt, resLo95, by = c("time", "Rt_case", "dist", "si_type", "method"))
+#res_dat_long <- data.table(res_Rt, Lower_bound = resLo95$Lower_bound, Upper_bound = #resUp95$Upper_bound)
+#
+#res_dat_long <- res_dat_long %>%
+#  mutate(method = fct_relevel(
+#    method, 
+#    "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS", "EpiFilter", 
+#    "RtEstim (k=0)", "RtEstim (k=1)", "RtEstim (k=2)", "RtEstim (k=3)"
+#  )) %>%
+#  mutate(dist = fct_relevel(dist, "Poisson", "Negative Binomial")) %>%
+#  filter(Rt_value > 0)  
+#
+#saveRDS(res_dat_long, here::here("dat/data_example_estimates_long.RDS"))
+res_dat_long <- readRDS(here::here("dat/data_example_estimates_long.RDS"))
+```
+
+```{r ci-example-measles-pois, echo = FALSE, fig.height=7, fig.width=6.5, fig.cap = "Example measles epidemics with Poisson incidence. Y-axes beyond 5 are truncated for a better illustration of small values."}
+fig_res_full_pois_measles <- res_dat_long %>%
+  filter(si_type == "measles", dist == "Poisson") %>% 
+  group_by(Rt_case, method) %>%
+  ggplot(aes(y = Rt_value, x = time)) + 
+  geom_ribbon(aes(ymax = Upper_bound, ymin = Lower_bound, fill = method), alpha = 0.5) +
+  geom_line(aes(y = trueRt)) + 
+  geom_line(aes(col = method)) +
+  facet_grid(method ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  scale_fill_manual(values = cbPalette[-5]) +
+  labs(y = "Rt estimates for measles epidemics with Poisson incidence", x = "Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(0, 5)) + # truncate y due to large EpiLPS at the first few timepoints
+  theme_bw() +
+  theme(legend.position = "bottom", strip.text.y = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow = TRUE), fill = guide_legend(title = NULL, byrow=TRUE))
+print(fig_res_full_pois_measles)
+```
+
+```{r ci-example-measles-nb, echo = FALSE, fig.height=7, fig.width=6.5, fig.cap = "Example measles epidemics with negative binomial incidence. Y-axes beyond 5 are truncated for a better illustration of small values."}
+fig_res_full_nb_measles <- res_dat_long %>%
+  filter(si_type == "measles", dist == "Negative Binomial") %>% 
+  group_by(Rt_case, method) %>%
+  ggplot(aes(y = Rt_value, x = time)) + 
+  geom_ribbon(aes(ymax = Upper_bound, ymin = Lower_bound, fill = method), alpha = 0.5) +
+  geom_line(aes(y = trueRt)) + 
+  geom_line(aes(col = method)) +
+  facet_grid(method ~ Rt_case, scales = "free_y") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  scale_fill_manual(values = cbPalette[-5]) +
+  labs(y = "Rt estimates for measles epidemics with negative binomial incidence", x = "Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(0, 5)) + 
+  theme_bw() +
+  theme(legend.position = "bottom", strip.text.y = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow = TRUE), fill = guide_legend(title = NULL, byrow=TRUE))
+print(fig_res_full_nb_measles)
+```
+
+```{r ci-example-sars-pois, echo = FALSE, fig.height=7, fig.width=6.5, fig.cap = "Example SARS epidemics with Poisson incidence. Y-axes beyond 5 are truncated for a better illustration of small values."}
+fig_res_full_pois_sars <- res_dat_long %>%
+  filter(si_type == "SARS", dist == "Poisson") %>% 
+  group_by(Rt_case, method) %>%
+  ggplot(aes(y = Rt_value, x = time)) + 
+  geom_ribbon(aes(ymax = Upper_bound, ymin = Lower_bound, fill = method), alpha = 0.5) +
+  geom_line(aes(y = trueRt)) + 
+  geom_line(aes(col = method)) +
+  facet_grid(method ~ Rt_case, scales = "free_y") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  scale_fill_manual(values = cbPalette[-5]) +
+  labs(y = "Rt estimates for SARS epidemics with Poisson incidence", x = "Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(0, 5)) + 
+  theme_bw() +
+  theme(legend.position = "bottom", strip.text.y = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow = TRUE), fill = guide_legend(title = NULL, byrow=TRUE))
+print(fig_res_full_pois_sars)
+```
+
+```{r ci-example-sars-nb, echo = FALSE, fig.height=7, fig.width=6.5, fig.cap = "Example SARS epidemics with negative binomial incidence. Y-axes beyond 5 are truncated for a better illustration of small values."}
+fig_res_full_nb_sars <- res_dat_long %>%
+  filter(si_type == "SARS", dist == "Negative Binomial") %>% 
+  group_by(Rt_case, method) %>%
+  ggplot(aes(y = Rt_value, x = time)) + 
+  geom_ribbon(aes(ymax = Upper_bound, ymin = Lower_bound, fill = method), alpha = 0.5) +
+  geom_line(aes(y = trueRt)) + 
+  geom_line(aes(col = method)) +
+  facet_grid(method ~ Rt_case, scales = "free_y") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  scale_fill_manual(values = cbPalette[-5]) +
+  labs(y = "Rt estimates for SARS epidemics with negative binomial incidence", x = "Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(0, 5)) + 
+  theme_bw() +
+  theme(legend.position = "bottom", strip.text.y = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow = TRUE), fill = guide_legend(title = NULL, byrow=TRUE))
+print(fig_res_full_nb_sars)
+```
+
+\clearpage
+## Experimental settings for coverage comparisons of confidence intervals
+
+We focus on a specific $\calR_t$ scenario, the piecewise linear case, and only 
+long epidemics to compare the coverage of 95\% confidence intervals across all 8 
+methods. We use the true serial interval distributions, those used to generate
+the synthetic epidemics, in this case. 
+Table \@ref(tab:df-ci-exp) summarizes the experimental settings. 
+For each setting, we generate 50 random synthetic epidemics. 
+
+```{r df-ci-exp, echo=FALSE, message=FALSE, warning=FALSE}
+df_ci_exp <- data.table(
+  len = rep(300, 2),
+  si = c("measles", "SARS"),
+  rt = rep(3, 2),
+  inci = rep("Poisson, NB", 2),
+  si_pars = c("measles", "SARS"),
+  method = rep("8 methods", 2)
+)
+
+kbl(df_ci_exp, booktabs = T, 
+    caption = "Summary of experimental setting on coverage of confidence intervals",
+    col.names = c("Length", "SI", "Rt scenario", "Incidence",
+                  "SI for modelling", "Method")) %>%
+  kable_styling(latex_options = c("repeat_header"))
+```
+
+We measure the coverage of 95\% confidence intervals using three metrics: 
+
+1. percentage of coverage per coordinate (if available) across all synthetic data, 
+2. percentage of overall coverage for all available coordinates, and
+3. interval score [@Bracher_2021] averaged over all available coordinates.
+
+The first metric results in the percentage of coverage (across the 50 replicates) 
+at each time point for each setting and method. In some cases, this is not available 
+for every time point, for example, \EpiEstim with weekly sliding window 
+does not provide estimates for the first week. The second metric aggregates across
+all time and replications. 
+The third metric, interval score [@Bracher_2021], is defined as
+$$\textrm{IS}_{\alpha}(\calR,u,l) = \frac{1}{n} \sum_{t=1}^n (u_t-l_t) + \frac{2}{\alpha}(l_t-\calR_t)\boldsymbol{1}_{(\calR_t<l_t)} + \frac{2}{\alpha}(\calR_t-u_t)\boldsymbol{1}_{(\calR_t>u_t)},$$ 
+where $\alpha=0.05$ is the significance level, $l,u$ are the lower and upper 
+bounds and 
+$\mathbf{1}_{X}$ is the indicator function of the condition $X$. 
+A confidence band that covers the true values more frequently with shorter 
+interval widths will have a lower interval score. 
+
+\clearpage
+## Experimental results on interval coverage comparison
+
+Figures \@ref(fig:ci-coverage-measles) and \@ref(fig:ci-coverage-sars) displays 
+the percentages of coverage of 95% CI per coordinate over 50 random samples for 
+\meas and \sars epidemics respectively. 
+Low Poisson incidence is the easiest for all methods, with coverage near 100\% at most
+timepoints and 0 at the change point. Large negative binomial incidence is the hardest:
+\EpiLPS does the best here with averged coverage at all timepoints close to 1. 
+This is consistent with the findings in the accuracy comparison (using KL values) 
+and the illustration of sample epidemics in Figures
+\@ref(fig:ci-example-measles-pois)--\@ref(fig:ci-example-sars-nb), where 
+\EpiLPS is the most accurate. 
+\RtEstim with degrees $k=1,2,3$ has 100\% coverage at most timepoints except the
+changepoints. The exception is the hardest case, where larger degrees tend to have higher
+percentages of coverge at most timepoints. 
+\RtEstim with $k=0$ tends to produce overly narrow intervals, leading to lower coverage. 
+\EpiEstim with weekly sliding windows fails to cover the true 
+$\calR_t$ more frequently under negative binomial incidence compared to Poisson,
+and performs worse for larger incidence.
+Its point estimates are quite accurate, but since its 95\% confidence band is overly 
+narrow, and the estimated curves are quite wiggly, so it often fails to cover the true values. 
+\EpiEstim with monthly sliding windows has low percentages of interval coverage 
+at more timepoints than other methods, especially under negative binomial 
+noise. This is consistent with the findings in Section \@ref(sec:samples), 
+where the point estimates miss $\calR_t$ value frequently. It also has relatively
+narrow intervals. \EpiFilter has lower percentages of coverage
+under negative binomial incidence than under Poisson incidence, which is consistent
+to its performance in accuracy of point estimation, and is to be expected given 
+the misspecified data model.
+
+```{r ci-results, message=FALSE, warning=FALSE, include=FALSE}
+CI_result <- readRDS(here::here("dat/CI_result_reduced_all.RDS"))
+CI_result <- CI_result %>%
+  mutate(method = fct_recode(
+    method,
+    "EpiEstim (weekly)" = "EpiEstim(week)",
+    "EpiEstim (monthly)" = "EpiEstim(month)",
+    "RtEstim (k=0)" = "RtEstim(k=0)",
+    "RtEstim (k=1)" = "RtEstim(k=1)",
+    "RtEstim (k=2)" = "RtEstim(k=2)",
+    "RtEstim (k=3)" = "RtEstim(k=3)"
+  )) %>%
+  mutate(method = fct_relevel(
+    method, 
+    "EpiEstim (weekly)", 
+    "EpiEstim (monthly)", 
+    "EpiLPS", 
+    "EpiFilter",
+    "RtEstim (k=0)", 
+    "RtEstim (k=1)", 
+    "RtEstim (k=2)", 
+    "RtEstim (k=3)"
+  )) %>%
+  mutate(dist = fct_recode(
+    dist,
+    "Poisson" = "poisson",
+    "Negative Binomial" = "NB"
+  )) %>%
+  mutate(dist = fct_relevel(
+    dist, 
+    "Poisson", 
+    "Negative Binomial"
+  )) %>%
+  mutate(Rt_case = as.character(Rt_case)) %>% 
+  mutate(Rt_case = fct_recode(
+    Rt_case,
+    "Scenario 1" = "1",
+    "Scenario 2" = "2",
+    "Scenario 3" = "3",
+    "Scenario 4" = "4"
+  ))
+ci_len <- double(nrow(CI_result))
+for(i in 1:nrow(CI_result)) {
+  ci_len[i] <- length(CI_result[i,]$ci_coverage[[1]])
+}
+CI_result <- data.table(CI_result, ci_len)
+```
+
+```{r ci-coverage-measles, echo=FALSE, fig.cap="Percent of CI coverage per coordinate across 50 synthetic measles epidemics.", fig.height=5, fig.width=6.5, message=FALSE, warning=FALSE}
+Rt_res_ci <- CI_result %>%
+  select(si_type, ci_len, dist, Rt_case, method, ci_coverage) %>%
+  group_by(si_type, dist, Rt_case, method) %>%
+  unnest_wider(ci_coverage, names_sep = "")
+
+# replace NAs with negative values (in EpiEstim at the first few timepoints)
+columns_to_replace <- paste0("ci_coverage", 1:300)
+Rt_res_ci_noNAs <- Rt_res_ci %>%
+  mutate_at(vars(columns_to_replace), list(~ replace_na(., -1)))
+Rt_res_ci_noNAs <- Rt_res_ci_noNAs %>% 
+  group_by(si_type, ci_len, dist, Rt_case, method) %>%
+  summarize(across(all_of(columns_to_replace), mean)) %>%
+  pivot_longer(cols = columns_to_replace, names_to = "index", values_to = "ci_coverage") %>%
+  mutate(index = as.numeric(gsub("\\D", "", index))) %>%
+  mutate(time_index = 300 - ci_len + index) %>%
+  group_by(dist, method, Rt_case) %>%
+  filter(ci_coverage >= 0) 
+
+ci_cover_measles <- Rt_res_ci_noNAs %>% # exclude NAs
+  filter(si_type == "measles") %>%
+  ggplot(aes(y = ci_coverage, x = time_index)) +
+  geom_line(aes(col = method)) + 
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) + 
+  labs(y = "CI coverage for measles epidemics", x = "Time") + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(ci_cover_measles)
+```
+
+```{r ci-coverage-sars, echo=FALSE, fig.cap="Percent of CI coverage per coordinate across 50 synthetic SARS epidemics.", fig.height=5, fig.width=6.5, message=FALSE, warning=FALSE}
+ci_cover_sars <- Rt_res_ci_noNAs %>% 
+  filter(si_type == "SARS") %>% 
+  ggplot(aes(y = ci_coverage, x = time_index)) +
+  geom_line(aes(col = method)) + 
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) + 
+  labs(y = "CI coverage for SARS epidemics", x = "Time") + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(ci_cover_sars)
+```
+
+Figures \@ref(fig:ci-percentage-measles) and \@ref(fig:ci-percentage-sars) 
+displays the percent coverage of 95% CI averaged over all timepoints 
+50 random replications of \meas and \sars epidemics respectively. 
+CIs of \RtEstim with $k=1,2,3$ have nearly 100\% coverage across all timepoints 
+for all random samples except in the hardest problem, where the incidence is 
+large and overdispersed. The coverage of \RtEstim $k=0$ is lower than for other 
+degrees, similar to the above. 
+\EpiFilter has better coverage under Poisson 
+incidence compared to negative binomial incidence. \EpiEstim with weekly sliding
+windows has higher coverage compared to monthly windows, while the percent
+coverage is less than the nominal 95\% in most cases. 
+\EpiLPS is the closest to nominal in most cases, and even
+in the hardest problem, its empirical coverage is quite accurate. 
+
+
+```{r ci-percentage-measles, echo=FALSE, fig.cap="Percentages of CI coverage over all timepoints for 50 synthetic measles epidemics. The orange dashed line represents 95\\% percentage of coverage across all timepoints.", fig.height=4.5, fig.width=6.2, message=FALSE, warning=FALSE}
+ci_percent_measles <- CI_result %>% 
+  filter(si_type == "measles", !is.na(ci_percentage)) %>%
+  group_by(dist, Rt_case, method) %>%
+  ggplot(aes(y = ci_percentage, x = method)) + 
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  geom_boxplot(aes(col = method)) +
+  scale_colour_manual(values = cbPalette[-5]) +
+  geom_hline(yintercept = 0.95, color = "orange", linetype = "dashed") + 
+  labs(x = "", y = "CI percentages of coverage for measles epidemics") + 
+  theme_bw() + 
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(ci_percent_measles)
+```
+
+
+```{r ci-percentage-sars, echo=FALSE, fig.cap="Percentages of CI coverage over all timepoints for 50 synthetic SARS epidemics. The orange dashed line represents 95\\% percentage of coverage across all timepoints.", fig.height=4.5, fig.width=6.2, message=FALSE, warning=FALSE}
+ci_percent_sars <- CI_result %>% 
+  filter(si_type == "SARS", !is.na(ci_percentage)) %>%
+  group_by(dist, Rt_case, method) %>%
+  ggplot(aes(y = ci_percentage, x = method)) + 
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  geom_boxplot(aes(col = method)) +
+  scale_colour_manual(values = cbPalette[-5]) +
+  geom_hline(yintercept = 0.95, color = "orange", linetype = "dashed") + 
+  labs(x = "", y = "CI percentages of coverage for SARS epidemics") + 
+  theme_bw() + 
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(ci_percent_sars)
+```
+
+
+Figures \@ref(fig:ci-score-measles) and \@ref(fig:ci-score-sars) display the 
+interval scores of 95% CI averaged over 50 random \meas and \sars epidemics 
+respectively. \RtEstim always has the lowest or close to the lowest interval
+scores. For Poisson, \EpiFilter has the lowest interval scores, 
+and the scores of \RtEstim are slightly higher. \EpiLPS has very large interval 
+scores due to its large estimates at the early stage of the epidemic. These large 
+misses (much larger than the true values) are multiplied by 
+$\frac{2}{\alpha},\alpha=0.05$ when computing the interval score, resulting in
+very poor performance on this metric.
+
+```{r ci-score-measles, echo=FALSE, fig.cap="Interval scores averaged over all coordinates for 50 synthetic measles epidemics.", fig.height=6, fig.width=6.2, message=FALSE, warning=FALSE}
+ci_score_measles <- CI_result %>% 
+  filter(si_type == "measles") %>%
+  group_by(dist, Rt_case, method) %>%
+  ggplot(aes(y = ci_score, x = method)) +
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  geom_boxplot(aes(col = method)) +
+  scale_colour_manual(values = cbPalette[-c(5)]) +
+  scale_y_log10(breaks = c(0.1, 1, 10, 10000, 1e7, 1e10), labels = c(0.1, 1, 10,  expression(10^4),expression(10^7),expression(10^10))) +
+  theme_bw() + 
+  labs(y = "Interval scores for measles epidemics", x = "") + 
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(ci_score_measles)
+```
+
+```{r ci-score-sars, echo=FALSE, fig.cap="Interval scores averaged over all coordinates for 50 synthetic SARS epidemics.", fig.height=4.5, fig.width=6.2, message=FALSE, warning=FALSE}
+ci_score_sars <- CI_result %>% 
+  filter(si_type == "SARS") %>%
+  group_by(dist, Rt_case, method) %>%
+  ggplot(aes(y = ci_score, x = method)) +
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  geom_boxplot(aes(col = method)) +
+  scale_colour_manual(values = cbPalette[-c(5)]) +
+  scale_y_log10() +
+  theme_bw() + 
+  labs(y = "Interval scores for SARS epidemics", x = "") + 
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(ci_score_sars)
+```
+
+\clearpage
+# Data examples and alternative visualizations of Figs 5 and 6
+
+## More visualization of example epidemics
+
+We generate \meas and \sars epidemics using Poisson and negative binomial
+incidence distributions for each experimental setting. The condensed display of estimates 
+for \meas with Poisson incidence and \sars with negative binomial incidence are provided in 
+Fig 5 and Fig 6 in the manuscript. A full visualization of each case is provided 
+in Section \@ref(sec:samples). 
+Here, we provide the condensed visualization of the other cases in Figures 
+\@ref(fig:display-example-pois-sars) and \@ref(fig:display-example-nb-meas). 
+All methods provide accurate point estimates given large incidence from the Poisson 
+distribution, while \EpiEstim (with weekly sliding window) and \EpiFilter are 
+more wiggly under negative binomial incidence.
+
+```{r display-example-pois-sars, echo=FALSE, fig.height=4, fig.width=6.2, fig.cap = "Example of instantaneous reproduction number estimates for SARS epidemics with Poisson observations. Y-axes beyond 5 are truncated for a better illustration of small values."}
+fig_res_pois_sars <- res_dat_long %>%
+  filter(si_type == "SARS", dist == "Poisson") %>% 
+  group_by(Rt_case, method) %>%
+  ggplot(aes(y = Rt_value, x = time)) + 
+  geom_line(aes(y = trueRt)) + 
+  geom_line(aes(col = method)) +
+  facet_wrap( ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  labs(y = "Rt estimates", x = "Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(0, 5)) + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_res_pois_sars)
+```
+
+```{r  display-example-nb-meas, echo=FALSE, fig.height=4, fig.width=6.2, fig.cap = "Example of instantaneous reproduction number estimates for measles epidemics with negative binomial observations. Y-axes beyond 5 are truncated for a better illustration of small values."}
+fig_res_NB_measles <- res_dat_long %>%
+  filter(si_type == "measles", dist == "Negative Binomial") %>% 
+  #filter(method != "EpiLPS") %>% # EpiLPS is large for the first 14 days
+  group_by(Rt_case, method) %>%
+  ggplot(aes(y = Rt_value, x = time)) + 
+  geom_line(aes(y = trueRt)) + 
+  geom_line(aes(col = method)) +
+  facet_wrap( ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  labs(y = "Rt estimates", x = "Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(0, 5)) + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_res_NB_measles)
+```
+
+\clearpage
+## Alternative view of the difference between fitted and true Rt estimates
+
+We also provide an alternative view of Fig 5 \& Fig 6 in the manuscript by 
+plotting $\calR_t - \hat{\calR}_t$ in Figures 
+\@ref(fig:display-example-pois-meas-alter) and 
+\@ref(fig:display-example-nb-sars-alter) respectively. 
+Figures \@ref(fig:display-example-pois-sars-alter) and 
+\@ref(fig:display-example-nb-meas-alter) provide the alternative view of 
+\@ref(fig:display-example-pois-sars) and \@ref(fig:display-example-nb-meas) respectively.
+As is to be expected, the difference is largest at the changepoints for most methods. 
+In the sinusoidal periodic scenario, the difference also displays a
+periodic pattern. This makes sense since $\calR_t$ is
+sinusoidal, while most methods estimate curves to a fixed polynomial degree. Thus higher-order
+behaviour is missed.
+
+```{r display-example-pois-meas-alter, echo=FALSE, fig.height=4, fig.width=6.2, fig.cap = "Difference between the true and estimated instantaneous reproduction numbers for measles epidemics with Poisson observations. Y-axes beyond 1.5 are truncated for a better illustration of small values."}
+fig_res_pois_meas_alter <- res_dat_long %>%
+  filter(si_type == "measles", dist == "Poisson") %>% 
+  mutate(dRt = Rt_value - trueRt) %>%
+  group_by(Rt_case, method) %>%
+  ggplot(aes(y = dRt, x = time)) + 
+  geom_line(aes(col = method), lwd=0.5) +
+  facet_wrap( ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  labs(y = expression(R[t]-widehat(R)[t]), x = "Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(-1.5, 1.5)) + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_res_pois_meas_alter)
+```
+
+```{r display-example-nb-sars-alter, echo=FALSE, fig.height=4, fig.width=6.2, fig.cap = "Difference between the true instantaneous reproduction number and its estimation for SARS epidemics with negative binomial observations. Y-axes beyond 3 are truncated for a better illustration of small values."}
+fig_res_nb_sars_alter <- res_dat_long %>%
+  filter(si_type == "SARS", dist == "Negative Binomial") %>% 
+  mutate(dRt = Rt_value - trueRt) %>%
+  group_by(Rt_case, method) %>%
+  ggplot(aes(y = dRt, x = time)) + 
+  geom_line(aes(col = method), lwd=0.5) +
+  facet_wrap( ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  labs(y = expression(R[t]-widehat(R)[t]), x = "Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(-1.5, 3)) + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_res_nb_sars_alter)
+```
+
+```{r display-example-pois-sars-alter, echo=FALSE, fig.height=4, fig.width=6.2, fig.cap = "Difference between the true and estimated instantaneous reproduction numbers for SARS epidemics with Poisson observations. Y-axes beyond 1.5 are truncated for a better illustration of small values."}
+fig_res_pois_meas_alter <- res_dat_long %>%
+  filter(si_type == "SARS", dist == "Poisson") %>% 
+  mutate(dRt = Rt_value - trueRt) %>%
+  group_by(Rt_case, method) %>%
+  ggplot(aes(y = dRt, x = time)) + 
+  geom_line(aes(col = method), lwd=0.5) +
+  facet_wrap( ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  labs(y = expression(R[t]-widehat(R)[t]), x = "Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(-2, 1.5)) + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_res_pois_meas_alter)
+```
+
+```{r display-example-nb-meas-alter, echo=FALSE, fig.height=4, fig.width=6.2, fig.cap = "Difference between the true and estimated instantaneous reproduction numbers for measles epidemics with negative binomial observations. Y-axes beyond 1.5 are truncated for a better illustration of small values."}
+fig_res_nb_sars_alter <- res_dat_long %>%
+  filter(si_type == "measles", dist == "Negative Binomial") %>% 
+  mutate(dRt = Rt_value - trueRt) %>%
+  group_by(Rt_case, method) %>%
+  ggplot(aes(y = dRt, x = time)) + 
+  geom_line(aes(col = method), lwd=0.5) +
+  facet_wrap( ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  labs(y = expression(R[t]-widehat(R)[t]), x = "Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(-1.5, 1.5)) + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_res_nb_sars_alter)
+```
+
+\clearpage
+# Application of RtEstim and all competitors on real epidemics 
+
+We apply all methods on Covid19 incidence in Canada, and the estimates are displayed 
+in \@ref(fig:plot-cancovid-ci). An alternative display which plots all estimated 
+curves in one panel for an easier comparison is provided in 
+\@ref(fig:plot-cancovid-one). All methods provide similar $\hat{\calR}_t$ curves
+beyond the early stage. Many methods, including \RtEstim $(k=1,2)$, \EpiLPS, and 
+\EpiEstim (weekly sliding window), all have large estimates (larger than 3) at 
+the early stage of the epidemic. \EpiFilter is much more wiggly than other estimates.
+All methods agree that the instantaneous reproduction number
+of Covid19 in Canada decreases to below 1 near June 2021 and reaches a small peak 
+afterwards, and then decreases slowly until an outbreak at the end of 2021. 
+
+
+```{r get-cancovid-si, eval=FALSE, include=FALSE}
+# get serial interval distributions of different variants
+can_pred_class <- readRDS(here::here("dat/can_pred_class.RDS"))
+colnames(can_pred_class)[1] <- "date"
+delay_dstns_can <- readRDS(here::here("dat/delay-distns-byvar.rds")) |>
+  filter(para == "SI", type %in% unique(can_pred_class$var)) 
+
+dates_index <- as.numeric(rtestim::cancovid$date - rtestim::cancovid$date[1] + 1)
+
+# take weighted average of four variants based on the percentages in the time interval
+delay_distn1 <- discretize_gamma(dates_index, delay_dstns_can[1,]$shape, delay_dstns_can[1,]$scale)
+delay_distn2 <- discretize_gamma(dates_index, delay_dstns_can[2,]$shape, delay_dstns_can[2,]$scale)
+delay_distn3 <- discretize_gamma(dates_index, delay_dstns_can[3,]$shape, delay_dstns_can[3,]$scale)
+delay_distn4 <- discretize_gamma(dates_index, delay_dstns_can[4,]$shape, delay_dstns_can[4,]$scale)
+
+len <- nrow(rtestim::cancovid)
+prob_vec <- left_join(rtestim::cancovid, can_pred_class) %>%
+  count(var) %>%
+  mutate(percent = n / len)
+prob_vec
+
+covid_delay_distn <- prob_vec$percent[1]*delay_distn1 + 
+                     prob_vec$percent[2]*delay_distn2 + 
+                     prob_vec$percent[3]*delay_distn3 + 
+                     prob_vec$percent[4]*delay_distn4
+covid_delay_distn <- covid_delay_distn / sum(covid_delay_distn)
+```
+
+```{r fit-all-cancovid, eval=FALSE, include=FALSE}
+alpha <- 0.05
+# EpiNow2: cannot work for long epidemics
+
+# RtEstim k = 0 ----
+fit_cancovid_RtEstim0 <- cv_estimate_rt(
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 0, nfold = 10, maxiter = 1e7L, 
+  nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn)
+ci_cancovid_RtEstim0 <- confband(fit_cancovid_RtEstim0, "lambda.min", 1-alpha)
+
+RtEstim0_Rt_cancovid <- ci_cancovid_RtEstim0[,1][[1]]
+RtEstim0_95Lo_cancovid <- ci_cancovid_RtEstim0[,2][[1]]
+RtEstim0_95Up_cancovid <- ci_cancovid_RtEstim0[,3][[1]]
+
+# RtEstim k=1,2,3 ----
+fit_cancovid_RtEstim1 <- cv_estimate_rt(
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 1, nfold = 10, maxiter = 1e7L, 
+  nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn)
+ci_cancovid_RtEstim1 <- confband(fit_cancovid_RtEstim1, "lambda.min", 1-alpha)
+
+fit_cancovid_RtEstim2 <- cv_estimate_rt(
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 2, nfold = 10, maxiter = 1e7L, 
+  nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn)
+ci_cancovid_RtEstim2 <- confband(fit_cancovid_RtEstim2, "lambda.min", 1-alpha)
+
+fit_cancovid_RtEstim3 <- cv_estimate_rt(
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 3, nfold = 10, maxiter = 1e7L, 
+  nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn)
+ci_cancovid_RtEstim3 <- confband(fit_cancovid_RtEstim3, "lambda.min", 1-alpha)
+
+RtEstim1_Rt_cancovid <- ci_cancovid_RtEstim1[,1][[1]]
+RtEstim1_95Lo_cancovid <- ci_cancovid_RtEstim1[,2][[1]]
+RtEstim1_95Up_cancovid <- ci_cancovid_RtEstim1[,3][[1]]
+RtEstim2_Rt_cancovid <- ci_cancovid_RtEstim2[,1][[1]]
+RtEstim2_95Lo_cancovid <- ci_cancovid_RtEstim2[,2][[1]]
+RtEstim2_95Up_cancovid <- ci_cancovid_RtEstim2[,3][[1]]
+RtEstim3_Rt_cancovid <- ci_cancovid_RtEstim3[,1][[1]]
+RtEstim3_95Lo_cancovid <- ci_cancovid_RtEstim3[,2][[1]]
+RtEstim3_95Up_cancovid <- ci_cancovid_RtEstim3[,3][[1]]
+
+
+# EpiEstim ----
+incid <- data.frame(I = rtestim::cancovid$incident_cases, dates = rtestim::cancovid$date)
+## weekly
+t_start_week <- seq(2, len - 6)
+t_end_week <- t_start_week + 6
+config_week <- make_config(list(si_distr = c(0, covid_delay_distn), t_start = t_start_week, t_end = t_end_week))
+# fit model
+fit_week <- EpiEstim::estimate_R(incid = incid, config = config_week, 
+                                 method = "non_parametric_si")
+l <- which(colnames(fit_week$R) == paste0("Quantile.",alpha/2,"(R)"))
+u <- which(colnames(fit_week$R) == paste0("Quantile.",1 - alpha/2,"(R)"))
+fill_NAs <- function(Rt_fitted, n) {
+    non_nas <- which(!is.na(Rt_fitted))
+    m <- length(non_nas)
+    return(c(rep(-1, n-m), Rt_fitted[non_nas]))
+  }
+EpiWeek_95Lo_cancovid <- fill_NAs(fit_week$R[,l], len) 
+EpiWeek_95Up_cancovid <- fill_NAs(fit_week$R[,u], len)
+EpiWeek_Rt_cancovid <- fill_NAs(fit_week$R$`Mean(R)`, len)
+
+## monthly
+t_start_month <- seq(2, len - 29)
+t_end_month <- t_start_month + 29
+config_month <- make_config(list(si_distr = c(0, covid_delay_distn), t_start = t_start_month, t_end = t_end_month))
+# fit model
+fit_month <- EpiEstim::estimate_R(incid = incid, config = config_month, 
+                                  method = "non_parametric_si")
+l <- which(colnames(fit_month$R) == paste0("Quantile.",alpha/2,"(R)"))
+u <- which(colnames(fit_month$R) == paste0("Quantile.",1 - alpha/2,"(R)"))
+fill_NAs <- function(Rt_fitted, n) {
+    non_nas <- which(!is.na(Rt_fitted))
+    m <- length(non_nas)
+    return(c(rep(-1, n-m), Rt_fitted[non_nas]))
+  }
+EpiMonth_95Lo_cancovid <- fill_NAs(fit_month$R[,l], len) 
+EpiMonth_95Up_cancovid <- fill_NAs(fit_month$R[,u], len)
+EpiMonth_Rt_cancovid <- fill_NAs(fit_month$R$`Mean(R)`, len)
+
+
+# EpiLPS ----
+fitLPS <- EpiLPS::estimR(incidence = rtestim::cancovid$incident_cases, si = covid_delay_distn, K = 40, 
+                         dates = rtestim::cancovid$date, CoriR = FALSE)
+l <- which(colnames(fitLPS$RLPS) == paste0("Rq", alpha/2)) # alpha can only by 0.05, 0.1, 0.5
+u <- which(colnames(fitLPS$RLPS) == paste0("Rq", 1 - alpha/2))
+EpiLPS_Rt_cancovid <- fill_NAs(fitLPS$RLPS$R, len)
+EpiLPS_95Lo_cancovid <- fill_NAs(fitLPS$RLPS[,l], len)
+EpiLPS_95Up_cancovid <- fill_NAs(fitLPS$RLPS[,u], len)
+
+# EpiFilter ----
+# cannot use dates as input, but the delays are incorporated by the delay distribution
+m <- 2000
+pR0 <- (1 / m) * rep(1, m)
+Rgrid <- seq(0.01, 10, length.out = m)
+w <- delay_calculator(rtestim::cancovid$incident_cases, x = rtestim::cancovid$date, delay_distn = covid_delay_distn)
+R_filter <- epiFilter(Rgrid, m, eta=0.1, pR0, len, w, rtestim::cancovid$incident_cases, a = alpha)
+R_smoother <- epiSmoother(Rgrid, m, R_filter[[4]], R_filter[[5]], len, R_filter[[6]], a = alpha)
+EpiFilter_Rt_cancovid <- R_smoother[[3]]
+EpiFilter_95Lo_cancovid <- R_smoother[[2]][1,]
+EpiFilter_95Up_cancovid <- R_smoother[[2]][2,]
+
+# results ----
+dat_cancovid_fitted_long <- data.table(
+  Date = rep(rtestim::cancovid$date, 8),
+  Method = rep(c("RtEstim (k=0)", "RtEstim (k=1)", "RtEstim (k=2)", "RtEstim (k=3)", 
+                 "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS", "EpiFilter"), each = len),
+  fitted_Rt = c(RtEstim0_Rt_cancovid, RtEstim1_Rt_cancovid, RtEstim2_Rt_cancovid, RtEstim3_Rt_cancovid, 
+                EpiWeek_Rt_cancovid, EpiMonth_Rt_cancovid, EpiLPS_Rt_cancovid, EpiFilter_Rt_cancovid),
+  ci_lo95 = c(RtEstim0_95Lo_cancovid, RtEstim1_95Lo_cancovid, RtEstim2_95Lo_cancovid, RtEstim3_95Lo_cancovid, 
+              EpiWeek_95Lo_cancovid, EpiMonth_95Lo_cancovid, EpiLPS_95Lo_cancovid, EpiFilter_95Lo_cancovid),
+  ci_hi95 = c(RtEstim0_95Up_cancovid, RtEstim1_95Up_cancovid, RtEstim2_95Up_cancovid, RtEstim3_95Up_cancovid,
+              EpiWeek_95Up_cancovid, EpiMonth_95Up_cancovid, EpiLPS_95Up_cancovid, EpiFilter_95Up_cancovid)
+)
+dat_cancovid_fitted_long <- dat_cancovid_fitted_long %>%
+  mutate(Method = fct_relevel(
+    Method, 
+    "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS", "EpiFilter",
+    "RtEstim (k=0)", "RtEstim (k=1)",
+    "RtEstim (k=2)", "RtEstim (k=3)"
+  ))
+saveRDS(dat_cancovid_fitted_long, here::here("dat/dat_cancovid_fitted.RDS"))
+```
+
+```{r plot-cancovid-ci, echo=FALSE, fig.height=8, fig.width=6.2, fig.cap = "Rt estimates with CIs for Covid19. Y-axes are truncated beyond 3 for a better display of the fluctuation in small values."}
+dat_cancovid_fitted_long <- readRDS(here::here("dat/dat_cancovid_fitted.RDS"))
+dat_cancovid_fitted_long %>%
+  filter(fitted_Rt > 0) %>% # remove NAs marked by -1
+  group_by(Method) %>%
+  ggplot(aes(x = Date)) + 
+  geom_line(aes(y = fitted_Rt, col = Method)) + 
+  geom_ribbon(aes(ymin = ci_lo95, ymax = ci_hi95, fill = Method), alpha = 0.5) +
+  facet_grid(Method ~ .) + 
+  coord_cartesian(ylim=c(0, 3)) +
+  geom_hline(yintercept = 1, linetype = "dotted") +
+  scale_x_date(date_breaks = "12 months", date_labels = "%Y", expand = expansion(c(0, 0.05))) +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_colour_manual(values = cbPalette[-5]) +
+  scale_fill_manual(values = cbPalette[-5]) +
+  labs(x = "Year", y = "Rt estimates") +
+  theme_bw() +
+  theme(legend.position = "bottom", strip.text = element_blank(),  panel.spacing = unit(0.4, "lines")) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE), fill = guide_legend(title = NULL, byrow=TRUE))
+```
+
+```{r plot-cancovid-one, echo=FALSE, fig.height=3.5, fig.width=6.2, fig.cap = "Rt estimates for Covid19. Y-axis beyond 3 is truncated for a better display of the fluctuation in small values. EpiFilter is excluded here, because its estimates are too wiggly and make the plot less readable."}
+dat_cancovid_fitted_long %>%
+  filter(fitted_Rt > 0, Method != "EpiFilter") %>% # remove NAs marked by -1
+  group_by(Method) %>%
+  ggplot(aes(x = Date)) + 
+  geom_line(aes(y = fitted_Rt, col = Method)) + 
+  geom_hline(yintercept = 1, linetype = "dotted") +
+  scale_x_date(date_breaks = "12 months", date_labels = "%Y", expand = expansion(c(0, 0.05))) +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim=c(0, 3)) + 
+  scale_colour_manual(values = cbPalette[-c(4,5)]) +
+  labs(x = "Year", y = "Rt estimates") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+```
+
+\clearpage
+
+We also apply all methods on Flu in 1918. The results are visualized in Figures 
+\@ref(fig:plot-flu-ci) and \@ref(fig:plot-flu-one). 
+\EpiEstim with weekly sliding windows, \EpiFilter and \RtEstim $(k=0)$ capture 
+the peak of $\calR_t$ (close to 3)
+at around day 30 since the start of the epidemic. While \EpiEstim with monthly 
+sliding windows, \EpiLPS, \RtEstim $(k=2,3)$ captures the increase around day 30, 
+but have smaller estimates otherwise. Most methods agree that after day 50, the 
+instantaneous reproduction number decreases to, and remains below, 1.
+
+```{r fit-all-flu, eval=FALSE, include=FALSE}
+data("Flu1918")
+
+len <- length(Flu1918$incidence)
+alpha <- 0.05
+flu_delay_distn <- Flu1918$si_distr
+time <- 1:len
+
+# RtEstim k = 0
+fit_flu_RtEstim0 <- cv_estimate_rt(
+  observed_counts = Flu1918$incidence, korder = 0, nfold = 10, maxiter = 1e7L, 
+  nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = flu_delay_distn)
+ci_flu_RtEstim0 <- confband(fit_flu_RtEstim0, "lambda.min", 1-alpha)
+
+RtEstim0_Rt_flu <- ci_flu_RtEstim0[,1][[1]]
+RtEstim0_95Lo_flu <- ci_flu_RtEstim0[,2][[1]]
+RtEstim0_95Up_flu <- ci_flu_RtEstim0[,3][[1]]
+
+# RtEstim k=1,2,3
+fit_flu_RtEstim1 <- cv_estimate_rt(
+  observed_counts = Flu1918$incidence, korder = 1, nfold = 10, maxiter = 1e7L, 
+  nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = flu_delay_distn)
+ci_flu_RtEstim1 <- confband(fit_flu_RtEstim1, "lambda.min", 1-alpha)
+
+fit_flu_RtEstim2 <- cv_estimate_rt(
+  observed_counts = Flu1918$incidence, korder = 2, nfold = 10, maxiter = 1e7L, 
+  nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = flu_delay_distn)
+ci_flu_RtEstim2 <- confband(fit_flu_RtEstim2, "lambda.min", 1-alpha)
+
+fit_flu_RtEstim3 <- cv_estimate_rt(
+  observed_counts = Flu1918$incidence, korder = 3, nfold = 10, maxiter = 1e7L, 
+  nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = flu_delay_distn)
+ci_flu_RtEstim3 <- confband(fit_flu_RtEstim3, "lambda.min", 1-alpha)
+
+RtEstim1_Rt_flu <- ci_flu_RtEstim1[,1][[1]]
+RtEstim1_95Lo_flu <- ci_flu_RtEstim1[,2][[1]]
+RtEstim1_95Up_flu <- ci_flu_RtEstim1[,3][[1]]
+RtEstim2_Rt_flu <- ci_flu_RtEstim2[,1][[1]]
+RtEstim2_95Lo_flu <- ci_flu_RtEstim2[,2][[1]]
+RtEstim2_95Up_flu <- ci_flu_RtEstim2[,3][[1]]
+RtEstim3_Rt_flu <- ci_flu_RtEstim3[,1][[1]]
+RtEstim3_95Lo_flu <- ci_flu_RtEstim3[,2][[1]]
+RtEstim3_95Up_flu <- ci_flu_RtEstim3[,3][[1]]
+
+# EpiEstim (weekly)
+t_start_week <- seq(2, len - 6)
+t_end_week <- t_start_week + 6
+config_week <- make_config(list(si_distr = c(0, flu_delay_distn), t_start = t_start_week, t_end = t_end_week))
+# fit model
+fit_week <- EpiEstim::estimate_R(incid = Flu1918$incidence, config = config_week, method = "non_parametric_si")
+l <- which(colnames(fit_week$R) == paste0("Quantile.",alpha/2,"(R)"))
+u <- which(colnames(fit_week$R) == paste0("Quantile.",1 - alpha/2,"(R)"))
+fill_NAs <- function(Rt_fitted, n) {
+    non_nas <- which(!is.na(Rt_fitted))
+    m <- length(non_nas)
+    return(c(rep(-1, n-m), Rt_fitted[non_nas]))
+  }
+EpiWeek_95Lo_flu <- fill_NAs(fit_week$R[,l], len) 
+EpiWeek_95Up_flu <- fill_NAs(fit_week$R[,u], len)
+EpiWeek_Rt_flu <- fill_NAs(fit_week$R$`Mean(R)`, len)
+
+## monthly
+t_start_month <- seq(2, len - 29)
+t_end_month <- t_start_month + 29
+config_month <- make_config(list(si_distr = c(0, flu_delay_distn), t_start = t_start_month, t_end = t_end_month))
+# fit model
+fit_month <- EpiEstim::estimate_R(incid = Flu1918$incidence, config = config_month, method = "non_parametric_si")
+l <- which(colnames(fit_month$R) == paste0("Quantile.",alpha/2,"(R)"))
+u <- which(colnames(fit_month$R) == paste0("Quantile.",1 - alpha/2,"(R)"))
+EpiMonth_95Lo_flu <- fill_NAs(fit_month$R[,l], len) 
+EpiMonth_95Up_flu <- fill_NAs(fit_month$R[,u], len)
+EpiMonth_Rt_flu <- fill_NAs(fit_month$R$`Mean(R)`, len)
+
+
+# EpiLPS
+fitLPS <- EpiLPS::estimR(incidence = Flu1918$incidence, si = flu_delay_distn, K = 40, CoriR = FALSE)
+l <- which(colnames(fitLPS$RLPS) == paste0("Rq", alpha/2)) # alpha can only by 0.05, 0.1, 0.5
+u <- which(colnames(fitLPS$RLPS) == paste0("Rq", 1 - alpha/2))
+EpiLPS_Rt_flu <- fill_NAs(fitLPS$RLPS$R, len)
+EpiLPS_95Lo_flu <- fill_NAs(fitLPS$RLPS[,l], len)
+EpiLPS_95Up_flu <- fill_NAs(fitLPS$RLPS[,u], len)
+
+# EpiFilter
+# cannot use dates as input, but the delays are incorporated by the delay distribution
+m <- 2000
+pR0 <- (1 / m) * rep(1, m)
+Rgrid <- seq(0.01, 10, length.out = m)
+w <- delay_calculator(Flu1918$incidence, x = 1:len, delay_distn = flu_delay_distn)
+R_filter <- epiFilter(Rgrid, m, eta=0.1, pR0, len, w, Flu1918$incidence, a = alpha)
+R_smoother <- epiSmoother(Rgrid, m, R_filter[[4]], R_filter[[5]], len, R_filter[[6]], a = alpha)
+EpiFilter_Rt_flu <- R_smoother[[3]]
+EpiFilter_95Lo_flu <- R_smoother[[2]][1,]
+EpiFilter_95Up_flu <- R_smoother[[2]][2,]
+
+# EpiNow2: use nonparametric SI distribution??
+#dates <- seq(from = as.Date("2023-01-01"), by = "day", length.out = len)
+#library(EpiNow2)
+#out <- EpiNow2::epinow(reported_cases = Flu1918$incidence,
+#              generation_time = flu_delay_distn,
+#              rt = rt_opts(),
+#              delays = delay_opts()
+#)
+#Rt_fitted <- out$estimates$summarised$mean[1:len]
+
+# combine all results
+dat_flu_fitted_long <- data.table(
+  Date = rep(1:len, 8),
+  Method = rep(c("RtEstim (k=0)", "RtEstim (k=1)", "RtEstim (k=2)", "RtEstim (k=3)", 
+                 "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS", "EpiFilter"), each = len),
+  fitted_Rt = c(RtEstim0_Rt_flu, RtEstim1_Rt_flu, RtEstim2_Rt_flu, RtEstim3_Rt_flu, 
+                EpiWeek_Rt_flu, EpiMonth_Rt_flu, EpiLPS_Rt_flu, EpiFilter_Rt_flu),
+  ci_lo95 = c(RtEstim0_95Lo_flu, RtEstim1_95Lo_flu, RtEstim2_95Lo_flu, RtEstim3_95Lo_flu, 
+              EpiWeek_95Lo_flu, EpiMonth_95Lo_flu, EpiLPS_95Lo_flu, EpiFilter_95Lo_flu),
+  ci_hi95 = c(RtEstim0_95Up_flu, RtEstim1_95Up_flu, RtEstim2_95Up_flu, RtEstim3_95Up_flu,
+              EpiWeek_95Up_flu, EpiMonth_95Up_flu, EpiLPS_95Up_flu, EpiFilter_95Up_flu)
+)
+dat_flu_fitted_long <- dat_flu_fitted_long %>%
+  mutate(Method = fct_relevel(
+    Method, 
+    "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS", "EpiFilter",
+    "RtEstim (k=0)", "RtEstim (k=1)",
+    "RtEstim (k=2)", "RtEstim (k=3)"
+  ))
+head(dat_flu_fitted_long)
+saveRDS(dat_flu_fitted_long, here::here("dat/dat_flu_fitted_long.RDS"))
+```
+
+```{r plot-flu-ci,  echo=FALSE, fig.height=8, fig.width=6.2, fig.cap = "Rt estimates with CIs for Flu 1918. Y-axes are truncated beyond 3.5 for a better display of the fluctuation in small values."}
+dat_flu_fitted_long <- readRDS(here::here("dat/dat_flu_fitted_long.RDS"))
+dat_flu_fitted_long %>%
+  filter(fitted_Rt > 0) %>% # remove NAs marked by -1
+  group_by(Method) %>%
+  ggplot(aes(x = Date)) + 
+  geom_ribbon(aes(ymin = ci_lo95, ymax = ci_hi95, fill = Method), alpha = 0.5) +
+  geom_line(aes(y = fitted_Rt, col = Method)) + 
+  facet_grid(Method ~ .) + 
+  coord_cartesian(ylim=c(0, 3.5)) +
+  geom_hline(yintercept = 1, linetype = "dotted") +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_colour_manual(values = cbPalette[-5]) +
+  scale_fill_manual(values = cbPalette[-5]) +
+  labs(x = "Days since start of epidemic", y = "Rt estimates") +
+  theme_bw() +
+  theme(legend.position = "bottom", strip.text = element_blank(),  panel.spacing = unit(0.4, "lines")) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE), fill = guide_legend(title = NULL, byrow=TRUE))
+```
+
+```{r plot-flu-one,  echo=FALSE, fig.height=3.5, fig.width=6.2, fig.cap = "Rt estimates for Flu 1918. Y-axis beyond 3.5 is truncated for a better display of the fluctuation in small values."}
+dat_flu_fitted_long %>%
+  filter(fitted_Rt > 0) %>% # remove NAs marked by -1
+  group_by(Method) %>%
+  ggplot(aes(x = Date)) + 
+  geom_line(aes(y = fitted_Rt, col = Method)) + 
+  #facet_wrap(~ Method, scales = "free_y", ncol = 1) + 
+  geom_hline(yintercept = 1, linetype = "dotted") +
+  coord_cartesian(ylim=c(0, 3.5)) + 
+  scale_colour_manual(values = cbPalette[-5]) +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  labs(x = "Days since start of epidemic", y = "Rt estimates") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+```
+
+\clearpage
+
+
+# References {.unnumbered}
+
+<!-- The following R chunks reproduce figures in the main manuscript. -->
+
+```{r Fig1-display-cancovid-example, eval = FALSE, include = FALSE}
 library(rtestim)
-cancovid <- cancovid[-1:-65, ] # drop the beginning period
-n <- nrow(cancovid)
+library(Matrix)
+n <- nrow(rtestim::cancovid)
+can_pred_class <- readRDS(here::here("dat/can_pred_class.RDS"))
+delay_dstns_can <- readRDS(here::here("dat/delay-distns-byvar.rds"))
+delay_dstns_can <- delay_dstns_can|>
+  filter(para == "SI", type %in% unique(can_pred_class$var)) 
+delay_mat <- matrix(0, n, n)
+delay_mat[1,1] <- 1
+for (iter in 2:n) {
+  current_var <- can_pred_class$var[iter]
+  current_pars <- delay_dstns_can |> filter(type == current_var)
+  delay <- discretize_gamma(0:(iter - 1), current_pars$shape, current_pars$scale)
+  delay_mat[iter, 1:iter] <- rev(delay)
+}
+delay_mat <- drop0(as(delay_mat, "CsparseMatrix")) # make it sparse, not necessary
+delay_mat <- delay_mat / rowSums(delay_mat) # renormalize
+
 
 # plot fitted Rt with confidence band
 cv_mod <- cv_estimate_rt(
-  x = cancovid$date, cancovid$incident_cases, korder = 2, nfold = 10,
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 2, nfold = 10, 
+  delay_distn = delay_mat,
   maxiter = 1e7L, nsol = 50, error_measure = "deviance",
   lambda_min_ratio = 1e-6, init = configure_rt_admm(tol = 1e-6)
 )
 rt_ci_covid <- confband(cv_mod, "lambda.1se") # get 95% confidence band
-fig_rt_fit <- rt_ci_covid %>%
-  ggplot(aes(x = cancovid$date)) +
-  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), fill = "gray", alpha = 0.5) +
+
+start_dates <- data.table(rt_ci_covid, variant = can_pred_class$var, date = rtestim::cancovid$date) %>% group_by(variant) %>% summarize(min(date))
+
+fig_rt_fit <- data.table(rt_ci_covid, variant = can_pred_class$var) %>%
+  mutate(variant = fct_relevel(
+    variant, 
+    "Ancestral lineage", "Alpha", "Delta", "Omicron"
+  )) %>%
+  ggplot(aes(x = rtestim::cancovid$date)) +
+  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`, fill=variant), alpha = 0.5) +#fill = "gray", 
   geom_line(aes(y = Rt), col = "#0072B2", lwd = 1) +
-  scale_x_date(date_breaks = "8 months", date_labels = "%Y-%m-%d") +
+  scale_x_date(date_breaks = "8 months", date_labels = "%Y-%m-%d", expand = expansion(c(0, 0.05))) +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
   geom_hline(yintercept = 1, linetype = "dotted") +
+  #geom_vline(xintercept = start_dates$`min(date)`[-2], linetype = "dashed") +
   labs(x = "Date", y = "Piecewise quadratic Rt with 95% CIs") +
-  theme_bw()
+  coord_cartesian(ylim = c(0, 2)) + 
+  theme_bw() +
+  scale_fill_brewer(palette = "Dark2", name = "")
+fig_rt_fit
 
 # plot fitted incidence
 mod_best <- estimate_rt(
-  x = cancovid$date, cancovid$incident_cases, korder = 2, maxiter = 1e7L,
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 2, maxiter = 1e7L, delay_distn = delay_mat,
   lambda = cv_mod$lambda.1se
 )
 incidence_fit <- mod_best$weighted_past_counts * rt_ci_covid$Rt
-inc_dat <- data.table(cancovid, incidence_fit = incidence_fit)
-fig_inc_fit <- inc_dat %>%
+inc_dat <- data.table(rtestim::cancovid, incidence_fit = incidence_fit)
+
+fig_inc_fit <- data.table(inc_dat, variant = can_pred_class$var) %>%
   ggplot(aes(x = date)) +
-  geom_line(aes(y = incident_cases / 10000)) +
-  geom_line(aes(y = incidence_fit / 10000), col = "#D55E00", lwd = 1) +
-  scale_x_date(date_breaks = "8 months", date_labels = "%Y-%m-%d") +
-  labs(x = "Date", y = "Fitted incidence (per 10,000)") +
+  geom_line(aes(y = incident_cases / 1000)) +
+  geom_line(aes(y = incidence_fit / 1000), col = "#D55E00", lwd = 1) +
+  scale_x_date(date_breaks = "8 months", date_labels = "%Y-%m-%d", expand = expansion(c(0, 0.05))) +
+  labs(x = "Date", y = "Fitted incidence (thousands)") +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  geom_vline(xintercept = start_dates$`min(date)`[-2], linetype = "dashed") +
   theme_bw()
 
-CANCovid_fig <- ggarrange(
+CANCovid_fig <- ggpubr::ggarrange(
   fig_rt_fit, fig_inc_fit,
   ncol = 1, common.legend = TRUE, legend = "bottom"
 )
 print(CANCovid_fig)
+
+ggsave(here::here("fig/intro-fig-new.png"), plot = CANCovid_fig, width = 6.5, height = 6.5)
 ```
 
-```{r Fig2-generate-poisson-examples, eval = FALSE, include = FALSE}
-# General settings:
-N1 <- 2 # first incidence data
-len <- 300 # number of evenly spaced time points
-library(rtestim)
-# Get Poisson incidence cases:
-get_pois_incidence <- function(N1, Rt, gamma_pars = c(2.5, 2.5)) {
-  len <- length(Rt)
-  incidence <- numeric(len) # N_1:n
-  poisson_count <- numeric(len) # y_1:n
-  incidence[1] <- N1
+```{r Fig2-display-data-examples, eval = FALSE, include = FALSE}
+# generate a random sample for each setting (of Rt scenario, incidence distribution, serial interval distribution)
+dat1_pois_measles <- data_generator(Rt_case = 1, dist = "poisson", si_type = "measles", seed = 9)
+dat2_pois_measles <- data_generator(Rt_case = 2, dist = "poisson", si_type = "measles", seed = 4)
+dat3_pois_measles <- data_generator(Rt_case = 3, dist = "poisson", si_type = "measles", seed = 9)
+dat4_pois_measles <- data_generator(Rt_case = 4, dist = "poisson", si_type = "measles", seed = 4)
+dat1_NB_measles <- data_generator(Rt_case = 1, dist = "NB", si_type = "measles", seed = 3)
+dat2_NB_measles <- data_generator(Rt_case = 2, dist = "NB", si_type = "measles", seed = 5)
+dat3_NB_measles <- data_generator(Rt_case = 3, dist = "NB", si_type = "measles", seed = 6)
+dat4_NB_measles <- data_generator(Rt_case = 4, dist = "NB", si_type = "measles", seed = 4)
+dat1_pois_SARS <- data_generator(Rt_case = 1, dist = "poisson", si_type = "SARS", seed = 792)
+dat2_pois_SARS <- data_generator(Rt_case = 2, dist = "poisson", si_type = "SARS", seed = 1)
+dat3_pois_SARS <- data_generator(Rt_case = 3, dist = "poisson", si_type = "SARS", seed = 792)
+dat4_pois_SARS <- data_generator(Rt_case = 4, dist = "poisson", si_type = "SARS", seed = 3)
+dat1_NB_SARS <- data_generator(Rt_case = 1, dist = "NB", si_type = "SARS", seed = 86)
+dat2_NB_SARS <- data_generator(Rt_case = 2, dist = "NB", si_type = "SARS", seed = 48)
+dat3_NB_SARS <- data_generator(Rt_case = 3, dist = "NB", si_type = "SARS", seed = 56)
+dat4_NB_SARS <- data_generator(Rt_case = 4, dist = "NB", si_type = "SARS", seed = 29)
 
-  poisson_count[1] <- rpois(1, N1)
-  if (poisson_count[1] == 0) poisson_count[1] <- 1
-  for (t in 2:len) {
-    pi <- discretize_gamma(1:(t - 1), gamma_pars[1], gamma_pars[2])
-    incidence[t] <- Rt[t] * sum(rev(pi) * poisson_count[1:(t - 1)])
-    poisson_count[t] <- rpois(1, incidence[t])
-  }
+# combine the random samples as a data table  
+dat_example <- data.table(incidence = c(dat1_pois_measles$incidence, 
+                                        dat2_pois_measles$incidence,
+                                        dat3_pois_measles$incidence,
+                                        dat4_pois_measles$incidence,
+                                        dat1_NB_measles$incidence,
+                                        dat2_NB_measles$incidence,
+                                        dat3_NB_measles$incidence,
+                                        dat4_NB_measles$incidence,
+                                        dat1_pois_SARS$incidence,
+                                        dat2_pois_SARS$incidence,
+                                        dat3_pois_SARS$incidence,
+                                        dat4_pois_SARS$incidence,
+                                        dat1_NB_SARS$incidence,
+                                        dat2_NB_SARS$incidence,
+                                        dat3_NB_SARS$incidence,
+                                        dat4_NB_SARS$incidence),
+                          mean = c(dat1_pois_measles$mean, 
+                                   dat2_pois_measles$mean,
+                                   dat3_pois_measles$mean,
+                                   dat4_pois_measles$mean,
+                                   dat1_NB_measles$mean,
+                                   dat2_NB_measles$mean,
+                                   dat3_NB_measles$mean,
+                                   dat4_NB_measles$mean,
+                                   dat1_pois_SARS$mean,
+                                   dat2_pois_SARS$mean,
+                                   dat3_pois_SARS$mean,
+                                   dat4_pois_SARS$mean,
+                                   dat1_NB_SARS$mean,
+                                   dat2_NB_SARS$mean,
+                                   dat3_NB_SARS$mean,
+                                   dat4_NB_SARS$mean),
+                          trueRt = rep(c(dat1_pois_measles$Rt,
+                                         dat2_pois_measles$Rt,
+                                         dat3_pois_measles$Rt,
+                                         dat4_pois_measles$Rt), 4),
+                          time = rep(1:300, 4 * 4),
+                          Rt_case = rep(rep(1:4, each = 300), 4),
+                          dist = rep(rep(c("Poisson", "Negative Binomial"), each = 300 * 4), 2),
+                          si_type = rep(c("measles", "SARS"), each = 4 * 300 * 2)
+                          )
+dat_example <- dat_example %>%
+  mutate(dist = fct_relevel(
+    dist, 
+    "Poisson", 
+    "Negative Binomial"
+  )) %>%
+  mutate(Rt_case = as.character(Rt_case)) %>% 
+  mutate(Rt_case = fct_recode(
+    Rt_case,
+    "Scenario 1" = "1",
+    "Scenario 2" = "2",
+    "Scenario 3" = "3",
+    "Scenario 4" = "4"
+  ))
 
-  return(poisson_count)
-}
-# Display the synthetic data:
-display_dat <- function(counts, Rt) {
-  len <- length(counts)
-  if (length(counts) != length(Rt)) cli::cli_abort("Data lengths do not match.")
-  dat <- data.frame(time = 1:len, count = counts, Rt = Rt)
-  fig1 <- dat %>%
-    ggplot(aes(y = Rt, x = time)) +
-    geom_line() +
-    theme_bw()
-  print(fig1)
-  fig2 <- dat %>%
-    ggplot(aes(y = count, x = time)) +
-    geom_line() +
-    # scale_y_log10() + # axis of incidence in log scale
-    ylab("Poisson incidence data") + # (in log scale)
-    theme_bw()
-  print(fig2)
-}
-# Check data quality:
-check_dat <- function(incidence, Rt) {
-  if (min(Rt) < 0) {
-    cli::cli_abort("`Rt` must be non-negative.")
-  }
-  if (min(incidence) < 0) {
-    cli::cli_abort("`incidence` cases must be nonnegative.")
-  }
-  if (max(incidence) > 1e4L) {
-    cli::cli_alert_warning("`incidence` cases are too large.")
-  }
-  if (sum(incidence == 0) > 30) {
-    cli::cli_warn("`incidence` data has more than 10% 0s.")
-  }
-}
+# save examples
+saveRDS(dat_example, here::here("dat/data_example.RDS"))
 
-seed <- 420
-# Scenario 1: piecewise constant with one dropping point
-Rt1 <- c(rep(2, 70), rep(0.8, len - 70))
-gamma_pars1 <- c(3, 3) # serial interval distribution parameters
-set.seed(seed)
-incidence1 <- get_pois_incidence(N1, Rt1, gamma_pars1)
-# display_dat(incidence1, Rt1)
-# check_dat(incidence1, Rt1)
+# display Rt
+fig_true_rt <- dat_example %>%
+  mutate(Rt_case = fct_recode(Rt_case,
+    "Scenario 1: piecewise constant" = "Scenario 1",
+    "Scenario 2: piecewise exponential" = "Scenario 2",
+    "Scenario 3: piecewise linear" = "Scenario 3",
+    "Scenario 4: periodic" = "Scenario 4"
+  )) %>%
+  group_by(Rt_case) %>%
+  ggplot(aes(y = trueRt, x = time)) +
+  geom_line() +
+  facet_wrap(~ Rt_case, scales = "free") + #facet_grid
+  labs(y = "True Rt curves", x = "Time") +
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  theme_bw()
 
-# Scenario 2: piecewise exponential
-rate <- c(.015, -.005)
-Rt2 <- numeric(len)
-knot <- 50
-Rt2[1:knot] <- exp(rate[1] * (1:knot))
-Rt2[(knot + 1):len] <- exp((rate[2]) * ((knot + 1):len)) * Rt2[knot]
-gamma_pars2 <- c(2.5, 2.5) # serial interval distribution parameters
-set.seed(seed)
-incidence2 <- get_pois_incidence(N1, Rt2, gamma_pars2)
-
-# Scenario 3: multi-stage piecewise linear
-Rt3 <- c(
-  seq(2.5, 2, length.out = 60), seq(0.8, 0.6, length.out = 50),
-  seq(1.7, 2, length.out = 40), seq(0.9, 0.5, length.out = 150)
-)
-gamma_pars3 <- c(3.5, 3.5) # serial interval distribution parameters
-set.seed(seed)
-incidence3 <- get_pois_incidence(N1, Rt3, gamma_pars3)
-
-# Scenario 4: multi-stage with exponential-sinusoidal growth and decay
-x <- seq(0, 10, length.out = len)
-Rt4 <- numeric(len)
-components <- list(
-  list(freq = 0.1, amp = 1),
-  list(freq = 0.5, amp = 2),
-  list(freq = 1.0, amp = 3)
-)
-for (component in components) {
-  Rt4 <- Rt4 + 0.2 * (component$amp * sin(pi * component$freq * x / 1.2) +
-    component$amp)
-}
-gamma_pars4 <- c(3.5, 3.5) # serial interval distribution parameters
-set.seed(seed)
-incidence4 <- get_pois_incidence(N1, Rt4, gamma_pars4)
-```
-
-```{r Fig2-generate-NB-examples, eval = FALSE, include = FALSE}
-get_nb_incidence <- function(N1, Rt, gamma_pars = c(2.5, 2.5)) {
-  len <- length(Rt)
-  incidence <- numeric(len) # N_1:n
-  NB_count <- numeric(len) # y_1:n
-  incidence[1] <- N1
-  size <- 5
-
-  NB_count[1] <- rnbinom(1, mu = N1, size = size)
-  if (NB_count[1] == 0) NB_count[1] <- 1
-  for (t in 2:len) {
-    pi <- discretize_gamma(1:(t - 1), gamma_pars[1], gamma_pars[2])
-    incidence[t] <- Rt[t] * sum(rev(pi) * NB_count[1:(t - 1)])
-    NB_count[t] <- rnbinom(1, mu = incidence[t], size = size)
-  }
-
-  return(NB_count)
-}
-# scenario 1
-seed <- 525
-set.seed(seed)
-nb_incidence1 <- get_nb_incidence(N1, Rt1, gamma_pars1)
-# scenario 2
-set.seed(seed)
-nb_incidence2 <- get_nb_incidence(N1, Rt2, gamma_pars2)
-# scenario 3
-set.seed(seed)
-nb_incidence3 <- get_nb_incidence(N1, Rt3, gamma_pars3)
-# scenario 4
-set.seed(seed)
-nb_incidence4 <- get_nb_incidence(N1, Rt4, gamma_pars4)
-```
-
-```{r Fig2-display-examples, eval = FALSE, include = FALSE}
-sample_dat <- data.table(
-  time = 1:len, Rt1 = Rt1, Rt2 = Rt2, Rt3 = Rt3, Rt4 = Rt4,
-  Pois_count1 = incidence1, Pois_count2 = incidence2,
-  Pois_count3 = incidence3, Pois_count4 = incidence4,
-  NB_count1 = nb_incidence1, NB_count2 = nb_incidence2,
-  NB_count3 = nb_incidence3, NB_count4 = nb_incidence4
-)
-
-display_example <- function(res_dat) {
-  len <- dim(res_dat)[1]
-  fig1 <- res_dat %>%
-    ggplot(aes(y = Rt1, x = time)) +
-    geom_line() +
-    labs(y = "Scenario 1", title = "Rt", x = "") +
-    theme(plot.title = element_text(hjust = 0.5)) +
-    theme_bw()
-  fig2 <- res_dat %>%
-    ggplot(aes(y = Pois_count1, x = time)) +
-    geom_line() +
-    labs(title = "Poisson incidence", y = " ", x = "") +
-    coord_cartesian(ylim = c(0, 2500)) +
-    theme(plot.title = element_text(hjust = 0.5)) +
-    theme_bw()
-  fig3 <- res_dat %>%
-    ggplot(aes(y = NB_count1, x = time)) +
-    geom_line() +
-    labs(title = "NB incidence", y = " ", x = "") +
-    coord_cartesian(ylim = c(0, 2500)) +
-    theme(plot.title = element_text(hjust = 0.5)) +
-    theme_bw()
-
-  fig21 <- res_dat %>%
-    ggplot(aes(y = Rt2, x = time)) +
-    geom_line() +
-    labs(y = "Scenario 2", x = "") +
-    theme_bw()
-  fig22 <- res_dat %>%
-    ggplot(aes(y = Pois_count2, x = time)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 3000)) +
-    labs(y = " ", x = "") +
-    theme_bw()
-  fig23 <- res_dat %>%
-    ggplot(aes(y = NB_count2, x = time)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 3000)) +
-    labs(y = " ", x = "") +
-    theme_bw()
-
-  fig31 <- res_dat %>%
-    ggplot(aes(y = Rt3, x = time)) +
-    geom_line() +
-    labs(y = "Scenario 3", x = "") +
-    theme_bw()
-  fig32 <- res_dat %>%
-    ggplot(aes(y = Pois_count3, x = time)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 1500)) +
-    labs(y = " ", x = "") +
-    theme_bw()
-  fig33 <- res_dat %>%
-    ggplot(aes(y = NB_count3, x = time)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 1500)) +
-    labs(y = " ", x = "") + # (in log scale)
-    theme_bw()
-
-  fig41 <- res_dat %>%
-    ggplot(aes(y = Rt4, x = time)) +
-    geom_line() +
-    labs(y = "Scenario 4") +
-    theme_bw()
-  fig42 <- res_dat %>%
-    ggplot(aes(y = Pois_count4, x = time)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 4000)) +
-    labs(y = " ") +
-    theme_bw()
-  fig43 <- res_dat %>%
-    ggplot(aes(y = NB_count4, x = time)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 4000)) +
-    labs(y = " ") +
-    theme_bw()
-
-  figfull <- ggpubr::ggarrange(fig1, fig2, fig3,
-    fig21, fig22, fig23,
-    fig31, fig32, fig33,
-    fig41, fig42, fig43,
-    ncol = 3, nrow = 4,
-    common.legend = TRUE, legend = "bottom"
-  )
-  print(figfull)
-}
-
-display_example(sample_dat)
-```
-
-```{r Fig3-display-simulation-results, eval = FALSE, include = FALSE}
-# exclude the extremely large KL values
-Rt_result_no_outliers <- Rt_result |>
-  filter(method != "EpiEstim (monthly)") |>
-  select(Rt_case, dist, method, Rt_kl) |>
-  group_by(Rt_case, dist, method) |>
-  mutate(big_out = Rt_kl > fivenum(Rt_kl, na.rm = TRUE)[4] +
-    1.5 * IQR(Rt_kl, na.rm = TRUE)) |>
-  filter(!big_out) |>
-  select(!big_out)
-Rt_result_no_outliers$Rt_case <- as.factor(Rt_result_no_outliers$Rt_case)
-Rt_result_no_outliers$dist <- as.factor(Rt_result_no_outliers$dist)
-Rt_result_no_outliers$method <- as.factor(Rt_result_no_outliers$method)
-
-KL_fig_no_outlier <- Rt_result_no_outliers %>%
-  ggplot(aes(x = method, y = Rt_kl * 300)) + # sum up KL per coordinate s
-  geom_boxplot(aes(col = method)) +
+# display each setting of the random samples
+fig_measles_data <- dat_example %>%
+  filter(si_type == "measles") %>%
+  group_by(Rt_case, dist) %>%
+  ggplot(aes(x = time, y = incidence)) +
+  geom_line() + 
   facet_grid(dist ~ Rt_case, scales = "free") +
-  scale_colour_manual(values = cbPalette[-1]) +
-  labs(x = "Method", y = "KL divergence") +
+  labs(y = "Incidence of measles epidemics", x = "Time") +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  theme_bw()
+  
+fig_sars_data <- dat_example %>%
+  filter(si_type == "SARS") %>%
+  group_by(Rt_case, dist) %>%
+  ggplot(aes(x = time, y = incidence)) +
+  geom_line() + 
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  labs(y = "Incidence of SARS epidemics", x = "Time") +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  theme_bw()
+
+# save plots
+ggsave(plot=fig_true_rt, here::here("fig/fig_true_rt.png"), width = 6.5, height = 5)
+ggsave(plot=fig_measles_data, here::here("fig/fig_measles_data.png"), width = 6.5, height = 5)
+ggsave(plot=fig_sars_data, here::here("fig/fig_sars_data.png"), width = 6.5, height = 5)
+
+# combine the three figures above
+dat_example_Rt <- dat_example %>% select(trueRt, mean, time:dist)
+dat_example_Rt <- data.table(dat_example_Rt, si_type = "true Rt")
+colnames(dat_example_Rt)[1] <- "incidence"
+dat_example_inci <- dat_example %>% select(!trueRt)
+dat_example_long <- rbind(dat_example_Rt, dat_example_inci)
+fig_sample <- dat_example_long %>%
+  mutate(dist = fct_relevel(dist, "Negative Binomial", "Poisson")) %>%
+  mutate(si_type = fct_relevel(si_type, "true Rt", "measles", "SARS")) %>%
+  group_by(Rt_case, dist, si_type) %>%
+  ggplot(aes(x = time, y = incidence)) +
+  geom_line(aes(color = dist), alpha=0.8) + 
+  facet_grid(si_type ~ Rt_case, scales = "free") +
+  labs(y = "", x = "Time") +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_color_brewer(palette = "Set1") +
   theme_bw() +
-  theme(axis.text.x = element_blank(), legend.position = "bottom") +
+  theme(legend.position = "bottom") +
   guides(color = guide_legend(title = NULL))
-print(KL_fig_no_outlier)
+ggsave(here::here("fig/fig_samples.png"), fig_sample, width = 7.5, height = 6)
 ```
 
-```{r Fig4-display-Rt-for-Poisson-incidence, eval = FALSE, include = FALSE}
+```{r Figs3+4-display-simulation-results, eval = FALSE, include = FALSE}
+# exclude the extremely large KL values (excluding the first week)
+Rt_res_long_week_no_outliers <- Rt_result %>% 
+  filter(len == 300, method != "EpiEstim (monthly)") %>% 
+  select(Rt_case, dist, method, Rt_kl, si_type, si_pars) %>% 
+  group_by(Rt_case, dist, method, si_type, si_pars) %>% 
+  mutate(big_out = Rt_kl > fivenum(Rt_kl, na.rm = TRUE)[4] +
+    1.5 * IQR(Rt_kl, na.rm = TRUE)) %>% 
+  filter(!big_out) %>% 
+  select(!big_out)
+
+fig_kl_week_measles <- Rt_res_long_week_no_outliers %>% 
+  select(Rt_case, dist, method, Rt_kl, si_type, si_pars) |> 
+  group_by(Rt_case, dist, method, si_type, si_pars) |>
+  filter(si_type == "measles", si_pars == "measles", method != "EpiNow2") |> # SARS, measles?
+  ggplot(aes(x = method, y = Rt_kl)) + 
+  stat_boxplot(aes(col = method)) +
+  facet_grid(dist ~ Rt_case, scales = "free_y") +
+  scale_y_log10() + #labels = scientific_10
+  scale_colour_manual(values = cbPalette[c(1,3,4,6:9)]) +
+  labs(x = "", y = "KL divergence for measles epidemics") +
+  theme_bw() +
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_kl_week_measles)
+
+fig_kl_week_sars <- Rt_res_long_week_no_outliers %>% 
+  select(Rt_case, dist, method, Rt_kl, si_type, si_pars) |>
+  group_by(Rt_case, dist, method, si_type, si_pars) |>
+  filter(si_type == "SARS", si_pars == "SARS") |> # SARS, measles?
+  ggplot(aes(x = method, y = Rt_kl)) + # averaged over KL per coordinate
+  stat_boxplot(aes(col = method)) +
+  facet_grid(dist ~ Rt_case, scales = "free") +
+  scale_y_log10() +
+  scale_colour_manual(values = cbPalette[c(1,3,4,6:9)]) +
+  labs(x = "", y = "KL divergence for SARS epidemics") +
+  theme_bw() +
+  theme(axis.text.x = element_blank(), legend.position = "bottom",
+        axis.ticks.x = element_blank()) +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_kl_week_sars)
+
+ggsave(plot=fig_kl_week_measles, here::here("fig/fig_kl_week_measles.png"), width = 6.5, height = 5)
+ggsave(plot=fig_kl_week_sars, here::here("fig/fig_kl_week_sars.png"), width = 6.5, height = 5)
+```
+
+```{r save-fitted-rt, eval = FALSE, include = FALSE}
 ## Rt estimates for Poisson incidence by all models
 ## Commands used to visualize fitted Rt are commented.
 
-## RtEstim
-# Scenario 1 by RtEstim (k=0)
-cv_mod1 <- cv_estimate_rt(
-  incidence1,
-  korder = 0, nfold = 10, nsol = 50, dist_gamma = gamma_pars1,
-  maxiter = 1e7L, error_measure = "deviance"
-)
-# plot(cv_mod1)
-rtestim_tuned_mod1 <- cv_mod1$full_fit$Rt[, which.min(cv_mod1$cv_scores)]
-# rt_ci1 <- confband(cv_mod1, "lambda.min") # get 95% confidence band
-# rt_ci1 %>%
-#  ggplot(aes(x = 1:length(incidence1), y = Rt)) +
-#  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`),
-#              fill = "gray", alpha = 0.5) +
-#  geom_line() +
-#  geom_hline(yintercept = 1, linetype = "dotted") +
-#  labs(x="Time", y = "RtEstim Rt with 95% CIs") +
-#  theme_bw()
-# Scenario 2 by RtEstim (k=3)
-cv_mod2 <- cv_estimate_rt(
-  incidence2,
-  korder = 3, nfold = 10, nsol = 50, maxiter = 1e7L,
-  dist_gamma = gamma_pars2, error_measure = "deviance"
-)
-rtestim_tuned_mod2 <- cv_mod2$full_fit$Rt[, which.min(cv_mod2$cv_scores)]
-# Scenario 2 by RtEstim (k=1)
-cv_mod22 <- cv_estimate_rt(
-  incidence2,
-  korder = 1, nfold = 10, nsol = 50, maxiter = 1e7L,
-  dist_gamma = gamma_pars2, error_measure = "deviance"
-)
-rtestim_tuned_mod22 <- cv_mod22$full_fit$Rt[, which.min(cv_mod22$cv_scores)]
-# Scenario 3 by RtEstim (k=1)
-cv_mod3 <- cv_estimate_rt(
-  incidence3,
-  korder = 1, nfold = 10, nsol = 50, maxiter = 1e7L,
-  dist_gamma = gamma_pars3, error_measure = "deviance"
-)
-rtestim_tuned_mod3 <- cv_mod3$full_fit$Rt[, which.min(cv_mod3$cv_scores)]
-# Scenario 4 by RtEstim (k=3)
-cv_mod4 <- cv_estimate_rt(
-  incidence4,
-  korder = 3, nfold = 10, nsol = 50, maxiter = 1e7L,
-  dist_gamma = gamma_pars4, error_measure = "deviance"
-)
-rtestim_tuned_mod4 <- cv_mod4$full_fit$Rt[, which.min(cv_mod4$cv_scores)]
+# EpiEstim(week) ----
+Pois1_measles_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat1_pois_measles)
+Pois1_measles_Epiweek_Rt <- Pois1_measles_Epiweek$fitted_Rt
+Pois1_measles_Epiweek_95Lo <- Pois1_measles_Epiweek$lower_bound
+Pois1_measles_Epiweek_95Up <- Pois1_measles_Epiweek$upper_bound
+Pois2_measles_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat2_pois_measles)
+Pois2_measles_Epiweek_Rt <- Pois2_measles_Epiweek$fitted_Rt
+Pois2_measles_Epiweek_95Lo <- Pois2_measles_Epiweek$lower_bound
+Pois2_measles_Epiweek_95Up <- Pois2_measles_Epiweek$upper_bound
+Pois3_measles_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat3_pois_measles)
+Pois3_measles_Epiweek_Rt <- Pois3_measles_Epiweek$fitted_Rt
+Pois3_measles_Epiweek_95Lo <- Pois3_measles_Epiweek$lower_bound
+Pois3_measles_Epiweek_95Up <- Pois3_measles_Epiweek$upper_bound
+Pois4_measles_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat4_pois_measles)
+Pois4_measles_Epiweek_Rt <- Pois4_measles_Epiweek$fitted_Rt
+Pois4_measles_Epiweek_95Lo <- Pois4_measles_Epiweek$lower_bound
+Pois4_measles_Epiweek_95Up <- Pois4_measles_Epiweek$upper_bound
+NB1_measles_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat1_NB_measles)
+NB1_measles_Epiweek_Rt <- NB1_measles_Epiweek$fitted_Rt
+NB1_measles_Epiweek_95Lo <- NB1_measles_Epiweek$lower_bound
+NB1_measles_Epiweek_95Up <- NB1_measles_Epiweek$upper_bound
+NB2_measles_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat2_NB_measles)
+NB2_measles_Epiweek_Rt <- NB2_measles_Epiweek$fitted_Rt
+NB2_measles_Epiweek_95Lo <- NB2_measles_Epiweek$lower_bound
+NB2_measles_Epiweek_95Up <- NB2_measles_Epiweek$upper_bound
+NB3_measles_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat3_NB_measles)
+NB3_measles_Epiweek_Rt <- NB3_measles_Epiweek$fitted_Rt
+NB3_measles_Epiweek_95Lo <- NB3_measles_Epiweek$lower_bound
+NB3_measles_Epiweek_95Up <- NB3_measles_Epiweek$upper_bound
+NB4_measles_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat4_NB_measles)
+NB4_measles_Epiweek_Rt <- NB4_measles_Epiweek$fitted_Rt
+NB4_measles_Epiweek_95Lo <- NB4_measles_Epiweek$lower_bound
+NB4_measles_Epiweek_95Up <- NB4_measles_Epiweek$upper_bound
+Pois1_SARS_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat1_pois_SARS)
+Pois1_SARS_Epiweek_Rt <- Pois1_SARS_Epiweek$fitted_Rt
+Pois1_SARS_Epiweek_95Lo <- Pois1_SARS_Epiweek$lower_bound
+Pois1_SARS_Epiweek_95Up <- Pois1_SARS_Epiweek$upper_bound
+Pois2_SARS_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat2_pois_SARS)
+Pois2_SARS_Epiweek_Rt <- Pois2_SARS_Epiweek$fitted_Rt
+Pois2_SARS_Epiweek_95Lo <- Pois2_SARS_Epiweek$lower_bound
+Pois2_SARS_Epiweek_95Up <- Pois2_SARS_Epiweek$upper_bound
+Pois3_SARS_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat3_pois_SARS)
+Pois3_SARS_Epiweek_Rt <- Pois3_SARS_Epiweek$fitted_Rt
+Pois3_SARS_Epiweek_95Lo <- Pois3_SARS_Epiweek$lower_bound
+Pois3_SARS_Epiweek_95Up <- Pois3_SARS_Epiweek$upper_bound
+Pois4_SARS_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat4_pois_SARS)
+Pois4_SARS_Epiweek_Rt <- Pois4_SARS_Epiweek$fitted_Rt
+Pois4_SARS_Epiweek_95Lo <- Pois4_SARS_Epiweek$lower_bound
+Pois4_SARS_Epiweek_95Up <- Pois4_SARS_Epiweek$upper_bound
+NB1_SARS_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat1_NB_SARS)
+NB1_SARS_Epiweek_Rt <- NB1_SARS_Epiweek$fitted_Rt
+NB1_SARS_Epiweek_95Lo <- NB1_SARS_Epiweek$lower_bound
+NB1_SARS_Epiweek_95Up <- NB1_SARS_Epiweek$upper_bound
+NB2_SARS_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat2_NB_SARS)
+NB2_SARS_Epiweek_Rt <- NB2_SARS_Epiweek$fitted_Rt
+NB2_SARS_Epiweek_95Lo <- NB2_SARS_Epiweek$lower_bound
+NB2_SARS_Epiweek_95Up <- NB2_SARS_Epiweek$upper_bound
+NB3_SARS_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat3_NB_SARS)
+NB3_SARS_Epiweek_Rt <- NB3_SARS_Epiweek$fitted_Rt
+NB3_SARS_Epiweek_95Lo <- NB3_SARS_Epiweek$lower_bound
+NB3_SARS_Epiweek_95Up <- NB3_SARS_Epiweek$upper_bound
+NB4_SARS_Epiweek <- problem_solver(method = 'EpiEstim(week)', instance = dat4_NB_SARS)
+NB4_SARS_Epiweek_Rt <- NB4_SARS_Epiweek$fitted_Rt
+NB4_SARS_Epiweek_95Lo <- NB4_SARS_Epiweek$lower_bound
+NB4_SARS_Epiweek_95Up <- NB4_SARS_Epiweek$upper_bound
 
-## SI for EpiEstim and EpiLPS
-method <- "non_parametric_si"
-Dmax1 <- floor(stats::qgamma(0.9999, 3, scale = 3))
-prob_gamma1 <- discretize_gamma(1:Dmax1, shape = 3, scale = 3)
-Dmax2 <- floor(stats::qgamma(0.9999, 2.5, scale = 2.5))
-prob_gamma2 <- discretize_gamma(1:Dmax2, shape = 2.5, scale = 2.5)
-Dmax3 <- floor(stats::qgamma(0.9999, 3.5, scale = 3.5))
-prob_gamma3 <- discretize_gamma(1:Dmax3, shape = 3.5, scale = 3.5)
-prob_gamma4 <- prob_gamma3
+Epiweek_res <- c(
+  Pois1_measles_Epiweek_Rt, Pois1_measles_Epiweek_95Lo, Pois1_measles_Epiweek_95Up, 
+  Pois2_measles_Epiweek_Rt, Pois2_measles_Epiweek_95Lo, Pois2_measles_Epiweek_95Up, 
+  Pois3_measles_Epiweek_Rt, Pois3_measles_Epiweek_95Lo, Pois3_measles_Epiweek_95Up, 
+  Pois4_measles_Epiweek_Rt, Pois4_measles_Epiweek_95Lo, Pois4_measles_Epiweek_95Up, 
+  NB1_measles_Epiweek_Rt, NB1_measles_Epiweek_95Lo, NB1_measles_Epiweek_95Up, 
+  NB2_measles_Epiweek_Rt, NB2_measles_Epiweek_95Lo, NB2_measles_Epiweek_95Up, 
+  NB3_measles_Epiweek_Rt, NB3_measles_Epiweek_95Lo, NB3_measles_Epiweek_95Up, 
+  NB4_measles_Epiweek_Rt, NB4_measles_Epiweek_95Lo, NB4_measles_Epiweek_95Up, 
+  Pois1_SARS_Epiweek_Rt, Pois1_SARS_Epiweek_95Lo, Pois1_SARS_Epiweek_95Up, 
+  Pois2_SARS_Epiweek_Rt, Pois2_SARS_Epiweek_95Lo, Pois2_SARS_Epiweek_95Up, 
+  Pois3_SARS_Epiweek_Rt, Pois3_SARS_Epiweek_95Lo, Pois3_SARS_Epiweek_95Up, 
+  Pois4_SARS_Epiweek_Rt, Pois4_SARS_Epiweek_95Lo, Pois4_SARS_Epiweek_95Up, 
+  NB1_SARS_Epiweek_Rt, NB1_SARS_Epiweek_95Lo, NB1_SARS_Epiweek_95Up, 
+  NB2_SARS_Epiweek_Rt, NB2_SARS_Epiweek_95Lo, NB2_SARS_Epiweek_95Up, 
+  NB3_SARS_Epiweek_Rt, NB3_SARS_Epiweek_95Lo, NB3_SARS_Epiweek_95Up, 
+  NB4_SARS_Epiweek_Rt, NB4_SARS_Epiweek_95Lo, NB4_SARS_Epiweek_95Up
+)
+Epiweek_res <- data.table(Res = Epiweek_res,
+                         Type = rep(rep(c("Fitted_Rt", "Lo95", "Up95"), each = 300), 16))
 
-## EpiEstim
-# configuration for weekly sliding windows
-t_week_start <- seq(2, len - 6)
-t_week_end <- t_week_start + 6
-config_week1 <- make_config(list(
-  si_distr = c(0, prob_gamma1),
-  t_start = t_week_start,
-  t_end = t_week_end
-))
-config_week2 <- make_config(list(
-  si_distr = c(0, prob_gamma2),
-  t_start = t_week_start,
-  t_end = t_week_end
-))
-config_week3 <- make_config(list(
-  si_distr = c(0, prob_gamma3),
-  t_start = t_week_start,
-  t_end = t_week_end
-))
-config_week4 <- config_week3
-# Rt estimates
-mod_epiEstim_week1 <- EpiEstim::estimate_R(
-  incid = incidence1,
-  config = config_week1,
-  method = method
+Epiweek_Rt <- Epiweek_res[Type == "Fitted_Rt", ]$Res
+Epiweek_Lo95 <- Epiweek_res[Type == "Lo95", ]$Res
+Epiweek_Up95 <- Epiweek_res[Type == "Up95", ]$Res
+
+
+# EpiEstim(month) ----
+Pois1_measles_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat1_pois_measles)
+Pois1_measles_Epimonth_Rt <- Pois1_measles_Epimonth$fitted_Rt
+Pois1_measles_Epimonth_95Lo <- Pois1_measles_Epimonth$lower_bound
+Pois1_measles_Epimonth_95Up <- Pois1_measles_Epimonth$upper_bound
+Pois2_measles_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat2_pois_measles)
+Pois2_measles_Epimonth_Rt <- Pois2_measles_Epimonth$fitted_Rt
+Pois2_measles_Epimonth_95Lo <- Pois2_measles_Epimonth$lower_bound
+Pois2_measles_Epimonth_95Up <- Pois2_measles_Epimonth$upper_bound
+Pois3_measles_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat3_pois_measles)
+Pois3_measles_Epimonth_Rt <- Pois3_measles_Epimonth$fitted_Rt
+Pois3_measles_Epimonth_95Lo <- Pois3_measles_Epimonth$lower_bound
+Pois3_measles_Epimonth_95Up <- Pois3_measles_Epimonth$upper_bound
+Pois4_measles_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat4_pois_measles)
+Pois4_measles_Epimonth_Rt <- Pois4_measles_Epimonth$fitted_Rt
+Pois4_measles_Epimonth_95Lo <- Pois4_measles_Epimonth$lower_bound
+Pois4_measles_Epimonth_95Up <- Pois4_measles_Epimonth$upper_bound
+NB1_measles_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat1_NB_measles)
+NB1_measles_Epimonth_Rt <- NB1_measles_Epimonth$fitted_Rt
+NB1_measles_Epimonth_95Lo <- NB1_measles_Epimonth$lower_bound
+NB1_measles_Epimonth_95Up <- NB1_measles_Epimonth$upper_bound
+NB2_measles_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat2_NB_measles)
+NB2_measles_Epimonth_Rt <- NB2_measles_Epimonth$fitted_Rt
+NB2_measles_Epimonth_95Lo <- NB2_measles_Epimonth$lower_bound
+NB2_measles_Epimonth_95Up <- NB2_measles_Epimonth$upper_bound
+NB3_measles_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat3_NB_measles)
+NB3_measles_Epimonth_Rt <- NB3_measles_Epimonth$fitted_Rt
+NB3_measles_Epimonth_95Lo <- NB3_measles_Epimonth$lower_bound
+NB3_measles_Epimonth_95Up <- NB3_measles_Epimonth$upper_bound
+NB4_measles_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat4_NB_measles)
+NB4_measles_Epimonth_Rt <- NB4_measles_Epimonth$fitted_Rt
+NB4_measles_Epimonth_95Lo <- NB4_measles_Epimonth$lower_bound
+NB4_measles_Epimonth_95Up <- NB4_measles_Epimonth$upper_bound
+Pois1_SARS_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat1_pois_SARS)
+Pois1_SARS_Epimonth_Rt <- Pois1_SARS_Epimonth$fitted_Rt
+Pois1_SARS_Epimonth_95Lo <- Pois1_SARS_Epimonth$lower_bound
+Pois1_SARS_Epimonth_95Up <- Pois1_SARS_Epimonth$upper_bound
+Pois2_SARS_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat2_pois_SARS)
+Pois2_SARS_Epimonth_Rt <- Pois2_SARS_Epimonth$fitted_Rt
+Pois2_SARS_Epimonth_95Lo <- Pois2_SARS_Epimonth$lower_bound
+Pois2_SARS_Epimonth_95Up <- Pois2_SARS_Epimonth$upper_bound
+Pois3_SARS_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat3_pois_SARS)
+Pois3_SARS_Epimonth_Rt <- Pois3_SARS_Epimonth$fitted_Rt
+Pois3_SARS_Epimonth_95Lo <- Pois3_SARS_Epimonth$lower_bound
+Pois3_SARS_Epimonth_95Up <- Pois3_SARS_Epimonth$upper_bound
+Pois4_SARS_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat4_pois_SARS)
+Pois4_SARS_Epimonth_Rt <- Pois4_SARS_Epimonth$fitted_Rt
+Pois4_SARS_Epimonth_95Lo <- Pois4_SARS_Epimonth$lower_bound
+Pois4_SARS_Epimonth_95Up <- Pois4_SARS_Epimonth$upper_bound
+NB1_SARS_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat1_NB_SARS)
+NB1_SARS_Epimonth_Rt <- NB1_SARS_Epimonth$fitted_Rt
+NB1_SARS_Epimonth_95Lo <- NB1_SARS_Epimonth$lower_bound
+NB1_SARS_Epimonth_95Up <- NB1_SARS_Epimonth$upper_bound
+NB2_SARS_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat2_NB_SARS)
+NB2_SARS_Epimonth_Rt <- NB2_SARS_Epimonth$fitted_Rt
+NB2_SARS_Epimonth_95Lo <- NB2_SARS_Epimonth$lower_bound
+NB2_SARS_Epimonth_95Up <- NB2_SARS_Epimonth$upper_bound
+NB3_SARS_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat3_NB_SARS)
+NB3_SARS_Epimonth_Rt <- NB3_SARS_Epimonth$fitted_Rt
+NB3_SARS_Epimonth_95Lo <- NB3_SARS_Epimonth$lower_bound
+NB3_SARS_Epimonth_95Up <- NB3_SARS_Epimonth$upper_bound
+NB4_SARS_Epimonth <- problem_solver(method = 'EpiEstim(month)', instance = dat4_NB_SARS)
+NB4_SARS_Epimonth_Rt <- NB4_SARS_Epimonth$fitted_Rt
+NB4_SARS_Epimonth_95Lo <- NB4_SARS_Epimonth$lower_bound
+NB4_SARS_Epimonth_95Up <- NB4_SARS_Epimonth$upper_bound
+
+Epimonth_res <- c(
+  Pois1_measles_Epimonth_Rt, Pois1_measles_Epimonth_95Lo, Pois1_measles_Epimonth_95Up,
+  Pois2_measles_Epimonth_Rt, Pois2_measles_Epimonth_95Lo, Pois2_measles_Epimonth_95Up,
+  Pois3_measles_Epimonth_Rt, Pois3_measles_Epimonth_95Lo, Pois3_measles_Epimonth_95Up,
+  Pois4_measles_Epimonth_Rt, Pois4_measles_Epimonth_95Lo, Pois4_measles_Epimonth_95Up, 
+  NB1_measles_Epimonth_Rt, NB1_measles_Epimonth_95Lo, NB1_measles_Epimonth_95Up, 
+  NB2_measles_Epimonth_Rt, NB2_measles_Epimonth_95Lo, NB2_measles_Epimonth_95Up, 
+  NB3_measles_Epimonth_Rt, NB3_measles_Epimonth_95Lo, NB3_measles_Epimonth_95Up, 
+  NB4_measles_Epimonth_Rt, NB4_measles_Epimonth_95Lo, NB4_measles_Epimonth_95Up, 
+  Pois1_SARS_Epimonth_Rt, Pois1_SARS_Epimonth_95Lo, Pois1_SARS_Epimonth_95Up, 
+  Pois2_SARS_Epimonth_Rt, Pois2_SARS_Epimonth_95Lo, Pois2_SARS_Epimonth_95Up, 
+  Pois3_SARS_Epimonth_Rt, Pois3_SARS_Epimonth_95Lo, Pois3_SARS_Epimonth_95Up, 
+  Pois4_SARS_Epimonth_Rt, Pois4_SARS_Epimonth_95Lo, Pois4_SARS_Epimonth_95Up, 
+  NB1_SARS_Epimonth_Rt, NB1_SARS_Epimonth_95Lo, NB1_SARS_Epimonth_95Up, 
+  NB2_SARS_Epimonth_Rt, NB2_SARS_Epimonth_95Lo, NB2_SARS_Epimonth_95Up, 
+  NB3_SARS_Epimonth_Rt, NB3_SARS_Epimonth_95Lo, NB3_SARS_Epimonth_95Up, 
+  NB4_SARS_Epimonth_Rt, NB4_SARS_Epimonth_95Lo, NB4_SARS_Epimonth_95Up
 )
-# plot(mod_epiEstim_week1, "R") +
-#  labs(y="EpiEstim Rt with weekly window and 95% CIs", title="") +
-#  theme_bw() +
-#  theme(legend.position = "none")
-mod_epiEstim_week2 <- EpiEstim::estimate_R(
-  incid = incidence2,
-  config = config_week2,
-  method = method
+Epimonth_res <- data.table(Res = Epimonth_res,
+                         Type = rep(rep(c("Fitted_Rt", "Lo95", "Up95"), each = 300), 16))
+
+Epimonth_Rt <- Epimonth_res[Type == "Fitted_Rt", ]$Res
+Epimonth_Lo95 <- Epimonth_res[Type == "Lo95", ]$Res
+Epimonth_Up95 <- Epimonth_res[Type == "Up95", ]$Res
+
+
+
+# EpiLPS ----
+Pois1_measles_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat1_pois_measles)
+Pois1_measles_EpiLPS_Rt <- Pois1_measles_EpiLPS$fitted_Rt
+Pois1_measles_EpiLPS_95Lo <- Pois1_measles_EpiLPS$lower_bound
+Pois1_measles_EpiLPS_95Up <- Pois1_measles_EpiLPS$upper_bound
+Pois2_measles_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat2_pois_measles)
+Pois2_measles_EpiLPS_Rt <- Pois2_measles_EpiLPS$fitted_Rt
+Pois2_measles_EpiLPS_95Lo <- Pois2_measles_EpiLPS$lower_bound
+Pois2_measles_EpiLPS_95Up <- Pois2_measles_EpiLPS$upper_bound
+Pois3_measles_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat3_pois_measles)
+Pois3_measles_EpiLPS_Rt <- Pois3_measles_EpiLPS$fitted_Rt
+Pois3_measles_EpiLPS_95Lo <- Pois3_measles_EpiLPS$lower_bound
+Pois3_measles_EpiLPS_95Up <- Pois3_measles_EpiLPS$upper_bound
+Pois4_measles_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat4_pois_measles)
+Pois4_measles_EpiLPS_Rt <- Pois4_measles_EpiLPS$fitted_Rt
+Pois4_measles_EpiLPS_95Lo <- Pois4_measles_EpiLPS$lower_bound
+Pois4_measles_EpiLPS_95Up <- Pois4_measles_EpiLPS$upper_bound
+NB1_measles_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat1_NB_measles)
+NB1_measles_EpiLPS_Rt <- NB1_measles_EpiLPS$fitted_Rt
+NB1_measles_EpiLPS_95Lo <- NB1_measles_EpiLPS$lower_bound
+NB1_measles_EpiLPS_95Up <- NB1_measles_EpiLPS$upper_bound
+NB2_measles_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat2_NB_measles)
+NB2_measles_EpiLPS_Rt <- NB2_measles_EpiLPS$fitted_Rt
+NB2_measles_EpiLPS_95Lo <- NB2_measles_EpiLPS$lower_bound
+NB2_measles_EpiLPS_95Up <- NB2_measles_EpiLPS$upper_bound
+NB3_measles_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat3_NB_measles)
+NB3_measles_EpiLPS_Rt <- NB3_measles_EpiLPS$fitted_Rt
+NB3_measles_EpiLPS_95Lo <- NB3_measles_EpiLPS$lower_bound
+NB3_measles_EpiLPS_95Up <- NB3_measles_EpiLPS$upper_bound
+NB4_measles_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat4_NB_measles)
+NB4_measles_EpiLPS_Rt <- NB4_measles_EpiLPS$fitted_Rt
+NB4_measles_EpiLPS_95Lo <- NB4_measles_EpiLPS$lower_bound
+NB4_measles_EpiLPS_95Up <- NB4_measles_EpiLPS$upper_bound
+Pois1_SARS_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat1_pois_SARS)
+Pois1_SARS_EpiLPS_Rt <- Pois1_SARS_EpiLPS$fitted_Rt
+Pois1_SARS_EpiLPS_95Lo <- Pois1_SARS_EpiLPS$lower_bound
+Pois1_SARS_EpiLPS_95Up <- Pois1_SARS_EpiLPS$upper_bound
+Pois2_SARS_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat2_pois_SARS)
+Pois2_SARS_EpiLPS_Rt <- Pois2_SARS_EpiLPS$fitted_Rt
+Pois2_SARS_EpiLPS_95Lo <- Pois2_SARS_EpiLPS$lower_bound
+Pois2_SARS_EpiLPS_95Up <- Pois2_SARS_EpiLPS$upper_bound
+Pois3_SARS_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat3_pois_SARS)
+Pois3_SARS_EpiLPS_Rt <- Pois3_SARS_EpiLPS$fitted_Rt
+Pois3_SARS_EpiLPS_95Lo <- Pois3_SARS_EpiLPS$lower_bound
+Pois3_SARS_EpiLPS_95Up <- Pois3_SARS_EpiLPS$upper_bound
+Pois4_SARS_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat4_pois_SARS)
+Pois4_SARS_EpiLPS_Rt <- Pois4_SARS_EpiLPS$fitted_Rt
+Pois4_SARS_EpiLPS_95Lo <- Pois4_SARS_EpiLPS$lower_bound
+Pois4_SARS_EpiLPS_95Up <- Pois4_SARS_EpiLPS$upper_bound
+NB1_SARS_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat1_NB_SARS)
+NB1_SARS_EpiLPS_Rt <- NB1_SARS_EpiLPS$fitted_Rt
+NB1_SARS_EpiLPS_95Lo <- NB1_SARS_EpiLPS$lower_bound
+NB1_SARS_EpiLPS_95Up <- NB1_SARS_EpiLPS$upper_bound
+NB2_SARS_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat2_NB_SARS)
+NB2_SARS_EpiLPS_Rt <- NB2_SARS_EpiLPS$fitted_Rt
+NB2_SARS_EpiLPS_95Lo <- NB2_SARS_EpiLPS$lower_bound
+NB2_SARS_EpiLPS_95Up <- NB2_SARS_EpiLPS$upper_bound
+NB3_SARS_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat3_NB_SARS)
+NB3_SARS_EpiLPS_Rt <- NB3_SARS_EpiLPS$fitted_Rt
+NB3_SARS_EpiLPS_95Lo <- NB3_SARS_EpiLPS$lower_bound
+NB3_SARS_EpiLPS_95Up <- NB3_SARS_EpiLPS$upper_bound
+NB4_SARS_EpiLPS <- problem_solver(method = 'EpiLPS', instance = dat4_NB_SARS)
+NB4_SARS_EpiLPS_Rt <- NB4_SARS_EpiLPS$fitted_Rt
+NB4_SARS_EpiLPS_95Lo <- NB4_SARS_EpiLPS$lower_bound
+NB4_SARS_EpiLPS_95Up <- NB4_SARS_EpiLPS$upper_bound
+
+EpiLPS_res <- c(
+  Pois1_measles_EpiLPS_Rt, Pois1_measles_EpiLPS_95Lo, Pois1_measles_EpiLPS_95Up, 
+  Pois2_measles_EpiLPS_Rt, Pois2_measles_EpiLPS_95Lo, Pois2_measles_EpiLPS_95Up, 
+  Pois3_measles_EpiLPS_Rt, Pois3_measles_EpiLPS_95Lo, Pois3_measles_EpiLPS_95Up, 
+  Pois4_measles_EpiLPS_Rt, Pois4_measles_EpiLPS_95Lo, Pois4_measles_EpiLPS_95Up, 
+  NB1_measles_EpiLPS_Rt, NB1_measles_EpiLPS_95Lo, NB1_measles_EpiLPS_95Up, 
+  NB2_measles_EpiLPS_Rt, NB2_measles_EpiLPS_95Lo, NB2_measles_EpiLPS_95Up, 
+  NB3_measles_EpiLPS_Rt, NB3_measles_EpiLPS_95Lo, NB3_measles_EpiLPS_95Up, 
+  NB4_measles_EpiLPS_Rt, NB4_measles_EpiLPS_95Lo, NB4_measles_EpiLPS_95Up, 
+  Pois1_SARS_EpiLPS_Rt, Pois1_SARS_EpiLPS_95Lo, Pois1_SARS_EpiLPS_95Up, 
+  Pois2_SARS_EpiLPS_Rt, Pois2_SARS_EpiLPS_95Lo, Pois2_SARS_EpiLPS_95Up, 
+  Pois3_SARS_EpiLPS_Rt, Pois3_SARS_EpiLPS_95Lo, Pois3_SARS_EpiLPS_95Up, 
+  Pois4_SARS_EpiLPS_Rt, Pois4_SARS_EpiLPS_95Lo, Pois4_SARS_EpiLPS_95Up, 
+  NB1_SARS_EpiLPS_Rt, NB1_SARS_EpiLPS_95Lo, NB1_SARS_EpiLPS_95Up, 
+  NB2_SARS_EpiLPS_Rt, NB2_SARS_EpiLPS_95Lo, NB2_SARS_EpiLPS_95Up, 
+  NB3_SARS_EpiLPS_Rt, NB3_SARS_EpiLPS_95Lo, NB3_SARS_EpiLPS_95Up, 
+  NB4_SARS_EpiLPS_Rt, NB4_SARS_EpiLPS_95Lo, NB4_SARS_EpiLPS_95Up
 )
-mod_epiEstim_week3 <- EpiEstim::estimate_R(
-  incid = incidence3,
-  config = config_week3,
-  method = method
+EpiLPS_res <- data.table(Res = EpiLPS_res,
+                         Type = rep(rep(c("Fitted_Rt", "Lo95", "Up95"), each = 300), 16))
+
+EpiLPS_Rt <- EpiLPS_res[Type == "Fitted_Rt", ]$Res
+EpiLPS_Lo95 <- EpiLPS_res[Type == "Lo95", ]$Res
+EpiLPS_Up95 <- EpiLPS_res[Type == "Up95", ]$Res
+
+
+# EpiFilter ----
+Pois1_measles_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat1_pois_measles)
+Pois1_measles_EpiFilter_Rt <- Pois1_measles_EpiFilter$fitted_Rt
+Pois1_measles_EpiFilter_95Lo <- Pois1_measles_EpiFilter$lower_bound
+Pois1_measles_EpiFilter_95Up <- Pois1_measles_EpiFilter$upper_bound
+Pois2_measles_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat2_pois_measles)
+Pois2_measles_EpiFilter_Rt <- Pois2_measles_EpiFilter$fitted_Rt
+Pois2_measles_EpiFilter_95Lo <- Pois2_measles_EpiFilter$lower_bound
+Pois2_measles_EpiFilter_95Up <- Pois2_measles_EpiFilter$upper_bound
+Pois3_measles_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat3_pois_measles)
+Pois3_measles_EpiFilter_Rt <- Pois3_measles_EpiFilter$fitted_Rt
+Pois3_measles_EpiFilter_95Lo <- Pois3_measles_EpiFilter$lower_bound
+Pois3_measles_EpiFilter_95Up <- Pois3_measles_EpiFilter$upper_bound
+Pois4_measles_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat4_pois_measles)
+Pois4_measles_EpiFilter_Rt <- Pois4_measles_EpiFilter$fitted_Rt
+Pois4_measles_EpiFilter_95Lo <- Pois4_measles_EpiFilter$lower_bound
+Pois4_measles_EpiFilter_95Up <- Pois4_measles_EpiFilter$upper_bound
+NB1_measles_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat1_NB_measles)
+NB1_measles_EpiFilter_Rt <- NB1_measles_EpiFilter$fitted_Rt
+NB1_measles_EpiFilter_95Lo <- NB1_measles_EpiFilter$lower_bound
+NB1_measles_EpiFilter_95Up <- NB1_measles_EpiFilter$upper_bound
+NB2_measles_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat2_NB_measles)
+NB2_measles_EpiFilter_Rt <- NB2_measles_EpiFilter$fitted_Rt
+NB2_measles_EpiFilter_95Lo <- NB2_measles_EpiFilter$lower_bound
+NB2_measles_EpiFilter_95Up <- NB2_measles_EpiFilter$upper_bound
+NB3_measles_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat3_NB_measles)
+NB3_measles_EpiFilter_Rt <- NB3_measles_EpiFilter$fitted_Rt
+NB3_measles_EpiFilter_95Lo <- NB3_measles_EpiFilter$lower_bound
+NB3_measles_EpiFilter_95Up <- NB3_measles_EpiFilter$upper_bound
+NB4_measles_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat4_NB_measles)
+NB4_measles_EpiFilter_Rt <- NB4_measles_EpiFilter$fitted_Rt
+NB4_measles_EpiFilter_95Lo <- NB4_measles_EpiFilter$lower_bound
+NB4_measles_EpiFilter_95Up <- NB4_measles_EpiFilter$upper_bound
+Pois1_SARS_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat1_pois_SARS)
+Pois1_SARS_EpiFilter_Rt <- Pois1_SARS_EpiFilter$fitted_Rt
+Pois1_SARS_EpiFilter_95Lo <- Pois1_SARS_EpiFilter$lower_bound
+Pois1_SARS_EpiFilter_95Up <- Pois1_SARS_EpiFilter$upper_bound
+Pois2_SARS_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat2_pois_SARS)
+Pois2_SARS_EpiFilter_Rt <- Pois2_SARS_EpiFilter$fitted_Rt
+Pois2_SARS_EpiFilter_95Lo <- Pois2_SARS_EpiFilter$lower_bound
+Pois2_SARS_EpiFilter_95Up <- Pois2_SARS_EpiFilter$upper_bound
+Pois3_SARS_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat3_pois_SARS)
+Pois3_SARS_EpiFilter_Rt <- Pois3_SARS_EpiFilter$fitted_Rt
+Pois3_SARS_EpiFilter_95Lo <- Pois3_SARS_EpiFilter$lower_bound
+Pois3_SARS_EpiFilter_95Up <- Pois3_SARS_EpiFilter$upper_bound
+Pois4_SARS_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat4_pois_SARS)
+Pois4_SARS_EpiFilter_Rt <- Pois4_SARS_EpiFilter$fitted_Rt
+Pois4_SARS_EpiFilter_95Lo <- Pois4_SARS_EpiFilter$lower_bound
+Pois4_SARS_EpiFilter_95Up <- Pois4_SARS_EpiFilter$upper_bound
+NB1_SARS_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat1_NB_SARS)
+NB1_SARS_EpiFilter_Rt <- NB1_SARS_EpiFilter$fitted_Rt
+NB1_SARS_EpiFilter_95Lo <- NB1_SARS_EpiFilter$lower_bound
+NB1_SARS_EpiFilter_95Up <- NB1_SARS_EpiFilter$upper_bound
+NB2_SARS_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat2_NB_SARS)
+NB2_SARS_EpiFilter_Rt <- NB2_SARS_EpiFilter$fitted_Rt
+NB2_SARS_EpiFilter_95Lo <- NB2_SARS_EpiFilter$lower_bound
+NB2_SARS_EpiFilter_95Up <- NB2_SARS_EpiFilter$upper_bound
+NB3_SARS_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat3_NB_SARS)
+NB3_SARS_EpiFilter_Rt <- NB3_SARS_EpiFilter$fitted_Rt
+NB3_SARS_EpiFilter_95Lo <- NB3_SARS_EpiFilter$lower_bound
+NB3_SARS_EpiFilter_95Up <- NB3_SARS_EpiFilter$upper_bound
+NB4_SARS_EpiFilter <- problem_solver(method = 'EpiFilter', instance = dat4_NB_SARS)
+NB4_SARS_EpiFilter_Rt <- NB4_SARS_EpiFilter$fitted_Rt
+NB4_SARS_EpiFilter_95Lo <- NB4_SARS_EpiFilter$lower_bound
+NB4_SARS_EpiFilter_95Up <- NB4_SARS_EpiFilter$upper_bound
+
+EpiFilter_res <- c(
+  Pois1_measles_EpiFilter_Rt, Pois1_measles_EpiFilter_95Lo, Pois1_measles_EpiFilter_95Up,
+  Pois2_measles_EpiFilter_Rt, Pois2_measles_EpiFilter_95Lo, Pois2_measles_EpiFilter_95Up,
+  Pois3_measles_EpiFilter_Rt, Pois3_measles_EpiFilter_95Lo, Pois3_measles_EpiFilter_95Up,
+  Pois4_measles_EpiFilter_Rt, Pois4_measles_EpiFilter_95Lo, Pois4_measles_EpiFilter_95Up,
+  NB1_measles_EpiFilter_Rt, NB1_measles_EpiFilter_95Lo, NB1_measles_EpiFilter_95Up, 
+  NB2_measles_EpiFilter_Rt, NB2_measles_EpiFilter_95Lo, NB2_measles_EpiFilter_95Up, 
+  NB3_measles_EpiFilter_Rt, NB3_measles_EpiFilter_95Lo, NB3_measles_EpiFilter_95Up, 
+  NB4_measles_EpiFilter_Rt, NB4_measles_EpiFilter_95Lo, NB4_measles_EpiFilter_95Up, 
+  Pois1_SARS_EpiFilter_Rt, Pois1_SARS_EpiFilter_95Lo, Pois1_SARS_EpiFilter_95Up, 
+  Pois2_SARS_EpiFilter_Rt, Pois2_SARS_EpiFilter_95Lo, Pois2_SARS_EpiFilter_95Up, 
+  Pois3_SARS_EpiFilter_Rt, Pois3_SARS_EpiFilter_95Lo, Pois3_SARS_EpiFilter_95Up, 
+  Pois4_SARS_EpiFilter_Rt, Pois4_SARS_EpiFilter_95Lo, Pois4_SARS_EpiFilter_95Up, 
+  NB1_SARS_EpiFilter_Rt, NB1_SARS_EpiFilter_95Lo, NB1_SARS_EpiFilter_95Up, 
+  NB2_SARS_EpiFilter_Rt, NB2_SARS_EpiFilter_95Lo, NB2_SARS_EpiFilter_95Up, 
+  NB3_SARS_EpiFilter_Rt, NB3_SARS_EpiFilter_95Lo, NB3_SARS_EpiFilter_95Up, 
+  NB4_SARS_EpiFilter_Rt, NB4_SARS_EpiFilter_95Lo, NB4_SARS_EpiFilter_95Up
 )
-mod_epiEstim_week4 <- EpiEstim::estimate_R(
-  incid = incidence4,
-  config = config_week4,
-  method = method
+EpiFilter_res <- data.table(Res = EpiFilter_res,
+                           Type = rep(rep(c("Fitted_Rt", "Lo95", "Up95"), each = 300), 16))
+EpiFilter_Rt <- EpiFilter_res[Type == "Fitted_Rt", ]$Res
+EpiFilter_Lo95 <- EpiFilter_res[Type == "Lo95", ]$Res
+EpiFilter_Up95 <- EpiFilter_res[Type == "Up95", ]$Res
+
+
+# RtEstim(k=0) ----
+Pois1_measles_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat1_pois_measles)
+Pois1_measles_RtEstim0_Rt <- Pois1_measles_RtEstim0$fitted_Rt
+Pois1_measles_RtEstim0_95Lo <- Pois1_measles_RtEstim0$lower_bound
+Pois1_measles_RtEstim0_95Up <- Pois1_measles_RtEstim0$upper_bound
+Pois2_measles_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat2_pois_measles)
+Pois2_measles_RtEstim0_Rt <- Pois2_measles_RtEstim0$fitted_Rt
+Pois2_measles_RtEstim0_95Lo <- Pois2_measles_RtEstim0$lower_bound
+Pois2_measles_RtEstim0_95Up <- Pois2_measles_RtEstim0$upper_bound
+Pois3_measles_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat3_pois_measles)
+Pois3_measles_RtEstim0_Rt <- Pois3_measles_RtEstim0$fitted_Rt
+Pois3_measles_RtEstim0_95Lo <- Pois3_measles_RtEstim0$lower_bound
+Pois3_measles_RtEstim0_95Up <- Pois3_measles_RtEstim0$upper_bound
+Pois4_measles_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat4_pois_measles)
+Pois4_measles_RtEstim0_Rt <- Pois4_measles_RtEstim0$fitted_Rt
+Pois4_measles_RtEstim0_95Lo <- Pois4_measles_RtEstim0$lower_bound
+Pois4_measles_RtEstim0_95Up <- Pois4_measles_RtEstim0$upper_bound
+NB1_measles_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat1_NB_measles)
+NB1_measles_RtEstim0_Rt <- NB1_measles_RtEstim0$fitted_Rt
+NB1_measles_RtEstim0_95Lo <- NB1_measles_RtEstim0$lower_bound
+NB1_measles_RtEstim0_95Up <- NB1_measles_RtEstim0$upper_bound
+NB2_measles_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat2_NB_measles)
+NB2_measles_RtEstim0_Rt <- NB2_measles_RtEstim0$fitted_Rt
+NB2_measles_RtEstim0_95Lo <- NB2_measles_RtEstim0$lower_bound
+NB2_measles_RtEstim0_95Up <- NB2_measles_RtEstim0$upper_bound
+NB3_measles_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat3_NB_measles)
+NB3_measles_RtEstim0_Rt <- NB3_measles_RtEstim0$fitted_Rt
+NB3_measles_RtEstim0_95Lo <- NB3_measles_RtEstim0$lower_bound
+NB3_measles_RtEstim0_95Up <- NB3_measles_RtEstim0$upper_bound
+NB4_measles_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat4_NB_measles)
+NB4_measles_RtEstim0_Rt <- NB4_measles_RtEstim0$fitted_Rt
+NB4_measles_RtEstim0_95Lo <- NB4_measles_RtEstim0$lower_bound
+NB4_measles_RtEstim0_95Up <- NB4_measles_RtEstim0$upper_bound
+Pois1_SARS_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat1_pois_SARS)
+Pois1_SARS_RtEstim0_Rt <- Pois1_SARS_RtEstim0$fitted_Rt
+Pois1_SARS_RtEstim0_95Lo <- Pois1_SARS_RtEstim0$lower_bound
+Pois1_SARS_RtEstim0_95Up <- Pois1_SARS_RtEstim0$upper_bound
+Pois2_SARS_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat2_pois_SARS)
+Pois2_SARS_RtEstim0_Rt <- Pois2_SARS_RtEstim0$fitted_Rt
+Pois2_SARS_RtEstim0_95Lo <- Pois2_SARS_RtEstim0$lower_bound
+Pois2_SARS_RtEstim0_95Up <- Pois2_SARS_RtEstim0$upper_bound
+Pois3_SARS_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat3_pois_SARS)
+Pois3_SARS_RtEstim0_Rt <- Pois3_SARS_RtEstim0$fitted_Rt
+Pois3_SARS_RtEstim0_95Lo <- Pois3_SARS_RtEstim0$lower_bound
+Pois3_SARS_RtEstim0_95Up <- Pois3_SARS_RtEstim0$upper_bound
+Pois4_SARS_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat4_pois_SARS)
+Pois4_SARS_RtEstim0_Rt <- Pois4_SARS_RtEstim0$fitted_Rt
+Pois4_SARS_RtEstim0_95Lo <- Pois4_SARS_RtEstim0$lower_bound
+Pois4_SARS_RtEstim0_95Up <- Pois4_SARS_RtEstim0$upper_bound
+NB1_SARS_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat1_NB_SARS)
+NB1_SARS_RtEstim0_Rt <- NB1_SARS_RtEstim0$fitted_Rt
+NB1_SARS_RtEstim0_95Lo <- NB1_SARS_RtEstim0$lower_bound
+NB1_SARS_RtEstim0_95Up <- NB1_SARS_RtEstim0$upper_bound
+NB2_SARS_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat2_NB_SARS)
+NB2_SARS_RtEstim0_Rt <- NB2_SARS_RtEstim0$fitted_Rt
+NB2_SARS_RtEstim0_95Lo <- NB2_SARS_RtEstim0$lower_bound
+NB2_SARS_RtEstim0_95Up <- NB2_SARS_RtEstim0$upper_bound
+NB3_SARS_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat3_NB_SARS)
+NB3_SARS_RtEstim0_Rt <- NB3_SARS_RtEstim0$fitted_Rt
+NB3_SARS_RtEstim0_95Lo <- NB3_SARS_RtEstim0$lower_bound
+NB3_SARS_RtEstim0_95Up <- NB3_SARS_RtEstim0$upper_bound
+NB4_SARS_RtEstim0 <- problem_solver(method = 'RtEstim(k=0)', instance = dat4_NB_SARS)
+NB4_SARS_RtEstim0_Rt <- NB4_SARS_RtEstim0$fitted_Rt
+NB4_SARS_RtEstim0_95Lo <- NB4_SARS_RtEstim0$lower_bound
+NB4_SARS_RtEstim0_95Up <- NB4_SARS_RtEstim0$upper_bound
+
+RtEstim0_res <- c(
+  Pois1_measles_RtEstim0_Rt, Pois1_measles_RtEstim0_95Lo, Pois1_measles_RtEstim0_95Up,
+  Pois2_measles_RtEstim0_Rt, Pois2_measles_RtEstim0_95Lo, Pois2_measles_RtEstim0_95Up,
+  Pois3_measles_RtEstim0_Rt, Pois3_measles_RtEstim0_95Lo, Pois3_measles_RtEstim0_95Up,
+  Pois4_measles_RtEstim0_Rt, Pois4_measles_RtEstim0_95Lo, Pois4_measles_RtEstim0_95Up, 
+  NB1_measles_RtEstim0_Rt, NB1_measles_RtEstim0_95Lo, NB1_measles_RtEstim0_95Up, 
+  NB2_measles_RtEstim0_Rt, NB2_measles_RtEstim0_95Lo, NB2_measles_RtEstim0_95Up, 
+  NB3_measles_RtEstim0_Rt, NB3_measles_RtEstim0_95Lo, NB3_measles_RtEstim0_95Up, 
+  NB4_measles_RtEstim0_Rt, NB4_measles_RtEstim0_95Lo, NB4_measles_RtEstim0_95Up, 
+  Pois1_SARS_RtEstim0_Rt, Pois1_SARS_RtEstim0_95Lo, Pois1_SARS_RtEstim0_95Up, 
+  Pois2_SARS_RtEstim0_Rt, Pois2_SARS_RtEstim0_95Lo, Pois2_SARS_RtEstim0_95Up, 
+  Pois3_SARS_RtEstim0_Rt, Pois3_SARS_RtEstim0_95Lo, Pois3_SARS_RtEstim0_95Up, 
+  Pois4_SARS_RtEstim0_Rt, Pois4_SARS_RtEstim0_95Lo, Pois4_SARS_RtEstim0_95Up, 
+  NB1_SARS_RtEstim0_Rt, NB1_SARS_RtEstim0_95Lo, NB1_SARS_RtEstim0_95Up, 
+  NB2_SARS_RtEstim0_Rt, NB2_SARS_RtEstim0_95Lo, NB2_SARS_RtEstim0_95Up, 
+  NB3_SARS_RtEstim0_Rt, NB3_SARS_RtEstim0_95Lo, NB3_SARS_RtEstim0_95Up, 
+  NB4_SARS_RtEstim0_Rt, NB4_SARS_RtEstim0_95Lo, NB4_SARS_RtEstim0_95Up
 )
-# configuration for monthly sliding window
-t_month_start <- seq(2, len - 29)
-t_month_end <- t_month_start + 29
-config_month1 <- make_config(list(
-  si_distr = c(0, prob_gamma1),
-  t_start = t_month_start,
-  t_end = t_month_end
-))
-config_month2 <- make_config(list(
-  si_distr = c(0, prob_gamma2),
-  t_start = t_month_start,
-  t_end = t_month_end
-))
-config_month3 <- make_config(list(
-  si_distr = c(0, prob_gamma3),
-  t_start = t_month_start,
-  t_end = t_month_end
-))
-config_month4 <- config_month3
-# Rt estimates
-mod_epiEstim_month1 <- EpiEstim::estimate_R(
-  incid = incidence1,
-  config = config_month1,
-  method = method
+RtEstim0_res <- data.table(Res = RtEstim0_res,
+                           Type = rep(rep(c("Fitted_Rt", "Lo95", "Up95"), each = 300), 16))
+RtEstim0_Rt <- RtEstim0_res[Type == "Fitted_Rt", ]$Res
+RtEstim0_Lo95 <- RtEstim0_res[Type == "Lo95", ]$Res
+RtEstim0_Up95 <- RtEstim0_res[Type == "Up95", ]$Res
+
+
+# RtEstim(k=1) ----
+Pois1_measles_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat1_pois_measles)
+Pois1_measles_RtEstim1_Rt <- Pois1_measles_RtEstim1$fitted_Rt
+Pois1_measles_RtEstim1_95Lo <- Pois1_measles_RtEstim1$lower_bound
+Pois1_measles_RtEstim1_95Up <- Pois1_measles_RtEstim1$upper_bound
+Pois2_measles_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat2_pois_measles)
+Pois2_measles_RtEstim1_Rt <- Pois2_measles_RtEstim1$fitted_Rt
+Pois2_measles_RtEstim1_95Lo <- Pois2_measles_RtEstim1$lower_bound
+Pois2_measles_RtEstim1_95Up <- Pois2_measles_RtEstim1$upper_bound
+Pois3_measles_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat3_pois_measles)
+Pois3_measles_RtEstim1_Rt <- Pois3_measles_RtEstim1$fitted_Rt
+Pois3_measles_RtEstim1_95Lo <- Pois3_measles_RtEstim1$lower_bound
+Pois3_measles_RtEstim1_95Up <- Pois3_measles_RtEstim1$upper_bound
+Pois4_measles_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat4_pois_measles)
+Pois4_measles_RtEstim1_Rt <- Pois4_measles_RtEstim1$fitted_Rt
+Pois4_measles_RtEstim1_95Lo <- Pois4_measles_RtEstim1$lower_bound
+Pois4_measles_RtEstim1_95Up <- Pois4_measles_RtEstim1$upper_bound
+NB1_measles_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat1_NB_measles)
+NB1_measles_RtEstim1_Rt <- NB1_measles_RtEstim1$fitted_Rt
+NB1_measles_RtEstim1_95Lo <- NB1_measles_RtEstim1$lower_bound
+NB1_measles_RtEstim1_95Up <- NB1_measles_RtEstim1$upper_bound
+NB2_measles_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat2_NB_measles)
+NB2_measles_RtEstim1_Rt <- NB2_measles_RtEstim1$fitted_Rt
+NB2_measles_RtEstim1_95Lo <- NB2_measles_RtEstim1$lower_bound
+NB2_measles_RtEstim1_95Up <- NB2_measles_RtEstim1$upper_bound
+NB3_measles_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat3_NB_measles)
+NB3_measles_RtEstim1_Rt <- NB3_measles_RtEstim1$fitted_Rt
+NB3_measles_RtEstim1_95Lo <- NB3_measles_RtEstim1$lower_bound
+NB3_measles_RtEstim1_95Up <- NB3_measles_RtEstim1$upper_bound
+NB4_measles_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat4_NB_measles)
+NB4_measles_RtEstim1_Rt <- NB4_measles_RtEstim1$fitted_Rt
+NB4_measles_RtEstim1_95Lo <- NB4_measles_RtEstim1$lower_bound
+NB4_measles_RtEstim1_95Up <- NB4_measles_RtEstim1$upper_bound
+Pois1_SARS_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat1_pois_SARS)
+Pois1_SARS_RtEstim1_Rt <- Pois1_SARS_RtEstim1$fitted_Rt
+Pois1_SARS_RtEstim1_95Lo <- Pois1_SARS_RtEstim1$lower_bound
+Pois1_SARS_RtEstim1_95Up <- Pois1_SARS_RtEstim1$upper_bound
+Pois2_SARS_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat2_pois_SARS)
+Pois2_SARS_RtEstim1_Rt <- Pois2_SARS_RtEstim1$fitted_Rt
+Pois2_SARS_RtEstim1_95Lo <- Pois2_SARS_RtEstim1$lower_bound
+Pois2_SARS_RtEstim1_95Up <- Pois2_SARS_RtEstim1$upper_bound
+Pois3_SARS_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat3_pois_SARS)
+Pois3_SARS_RtEstim1_Rt <- Pois3_SARS_RtEstim1$fitted_Rt
+Pois3_SARS_RtEstim1_95Lo <- Pois3_SARS_RtEstim1$lower_bound
+Pois3_SARS_RtEstim1_95Up <- Pois3_SARS_RtEstim1$upper_bound
+Pois4_SARS_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat4_pois_SARS)
+Pois4_SARS_RtEstim1_Rt <- Pois4_SARS_RtEstim1$fitted_Rt
+Pois4_SARS_RtEstim1_95Lo <- Pois4_SARS_RtEstim1$lower_bound
+Pois4_SARS_RtEstim1_95Up <- Pois4_SARS_RtEstim1$upper_bound
+NB1_SARS_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat1_NB_SARS)
+NB1_SARS_RtEstim1_Rt <- NB1_SARS_RtEstim1$fitted_Rt
+NB1_SARS_RtEstim1_95Lo <- NB1_SARS_RtEstim1$lower_bound
+NB1_SARS_RtEstim1_95Up <- NB1_SARS_RtEstim1$upper_bound
+NB2_SARS_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat2_NB_SARS)
+NB2_SARS_RtEstim1_Rt <- NB2_SARS_RtEstim1$fitted_Rt
+NB2_SARS_RtEstim1_95Lo <- NB2_SARS_RtEstim1$lower_bound
+NB2_SARS_RtEstim1_95Up <- NB2_SARS_RtEstim1$upper_bound
+NB3_SARS_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat3_NB_SARS)
+NB3_SARS_RtEstim1_Rt <- NB3_SARS_RtEstim1$fitted_Rt
+NB3_SARS_RtEstim1_95Lo <- NB3_SARS_RtEstim1$lower_bound
+NB3_SARS_RtEstim1_95Up <- NB3_SARS_RtEstim1$upper_bound
+NB4_SARS_RtEstim1 <- problem_solver(method = 'RtEstim(k=1)', instance = dat4_NB_SARS)
+NB4_SARS_RtEstim1_Rt <- NB4_SARS_RtEstim1$fitted_Rt
+NB4_SARS_RtEstim1_95Lo <- NB4_SARS_RtEstim1$lower_bound
+NB4_SARS_RtEstim1_95Up <- NB4_SARS_RtEstim1$upper_bound
+
+
+RtEstim1_res <- c(
+  Pois1_measles_RtEstim1_Rt, Pois1_measles_RtEstim1_95Lo, Pois1_measles_RtEstim1_95Up,
+  Pois2_measles_RtEstim1_Rt, Pois2_measles_RtEstim1_95Lo, Pois2_measles_RtEstim1_95Up,
+  Pois3_measles_RtEstim1_Rt, Pois3_measles_RtEstim1_95Lo, Pois3_measles_RtEstim1_95Up,
+  Pois4_measles_RtEstim1_Rt, Pois4_measles_RtEstim1_95Lo, Pois4_measles_RtEstim1_95Up, 
+  NB1_measles_RtEstim1_Rt, NB1_measles_RtEstim1_95Lo, NB1_measles_RtEstim1_95Up, 
+  NB2_measles_RtEstim1_Rt, NB2_measles_RtEstim1_95Lo, NB2_measles_RtEstim1_95Up, 
+  NB3_measles_RtEstim1_Rt, NB3_measles_RtEstim1_95Lo, NB3_measles_RtEstim1_95Up, 
+  NB4_measles_RtEstim1_Rt, NB4_measles_RtEstim1_95Lo, NB4_measles_RtEstim1_95Up, 
+  Pois1_SARS_RtEstim1_Rt, Pois1_SARS_RtEstim1_95Lo, Pois1_SARS_RtEstim1_95Up, 
+  Pois2_SARS_RtEstim1_Rt, Pois2_SARS_RtEstim1_95Lo, Pois2_SARS_RtEstim1_95Up, 
+  Pois3_SARS_RtEstim1_Rt, Pois3_SARS_RtEstim1_95Lo, Pois3_SARS_RtEstim1_95Up, 
+  Pois4_SARS_RtEstim1_Rt, Pois4_SARS_RtEstim1_95Lo, Pois4_SARS_RtEstim1_95Up, 
+  NB1_SARS_RtEstim1_Rt, NB1_SARS_RtEstim1_95Lo, NB1_SARS_RtEstim1_95Up, 
+  NB2_SARS_RtEstim1_Rt, NB2_SARS_RtEstim1_95Lo, NB2_SARS_RtEstim1_95Up, 
+  NB3_SARS_RtEstim1_Rt, NB3_SARS_RtEstim1_95Lo, NB3_SARS_RtEstim1_95Up, 
+  NB4_SARS_RtEstim1_Rt, NB4_SARS_RtEstim1_95Lo, NB4_SARS_RtEstim1_95Up
 )
-mod_epiEstim_month2 <- EpiEstim::estimate_R(
-  incid = incidence2,
-  config = config_month2,
-  method = method
-)
-mod_epiEstim_month3 <- EpiEstim::estimate_R(
-  incid = incidence3,
-  config = config_month3,
-  method = method
-)
-mod_epiEstim_month4 <- EpiEstim::estimate_R(
-  incid = incidence4,
-  config = config_month4,
-  method = method
+RtEstim1_res <- data.table(Res = RtEstim1_res,
+                           Type = rep(rep(c("Fitted_Rt", "Lo95", "Up95"), each = 300), 16))
+RtEstim1_Rt <- RtEstim1_res[Type == "Fitted_Rt", ]$Res
+RtEstim1_Lo95 <- RtEstim1_res[Type == "Lo95", ]$Res
+RtEstim1_Up95 <- RtEstim1_res[Type == "Up95", ]$Res
+
+
+# RtEstim(k=2) ----
+Pois1_measles_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat1_pois_measles)
+Pois1_measles_RtEstim2_Rt <- Pois1_measles_RtEstim2$fitted_Rt
+Pois1_measles_RtEstim2_95Lo <- Pois1_measles_RtEstim2$lower_bound
+Pois1_measles_RtEstim2_95Up <- Pois1_measles_RtEstim2$upper_bound
+Pois2_measles_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat2_pois_measles)
+Pois2_measles_RtEstim2_Rt <- Pois2_measles_RtEstim2$fitted_Rt
+Pois2_measles_RtEstim2_95Lo <- Pois2_measles_RtEstim2$lower_bound
+Pois2_measles_RtEstim2_95Up <- Pois2_measles_RtEstim2$upper_bound
+Pois3_measles_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat3_pois_measles)
+Pois3_measles_RtEstim2_Rt <- Pois3_measles_RtEstim2$fitted_Rt
+Pois3_measles_RtEstim2_95Lo <- Pois3_measles_RtEstim2$lower_bound
+Pois3_measles_RtEstim2_95Up <- Pois3_measles_RtEstim2$upper_bound
+Pois4_measles_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat4_pois_measles)
+Pois4_measles_RtEstim2_Rt <- Pois4_measles_RtEstim2$fitted_Rt
+Pois4_measles_RtEstim2_95Lo <- Pois4_measles_RtEstim2$lower_bound
+Pois4_measles_RtEstim2_95Up <- Pois4_measles_RtEstim2$upper_bound
+NB1_measles_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat1_NB_measles)
+NB1_measles_RtEstim2_Rt <- NB1_measles_RtEstim2$fitted_Rt
+NB1_measles_RtEstim2_95Lo <- NB1_measles_RtEstim2$lower_bound
+NB1_measles_RtEstim2_95Up <- NB1_measles_RtEstim2$upper_bound
+NB2_measles_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat2_NB_measles)
+NB2_measles_RtEstim2_Rt <- NB2_measles_RtEstim2$fitted_Rt
+NB2_measles_RtEstim2_95Lo <- NB2_measles_RtEstim2$lower_bound
+NB2_measles_RtEstim2_95Up <- NB2_measles_RtEstim2$upper_bound
+NB3_measles_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat3_NB_measles)
+NB3_measles_RtEstim2_Rt <- NB3_measles_RtEstim2$fitted_Rt
+NB3_measles_RtEstim2_95Lo <- NB3_measles_RtEstim2$lower_bound
+NB3_measles_RtEstim2_95Up <- NB3_measles_RtEstim2$upper_bound
+NB4_measles_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat4_NB_measles)
+NB4_measles_RtEstim2_Rt <- NB4_measles_RtEstim2$fitted_Rt
+NB4_measles_RtEstim2_95Lo <- NB4_measles_RtEstim2$lower_bound
+NB4_measles_RtEstim2_95Up <- NB4_measles_RtEstim2$upper_bound
+Pois1_SARS_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat1_pois_SARS)
+Pois1_SARS_RtEstim2_Rt <- Pois1_SARS_RtEstim2$fitted_Rt
+Pois1_SARS_RtEstim2_95Lo <- Pois1_SARS_RtEstim2$lower_bound
+Pois1_SARS_RtEstim2_95Up <- Pois1_SARS_RtEstim2$upper_bound
+Pois2_SARS_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat2_pois_SARS)
+Pois2_SARS_RtEstim2_Rt <- Pois2_SARS_RtEstim2$fitted_Rt
+Pois2_SARS_RtEstim2_95Lo <- Pois2_SARS_RtEstim2$lower_bound
+Pois2_SARS_RtEstim2_95Up <- Pois2_SARS_RtEstim2$upper_bound
+Pois3_SARS_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat3_pois_SARS)
+Pois3_SARS_RtEstim2_Rt <- Pois3_SARS_RtEstim2$fitted_Rt
+Pois3_SARS_RtEstim2_95Lo <- Pois3_SARS_RtEstim2$lower_bound
+Pois3_SARS_RtEstim2_95Up <- Pois3_SARS_RtEstim2$upper_bound
+Pois4_SARS_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat4_pois_SARS)
+Pois4_SARS_RtEstim2_Rt <- Pois4_SARS_RtEstim2$fitted_Rt
+Pois4_SARS_RtEstim2_95Lo <- Pois4_SARS_RtEstim2$lower_bound
+Pois4_SARS_RtEstim2_95Up <- Pois4_SARS_RtEstim2$upper_bound
+NB1_SARS_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat1_NB_SARS)
+NB1_SARS_RtEstim2_Rt <- NB1_SARS_RtEstim2$fitted_Rt
+NB1_SARS_RtEstim2_95Lo <- NB1_SARS_RtEstim2$lower_bound
+NB1_SARS_RtEstim2_95Up <- NB1_SARS_RtEstim2$upper_bound
+NB2_SARS_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat2_NB_SARS)
+NB2_SARS_RtEstim2_Rt <- NB2_SARS_RtEstim2$fitted_Rt
+NB2_SARS_RtEstim2_95Lo <- NB2_SARS_RtEstim2$lower_bound
+NB2_SARS_RtEstim2_95Up <- NB2_SARS_RtEstim2$upper_bound
+NB3_SARS_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat3_NB_SARS)
+NB3_SARS_RtEstim2_Rt <- NB3_SARS_RtEstim2$fitted_Rt
+NB3_SARS_RtEstim2_95Lo <- NB3_SARS_RtEstim2$lower_bound
+NB3_SARS_RtEstim2_95Up <- NB3_SARS_RtEstim2$upper_bound
+NB4_SARS_RtEstim2 <- problem_solver(method = 'RtEstim(k=2)', instance = dat4_NB_SARS)
+NB4_SARS_RtEstim2_Rt <- NB4_SARS_RtEstim2$fitted_Rt
+NB4_SARS_RtEstim2_95Lo <- NB4_SARS_RtEstim2$lower_bound
+NB4_SARS_RtEstim2_95Up <- NB4_SARS_RtEstim2$upper_bound
+
+RtEstim2_res <- c( 
+  Pois1_measles_RtEstim2_Rt, Pois1_measles_RtEstim2_95Lo, Pois1_measles_RtEstim2_95Up,
+  Pois2_measles_RtEstim2_Rt, Pois2_measles_RtEstim2_95Lo, Pois2_measles_RtEstim2_95Up,
+  Pois3_measles_RtEstim2_Rt, Pois3_measles_RtEstim2_95Lo, Pois3_measles_RtEstim2_95Up,
+  Pois4_measles_RtEstim2_Rt, Pois4_measles_RtEstim2_95Lo, Pois4_measles_RtEstim2_95Up,
+  NB1_measles_RtEstim2_Rt, NB1_measles_RtEstim2_95Lo, NB1_measles_RtEstim2_95Up,
+  NB2_measles_RtEstim2_Rt, NB2_measles_RtEstim2_95Lo, NB2_measles_RtEstim2_95Up, 
+  NB3_measles_RtEstim2_Rt, NB3_measles_RtEstim2_95Lo, NB3_measles_RtEstim2_95Up,
+  NB4_measles_RtEstim2_Rt, NB4_measles_RtEstim2_95Lo, NB4_measles_RtEstim2_95Up,
+  Pois1_SARS_RtEstim2_Rt, Pois1_SARS_RtEstim2_95Lo, Pois1_SARS_RtEstim2_95Up,
+  Pois2_SARS_RtEstim2_Rt, Pois2_SARS_RtEstim2_95Lo, Pois2_SARS_RtEstim2_95Up,
+  Pois3_SARS_RtEstim2_Rt, Pois3_SARS_RtEstim2_95Lo, Pois3_SARS_RtEstim2_95Up,
+  Pois4_SARS_RtEstim2_Rt, Pois4_SARS_RtEstim2_95Lo, Pois4_SARS_RtEstim2_95Up, 
+  NB1_SARS_RtEstim2_Rt, NB1_SARS_RtEstim2_95Lo, NB1_SARS_RtEstim2_95Up, 
+  NB2_SARS_RtEstim2_Rt, NB2_SARS_RtEstim2_95Lo, NB2_SARS_RtEstim2_95Up, 
+  NB3_SARS_RtEstim2_Rt, NB3_SARS_RtEstim2_95Lo, NB3_SARS_RtEstim2_95Up, 
+  NB4_SARS_RtEstim2_Rt, NB4_SARS_RtEstim2_95Lo, NB4_SARS_RtEstim2_95Up
 )
 
-## EpiLPS
-mod_epilst_pois1 <- estimR(incidence = incidence1, si = prob_gamma1)
-# plot(mod_epilst_pois1) +
-#  labs(y="EpiLPS Rt with 95% CIs", title="") +
-#  theme_bw() +
-#  theme(legend.position = "none")
-mod_epilst_pois2 <- estimR(incidence = incidence2, si = prob_gamma2)
-mod_epilst_pois3 <- estimR(incidence = incidence3, si = prob_gamma3)
-mod_epilst_pois4 <- estimR(incidence = incidence4, si = prob_gamma4)
+RtEstim2_res <- data.table(Res = RtEstim2_res,
+                           Type = rep(rep(c("Fitted_Rt", "Lo95", "Up95"), each = 300), 16))
+RtEstim2_Rt <- RtEstim2_res[Type == "Fitted_Rt", ]$Res
+RtEstim2_Lo95 <- RtEstim2_res[Type == "Lo95", ]$Res
+RtEstim2_Up95 <- RtEstim2_res[Type == "Up95", ]$Res
 
-res_dat <- data.table(sample_dat,
-  Pois_Epi_week1 = c(rep(NA, 7), mod_epiEstim_week1$R$`Mean(R)`),
-  Pois_Epi_week2 = c(rep(NA, 7), mod_epiEstim_week2$R$`Mean(R)`),
-  Pois_Epi_week3 = c(rep(NA, 7), mod_epiEstim_week3$R$`Mean(R)`),
-  Pois_Epi_week4 = c(rep(NA, 7), mod_epiEstim_week4$R$`Mean(R)`),
-  Pois_Epi_month1 = c(rep(NA, 30), mod_epiEstim_month1$R$`Mean(R)`),
-  Pois_Epi_month2 = c(rep(NA, 30), mod_epiEstim_month2$R$`Mean(R)`),
-  Pois_Epi_month3 = c(rep(NA, 30), mod_epiEstim_month3$R$`Mean(R)`),
-  Pois_Epi_month4 = c(rep(NA, 30), mod_epiEstim_month4$R$`Mean(R)`),
-  Pois_Rtestim1 = rtestim_tuned_mod1,
-  Pois_Rtestim2 = rtestim_tuned_mod2,
-  Pois_Rtestim22 = rtestim_tuned_mod22,
-  Pois_Rtestim3 = rtestim_tuned_mod3,
-  Pois_Rtestim4 = rtestim_tuned_mod4,
-  Pois_EpiLPS1 = c(rep(NA, 7), mod_epilst_pois1$RLPS$R[-1:-7]),
-  Pois_EpiLPS2 = c(rep(NA, 7), mod_epilst_pois2$RLPS$R[-1:-7]),
-  Pois_EpiLPS3 = c(rep(NA, 7), mod_epilst_pois3$RLPS$R[-1:-7]),
-  Pois_EpiLPS4 = c(rep(NA, 7), mod_epilst_pois4$RLPS$R[-1:-7])
+# RtEstim(k=3) ----
+Pois1_measles_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat1_pois_measles)
+Pois1_measles_RtEstim3_Rt <- Pois1_measles_RtEstim3$fitted_Rt
+Pois1_measles_RtEstim3_95Lo <- Pois1_measles_RtEstim3$lower_bound
+Pois1_measles_RtEstim3_95Up <- Pois1_measles_RtEstim3$upper_bound
+Pois2_measles_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat2_pois_measles)
+Pois2_measles_RtEstim3_Rt <- Pois2_measles_RtEstim3$fitted_Rt
+Pois2_measles_RtEstim3_95Lo <- Pois2_measles_RtEstim3$lower_bound
+Pois2_measles_RtEstim3_95Up <- Pois2_measles_RtEstim3$upper_bound
+Pois3_measles_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat3_pois_measles)
+Pois3_measles_RtEstim3_Rt <- Pois3_measles_RtEstim3$fitted_Rt
+Pois3_measles_RtEstim3_95Lo <- Pois3_measles_RtEstim3$lower_bound
+Pois3_measles_RtEstim3_95Up <- Pois3_measles_RtEstim3$upper_bound
+Pois4_measles_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat4_pois_measles)
+Pois4_measles_RtEstim3_Rt <- Pois4_measles_RtEstim3$fitted_Rt
+Pois4_measles_RtEstim3_95Lo <- Pois4_measles_RtEstim3$lower_bound
+Pois4_measles_RtEstim3_95Up <- Pois4_measles_RtEstim3$upper_bound
+NB1_measles_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat1_NB_measles)
+NB1_measles_RtEstim3_Rt <- NB1_measles_RtEstim3$fitted_Rt
+NB1_measles_RtEstim3_95Lo <- NB1_measles_RtEstim3$lower_bound
+NB1_measles_RtEstim3_95Up <- NB1_measles_RtEstim3$upper_bound
+NB2_measles_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat2_NB_measles)
+NB2_measles_RtEstim3_Rt <- NB2_measles_RtEstim3$fitted_Rt
+NB2_measles_RtEstim3_95Lo <- NB2_measles_RtEstim3$lower_bound
+NB2_measles_RtEstim3_95Up <- NB2_measles_RtEstim3$upper_bound
+NB3_measles_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat3_NB_measles)
+NB3_measles_RtEstim3_Rt <- NB3_measles_RtEstim3$fitted_Rt
+NB3_measles_RtEstim3_95Lo <- NB3_measles_RtEstim3$lower_bound
+NB3_measles_RtEstim3_95Up <- NB3_measles_RtEstim3$upper_bound
+NB4_measles_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat4_NB_measles)
+NB4_measles_RtEstim3_Rt <- NB4_measles_RtEstim3$fitted_Rt
+NB4_measles_RtEstim3_95Lo <- NB4_measles_RtEstim3$lower_bound
+NB4_measles_RtEstim3_95Up <- NB4_measles_RtEstim3$upper_bound
+Pois1_SARS_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat1_pois_SARS)
+Pois1_SARS_RtEstim3_Rt <- Pois1_SARS_RtEstim3$fitted_Rt
+Pois1_SARS_RtEstim3_95Lo <- Pois1_SARS_RtEstim3$lower_bound
+Pois1_SARS_RtEstim3_95Up <- Pois1_SARS_RtEstim3$upper_bound
+Pois2_SARS_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat2_pois_SARS)
+Pois2_SARS_RtEstim3_Rt <- Pois2_SARS_RtEstim3$fitted_Rt
+Pois2_SARS_RtEstim3_95Lo <- Pois2_SARS_RtEstim3$lower_bound
+Pois2_SARS_RtEstim3_95Up <- Pois2_SARS_RtEstim3$upper_bound
+Pois3_SARS_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat3_pois_SARS)
+Pois3_SARS_RtEstim3_Rt <- Pois3_SARS_RtEstim3$fitted_Rt
+Pois3_SARS_RtEstim3_95Lo <- Pois3_SARS_RtEstim3$lower_bound
+Pois3_SARS_RtEstim3_95Up <- Pois3_SARS_RtEstim3$upper_bound
+Pois4_SARS_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat4_pois_SARS)
+Pois4_SARS_RtEstim3_Rt <- Pois4_SARS_RtEstim3$fitted_Rt
+Pois4_SARS_RtEstim3_95Lo <- Pois4_SARS_RtEstim3$lower_bound
+Pois4_SARS_RtEstim3_95Up <- Pois4_SARS_RtEstim3$upper_bound
+NB1_SARS_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat1_NB_SARS)
+NB1_SARS_RtEstim3_Rt <- NB1_SARS_RtEstim3$fitted_Rt
+NB1_SARS_RtEstim3_95Lo <- NB1_SARS_RtEstim3$lower_bound
+NB1_SARS_RtEstim3_95Up <- NB1_SARS_RtEstim3$upper_bound
+NB2_SARS_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat2_NB_SARS)
+NB2_SARS_RtEstim3_Rt <- NB2_SARS_RtEstim3$fitted_Rt
+NB2_SARS_RtEstim3_95Lo <- NB2_SARS_RtEstim3$lower_bound
+NB2_SARS_RtEstim3_95Up <- NB2_SARS_RtEstim3$upper_bound
+NB3_SARS_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat3_NB_SARS)
+NB3_SARS_RtEstim3_Rt <- NB3_SARS_RtEstim3$fitted_Rt
+NB3_SARS_RtEstim3_95Lo <- NB3_SARS_RtEstim3$lower_bound
+NB3_SARS_RtEstim3_95Up <- NB3_SARS_RtEstim3$upper_bound
+NB4_SARS_RtEstim3 <- problem_solver(method = 'RtEstim(k=3)', instance = dat4_NB_SARS)
+NB4_SARS_RtEstim3_Rt <- NB4_SARS_RtEstim3$fitted_Rt
+NB4_SARS_RtEstim3_95Lo <- NB4_SARS_RtEstim3$lower_bound
+NB4_SARS_RtEstim3_95Up <- NB4_SARS_RtEstim3$upper_bound
+
+RtEstim3_res <- c(Pois1_measles_RtEstim3_Rt, Pois1_measles_RtEstim3_95Lo, Pois1_measles_RtEstim3_95Up, 
+                  Pois2_measles_RtEstim3_Rt, Pois2_measles_RtEstim3_95Lo, Pois2_measles_RtEstim3_95Up, 
+                  Pois3_measles_RtEstim3_Rt, Pois3_measles_RtEstim3_95Lo, Pois3_measles_RtEstim3_95Up, 
+                  Pois4_measles_RtEstim3_Rt, Pois4_measles_RtEstim3_95Lo, Pois4_measles_RtEstim3_95Up, 
+                  NB1_measles_RtEstim3_Rt, NB1_measles_RtEstim3_95Lo, NB1_measles_RtEstim3_95Up, 
+                  NB2_measles_RtEstim3_Rt, NB2_measles_RtEstim3_95Lo, NB2_measles_RtEstim3_95Up, 
+                  NB3_measles_RtEstim3_Rt, NB3_measles_RtEstim3_95Lo, NB3_measles_RtEstim3_95Up, 
+                  NB4_measles_RtEstim3_Rt, NB4_measles_RtEstim3_95Lo, NB4_measles_RtEstim3_95Up,
+                  Pois1_SARS_RtEstim3_Rt, Pois1_SARS_RtEstim3_95Lo, Pois1_SARS_RtEstim3_95Up, 
+                  Pois2_SARS_RtEstim3_Rt, Pois2_SARS_RtEstim3_95Lo, Pois2_SARS_RtEstim3_95Up, 
+                  Pois3_SARS_RtEstim3_Rt, Pois3_SARS_RtEstim3_95Lo, Pois3_SARS_RtEstim3_95Up, 
+                  Pois4_SARS_RtEstim3_Rt, Pois4_SARS_RtEstim3_95Lo, Pois4_SARS_RtEstim3_95Up,
+                  NB1_SARS_RtEstim3_Rt, NB1_SARS_RtEstim3_95Lo, NB1_SARS_RtEstim3_95Up, 
+                  NB2_SARS_RtEstim3_Rt, NB2_SARS_RtEstim3_95Lo, NB2_SARS_RtEstim3_95Up, 
+                  NB3_SARS_RtEstim3_Rt, NB3_SARS_RtEstim3_95Lo, NB3_SARS_RtEstim3_95Up, 
+                  NB4_SARS_RtEstim3_Rt, NB4_SARS_RtEstim3_95Lo, NB4_SARS_RtEstim3_95Up
 )
+RtEstim3_res <- data.table(Res = RtEstim3_res,
+                           Type = rep(rep(c("Fitted_Rt", "Lo95", "Up95"), each = 300), 16))
+RtEstim3_Rt <- RtEstim3_res[Type == "Fitted_Rt", ]$Res
+RtEstim3_Lo95 <- RtEstim3_res[Type == "Lo95", ]$Res
+RtEstim3_Up95 <- RtEstim3_res[Type == "Up95", ]$Res
 
-cbPalette2 <- c("#999999", cbPalette[-2])
-res_dat1 <- res_dat %>%
-  select(time, Rt1, Pois_Epi_week1, Pois_Rtestim1, Pois_EpiLPS1) %>%
-  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type,
-    "True Rt" = "Rt1",
-    "RtEstim (k=0)" = "Pois_Rtestim1",
-    "EpiEstim" = "Pois_Epi_week1",
-    "EpiLPS" = "Pois_EpiLPS1"
-  )) %>%
-  mutate(Rt_type = fct_relevel(
-    Rt_type, "True Rt",
-    "EpiEstim",
-    "EpiLPS",
-    "RtEstim (k=0)"
-  )) %>%
-  mutate(Rt_case = 1)
-res_dat2 <- res_dat %>%
-  select(
-    time, Rt2, Pois_Epi_week2, Pois_Rtestim2, Pois_Rtestim22, Pois_EpiLPS2
-  ) %>%
-  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type,
-    "True Rt" = "Rt2",
-    "RtEstim (k=3)" = "Pois_Rtestim2",
-    "RtEstim (k=1)" = "Pois_Rtestim22",
-    "EpiEstim" = "Pois_Epi_week2",
-    "EpiLPS" = "Pois_EpiLPS2"
-  )) %>%
-  mutate(Rt_type = fct_relevel(
-    Rt_type, "True Rt",
-    "EpiEstim",
-    "EpiLPS",
-    "RtEstim (k=1)",
-    "RtEstim (k=3)"
-  )) %>%
-  mutate(Rt_case = 2)
-res_dat3 <- res_dat %>%
-  select(
-    time, Rt3, Pois_Epi_week3, Pois_Rtestim3, Pois_EpiLPS3
-  ) %>%
-  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type,
-    "True Rt" = "Rt3",
-    "RtEstim (k=1)" = "Pois_Rtestim3",
-    "EpiEstim" = "Pois_Epi_week3",
-    "EpiLPS" = "Pois_EpiLPS3"
-  )) %>%
-  mutate(Rt_type = fct_relevel(
-    Rt_type, "True Rt",
-    "EpiEstim",
-    "EpiLPS",
-    "RtEstim (k=1)"
-  )) %>%
-  mutate(Rt_case = 3)
-res_dat4 <- res_dat %>%
-  select(
-    time, Rt4, Pois_Epi_week4, Pois_Rtestim4, Pois_EpiLPS4
-  ) %>%
-  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type,
-    "True Rt" = "Rt4",
-    "RtEstim (k=3)" = "Pois_Rtestim4",
-    "EpiEstim" = "Pois_Epi_week4",
-    "EpiLPS" = "Pois_EpiLPS4"
-  )) %>%
-  mutate(Rt_type = fct_relevel(
-    Rt_type, "True Rt",
-    "EpiEstim",
-    "EpiLPS",
-    "RtEstim (k=3)"
-  )) %>%
-  mutate(Rt_case = 4)
-
-res_dat_long <- rbind(res_dat1, res_dat2, res_dat3, res_dat4)
-res_dat_long$Rt_case = as.factor(res_dat_long$Rt_case)
-res_dat_long$Rt_type = as.factor(res_dat_long$Rt_type)
-
-fig_Pois_res <- res_dat_long %>% 
-  mutate(Rt_case = fct_recode(Rt_case,
-    "Scenario 1: piecewise constant" = "1",
-    "Scenario 2: piecewise exponential" = "2",
-    "Scenario 3: piecewise linear" = "3",
-    "Scenario 4: periodic" = "4"
-  )) %>%
-  group_by(Rt_case, Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
-  geom_line(na.rm = TRUE) +
-  facet_wrap(~ Rt_case, scales = "free_y") + 
-  scale_colour_manual(values = cbPalette2) +
-  labs(y = "Rt estimates for Poisson incidence", color = "", x = "", title = "") +
-  theme_bw() +
-  theme(legend.position = "bottom") 
-print(fig_Pois_res)
+# save results ----
+res_dat <- rbind(dat_example, dat_example, dat_example, dat_example,
+                 dat_example, dat_example, dat_example, dat_example)
+res_dat <- data.table(
+  res_dat,
+  EpiWeek_Rt = Epiweek_Rt, 
+  EpiMonth_Rt = Epimonth_Rt,
+  EpiLPS_Rt = EpiLPS_Rt,
+  EpiFilter_Rt = EpiFilter_Rt,
+  RtEstim0_Rt = RtEstim0_Rt,
+  RtEstim1_Rt = RtEstim1_Rt,
+  RtEstim2_Rt = RtEstim2_Rt,
+  RtEstim3_Rt = RtEstim3_Rt,
+  EpiWeek_Lo95 = Epiweek_Lo95,
+  EpiMonth_Lo95 = Epimonth_Lo95,
+  EpiLPS_Lo95 = EpiLPS_Lo95,
+  EpiFilter_Lo95 = EpiFilter_Lo95,
+  RtEstim0_Lo95 = RtEstim0_Lo95,
+  RtEstim1_Lo95 = RtEstim1_Lo95,
+  RtEstim2_Lo95 = RtEstim2_Lo95,
+  RtEstim3_Lo95 = RtEstim3_Lo95,
+  EpiWeek_Up95 = Epiweek_Up95,
+  EpiMonth_Up95 = Epimonth_Up95,
+  EpiLPS_Up95 = EpiLPS_Up95,
+  EpiFilter_Up95 = EpiFilter_Up95,
+  RtEstim0_Up95 = RtEstim0_Up95,
+  RtEstim1_Up95 = RtEstim1_Up95,
+  RtEstim2_Up95 = RtEstim2_Up95,
+  RtEstim3_Up95 = RtEstim3_Up95
+)
+  
+saveRDS(res_dat, here::here("dat/data_example_estimates.RDS"))
 ```
 
-```{r Fig5-display-Rt-for-NB-incidence, eval = FALSE, include = FALSE}
-## RtEstim
-cv_mod_nb1 <- cv_estimate_rt(
-  nb_incidence1,
-  korder = 0, nfold = 10, nsol = 50, dist_gamma = c(3, 3),
-  error_measure = "deviance"
-)
-rtestim_tuned_mod_nb1 <- cv_mod_nb1$full_fit$Rt[, which.min(cv_mod_nb1$cv_scores)]
-cv_mod_nb2 <- cv_estimate_rt(
-  nb_incidence2,
-  korder = 3, nfold = 10, nsol = 50, dist_gamma = c(2.5, 2.5),
-  error_measure = "deviance"
-)
-rtestim_tuned_mod_nb2 <- cv_mod_nb2$full_fit$Rt[, which.min(cv_mod_nb2$cv_scores)]
-cv_mod_nb22 <- cv_estimate_rt(
-  nb_incidence2,
-  korder = 1, nfold = 10, nsol = 50, dist_gamma = c(2.5, 2.5),
-  error_measure = "deviance"
-)
-rtestim_tuned_mod_nb22 <- cv_mod_nb22$full_fit$Rt[, which.min(cv_mod_nb22$cv_scores)]
-cv_mod_nb3 <- cv_estimate_rt(
-  nb_incidence3,
-  korder = 1, nfold = 10, nsol = 100, dist_gamma = c(3.5, 3.5),
-  error_measure = "deviance"
-)
-rtestim_tuned_mod_nb3 <- cv_mod_nb3$full_fit$Rt[, which.min(cv_mod_nb3$cv_scores)]
-cv_mod_nb4 <- cv_estimate_rt(
-  nb_incidence4,
-  korder = 3, nfold = 10, nsol = 50, dist_gamma = c(3.5, 3.5),
-  error_measure = "deviance"
-)
-rtestim_tuned_mod_nb4 <- cv_mod_nb4$full_fit$Rt[, which.min(cv_mod_nb4$cv_scores)]
-## EpiEstim (weekly window)
-mod_epi_nb_week1 <- EpiEstim::estimate_R(
-  incid = nb_incidence1, config = config_week1, method = method
-)
-mod_epi_nb_week2 <- EpiEstim::estimate_R(
-  incid = nb_incidence2, config = config_week2, method = method
-)
-mod_epi_nb_week3 <- EpiEstim::estimate_R(
-  incid = nb_incidence3, config = config_week3, method = method
-)
-mod_epi_nb_week4 <- EpiEstim::estimate_R(
-  incid = nb_incidence4, config = config_week4, method = method
-)
-## EpiEstim (monthly window)
-mod_epi_nb_month1 <- EpiEstim::estimate_R(
-  incid = nb_incidence1, config = config_month1, method = method
-)
-mod_epi_nb_month2 <- EpiEstim::estimate_R(
-  incid = nb_incidence2, config = config_month2, method = method
-)
-mod_epi_nb_month3 <- EpiEstim::estimate_R(
-  incid = nb_incidence3, config = config_month3, method = method
-)
-mod_epi_nb_month4 <- EpiEstim::estimate_R(
-  incid = nb_incidence4, config = config_month4, method = method
-)
-## EpiLPS
-mod_epilst_nb1 <- estimR(incidence = nb_incidence1, si = prob_gamma1)
-mod_epilst_nb2 <- estimR(incidence = nb_incidence2, si = prob_gamma2)
-mod_epilst_nb3 <- estimR(incidence = nb_incidence3, si = prob_gamma3)
-mod_epilst_nb4 <- estimR(incidence = nb_incidence4, si = prob_gamma4)
+```{r Figs5+6-display-fitted-rt, eval = FALSE, include = FALSE}
+#res_dat_long <- res_dat %>%
+#  pivot_longer(EpiWeek_Rt:RtEstim3_Rt, names_to = "method", values_to = "Rt_value") %>%
+#  mutate(method = fct_recode(method,
+#    "EpiEstim (weekly)" = "EpiWeek_Rt",
+#    "EpiEstim (monthly)" = "EpiMonth_Rt",
+#    "EpiLPS" = "EpiLPS_Rt",
+#    "EpiFilter" = "EpiFilter_Rt",
+#    "RtEstim (k=0)" = "RtEstim0_Rt",
+#    "RtEstim (k=1)" = "RtEstim1_Rt",
+#    "RtEstim (k=2)" = "RtEstim2_Rt",
+#    "RtEstim (k=3)" = "RtEstim3_Rt"
+#  )) %>%
+#  mutate(method = fct_relevel(
+#    method, 
+#    "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS", "EpiFilter", 
+#    "RtEstim (k=0)", "RtEstim (k=1)", "RtEstim (k=2)", "RtEstim (k=3)"
+#  )) %>%
+#  filter(Rt_value > 0)
 
-res_dat <- data.table(res_dat,
-  NB_Epi_week1 = c(rep(NA, 7), mod_epi_nb_week1$R$`Mean(R)`),
-  NB_Epi_week2 = c(rep(NA, 7), mod_epi_nb_week2$R$`Mean(R)`),
-  NB_Epi_week3 = c(rep(NA, 7), mod_epi_nb_week3$R$`Mean(R)`),
-  NB_Epi_week4 = c(rep(NA, 7), mod_epi_nb_week4$R$`Mean(R)`),
-  NB_Epi_month1 = c(rep(NA, 30), mod_epi_nb_month1$R$`Mean(R)`),
-  NB_Epi_month2 = c(rep(NA, 30), mod_epi_nb_month2$R$`Mean(R)`),
-  NB_Epi_month3 = c(rep(NA, 30), mod_epi_nb_month3$R$`Mean(R)`),
-  NB_Epi_month4 = c(rep(NA, 30), mod_epi_nb_month4$R$`Mean(R)`),
-  NB_Rtestim1 = rtestim_tuned_mod_nb1,
-  NB_Rtestim2 = rtestim_tuned_mod_nb2,
-  NB_Rtestim22 = rtestim_tuned_mod_nb22,
-  NB_Rtestim3 = rtestim_tuned_mod_nb3,
-  NB_Rtestim4 = rtestim_tuned_mod_nb4,
-  NB_EpiLPS1 = c(rep(NA, 7), mod_epilst_nb1$RLPS$R[-1:-7]),
-  NB_EpiLPS2 = c(rep(NA, 7), mod_epilst_nb2$RLPS$R[-1:-7]),
-  NB_EpiLPS3 = c(rep(NA, 7), mod_epilst_nb3$RLPS$R[-1:-7]),
-  NB_EpiLPS4 = c(rep(NA, 7), mod_epilst_nb4$RLPS$R[-1:-7])
-)
-
-res_dat_n1 <- res_dat %>%
-  select(time, Rt1, NB_Epi_week1, NB_Rtestim1, NB_EpiLPS1) %>%
-  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type,
-    "EpiEstim" = "NB_Epi_week1",
-    "EpiLPS" = "NB_EpiLPS1",
-    "True Rt" = "Rt1",
-    "RtEstim (k=0)" = "NB_Rtestim1"
-  )) %>%
-  mutate(Rt_type = fct_relevel(
-    Rt_type, "True Rt",
-    "EpiEstim",
-    "EpiLPS",
-    "RtEstim (k=0)"
-  )) %>%
-  mutate(Rt_case = 1)
-
-res_dat_n2 <- res_dat %>%
-  select(time, Rt2, NB_Epi_week2, NB_Rtestim2, NB_Rtestim22, NB_EpiLPS2) %>%
-  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type,
-    "EpiEstim" = "NB_Epi_week2",
-    "RtEstim (k=3)" = "NB_Rtestim2",
-    "RtEstim (k=1)" = "NB_Rtestim22",
-    "EpiLPS" = "NB_EpiLPS2",
-    "True Rt" = "Rt2"
-  )) %>%
-  mutate(Rt_type = fct_relevel(
-    Rt_type, "True Rt",
-    "EpiEstim",
-    "EpiLPS",
-    "RtEstim (k=1)",
-    "RtEstim (k=3)"
-  )) %>%
-  mutate(Rt_case = 2)
-
-res_dat_n3 <- res_dat %>%
-  select(time, Rt3, NB_Epi_week3, NB_Rtestim3, NB_EpiLPS3) %>%
-  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type,
-    "EpiEstim" = "NB_Epi_week3",
-    "RtEstim (k=1)" = "NB_Rtestim3",
-    "EpiLPS" = "NB_EpiLPS3",
-    "True Rt" = "Rt3"
-  )) %>%
-  mutate(Rt_type = fct_relevel(
-    Rt_type, "True Rt",
-    "EpiEstim",
-    "EpiLPS",
-    "RtEstim (k=1)"
-  )) %>%
-  mutate(Rt_case = 3)
-
-res_dat_n4 <- res_dat %>%
-  select(time, Rt4, NB_Epi_week4, NB_Rtestim4, NB_EpiLPS4) %>%
-  pivot_longer(!time, names_to = "Rt_type", values_to = "Rt_value") %>%
-  mutate(Rt_type = fct_recode(Rt_type,
-    "EpiEstim" = "NB_Epi_week4",
-    "RtEstim (k=3)" = "NB_Rtestim4",
-    "EpiLPS" = "NB_EpiLPS4",
-    "True Rt" = "Rt4"
-  )) %>%
-  mutate(Rt_type = fct_relevel(
-    Rt_type, "True Rt",
-    "EpiEstim",
-    "EpiLPS",
-    "RtEstim (k=3)"
-  )) %>%
-  mutate(Rt_case = 4)
-
-res_dat_nb_long <- rbind(res_dat_n1, res_dat_n2, res_dat_n3, res_dat_n4)
-res_dat_nb_long$Rt_case <- as.factor(res_dat_nb_long$Rt_case)
-res_dat_nb_long$Rt_type <- as.factor(res_dat_nb_long$Rt_type)
-
-fig_NB_res <- res_dat_nb_long %>%
-  mutate(Rt_case = fct_recode(Rt_case,
-    "Scenario 1: piecewise constant" = "1",
-    "Scenario 2: piecewise exponential" = "2",
-    "Scenario 3: piecewise linear" = "3",
-    "Scenario 4: periodic" = "4"
-  )) %>%
-  group_by(Rt_case, Rt_type) %>%
-  ggplot(aes(x = time, y = Rt_value, col = Rt_type)) +
-  geom_line(na.rm = TRUE) +
-  facet_wrap(~ Rt_case, scales = "free_y") + 
-  scale_colour_manual(values = cbPalette2) +
-  labs(y = "Rt estimates for negative Binomial incidence", color = "", x = "", title = "") +
+fig_res_pois_measles <- res_dat_long %>%
+  filter(si_type == "measles", dist == "Poisson") %>% 
+  #filter(method != "EpiLPS") %>% # EpiLPS is large for the first 14 days
+  group_by(Rt_case, method) %>%
+  ggplot(aes(y = Rt_value, x = time)) + 
+  geom_line(aes(y = trueRt)) + 
+  geom_line(aes(col = method)) +
+  facet_wrap( ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  labs(y = "Rt estimates for measles epidemics with Poisson incidence", x="Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) +
+  coord_cartesian(ylim = c(0, 4)) + 
   theme_bw() +
-  theme(legend.position = "bottom") 
-print(fig_NB_res)
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_res_pois_measles)
+
+fig_res_NB_sars <- res_dat_long %>%
+  filter(si_type == "SARS", dist == "Negative Binomial") %>% 
+  group_by(Rt_case, method) %>%
+  ggplot(aes(y = Rt_value, x = time)) + 
+  geom_line(aes(y = trueRt)) + 
+  geom_line(aes(col = method)) +
+  facet_wrap( ~ Rt_case, scales = "free") +
+  scale_colour_manual(values = cbPalette[-5]) +
+  labs(y = "Rt estimates for SARS epidemics with NB incidence", x="Time") + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(0, 4)) + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(title = NULL, byrow=TRUE))
+print(fig_res_NB_sars)
+
+ggsave(plot=fig_res_pois_measles, here::here("fig/fig_res_pois_measles.png"), width = 6.5, height = 5)
+ggsave(plot=fig_res_NB_sars, here::here("fig/fig_res_NB_sars.png"), width = 6.5, height = 5)
 ```
 
-```{r Fig6-display-covid-BC-incidence, eval=FALSE, include=FALSE}
-# Get covid-19 incidence in BC
-library(CanCovidData)
-dat <- get_british_columbia_case_data() %>%
-  rename(HA = `Health Authority`, Date = `Reported Date`, Age = `Age group`) %>%
-  filter(Date >= ymd("2020-03-01"))
-cases <- dat %>% count(Date, name = "Cases")
-Covid_case <- cases %>%
-  ggplot(aes(x = Date)) +
-  geom_line(aes(y = Cases), col = "black") +
-  labs(x = "Month", y = "Covid-19 daily confirmed case counts in BC") +
-  scale_x_date(date_breaks = "6 months", date_labels = "%Y-%m") +
-  theme_bw() +
-  theme(
-    plot.title = element_text(hjust = 0.5),
-    axis.title = element_text(hjust = 0.5),
-    panel.spacing = unit(0.8, "lines"),
-    text = element_text(size = 12)
-  )
-print(Covid_case)
-```
-
-```{r Fig7-display-covid-BC-Rt-est, eval=FALSE, include=FALSE}
+```{r Fig7-display-cancovid-Rt-est, eval=FALSE, include=FALSE}
 ## estimate Rt using RtEstim
 # k=1
-mod_rt_covid1 <- estimate_rt(
-  x = cases$Date, cases$Cases, korder = 1, nsol = 50,
-  maxiter = 1e7L
-)
 cv_mod_covid1 <- cv_estimate_rt(
-  x = cases$Date, cases$Cases, korder = 1, nfold = 10,
-  maxiter = 1e7L, nsol = 50
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 1, nfold = 10,
+  maxiter = 1e7L, nsol = 50, error_measure = "deviance", 
+  lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn
 )
-mod_rtestim_covid1 <- cv_mod_covid1$full_fit$Rt[, which.min(cv_mod_covid1$cv_scores)]
-rt_ci_covid1 <- confband(cv_mod_covid1, "lambda.min") # get 95% confidence band
+rt_ci_covid1 <- confband(cv_mod_covid1, "lambda.1se") # get 95% confidence band
 
 # k=2
-mod_rt_covid2 <- estimate_rt(
-  x = cases$Date, cases$Cases, korder = 2, nsol = 50,
-  maxiter = 1e7L
-)
 cv_mod_covid2 <- cv_estimate_rt(
-  x = cases$Date, cases$Cases, korder = 2, nfold = 10,
-  maxiter = 1e7L, nsol = 50
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 2, nfold = 10,
+  maxiter = 1e7L, nsol = 50, error_measure = "deviance", 
+  lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn
 )
-mod_rtestim_covid2 <- cv_mod_covid2$full_fit$Rt[, which.min(cv_mod_covid2$cv_scores)]
-rt_ci_covid2 <- confband(cv_mod_covid2, "lambda.min") # get 95% confidence band
+rt_ci_covid2 <- confband(cv_mod_covid2, "lambda.1se") # get 95% confidence band
 
 # k=3
-mod_rt_covid3 <- estimate_rt(
-  x = cases$Date, cases$Cases, korder = 3, nsol = 50,
-  maxiter = 1e7L
-)
 cv_mod_covid3 <- cv_estimate_rt(
-  x = cases$Date, cases$Cases, korder = 3, nfold = 10,
-  maxiter = 1e7L, nsol = 50
+  x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 3, nfold = 10,
+  maxiter = 1e7L, nsol = 50, error_measure = "deviance", 
+  lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn
 )
-mod_rtestim_covid3 <- cv_mod_covid3$full_fit$Rt[, which.min(cv_mod_covid3$cv_scores)]
-rt_ci_covid3 <- confband(cv_mod_covid3, "lambda.min") # get 95% confidence band
+rt_ci_covid3 <- confband(cv_mod_covid3, "lambda.1se") # get 95% confidence band
 
 # Rt values with a candidate set
-n <- length(mod_rt_covid3$observed_counts)
-k <- length(mod_rt_covid3$lambda)
-df3 <- data.frame(
-    Rt = c(mod_rt_covid3$Rt),
-    lambda = rep(mod_rt_covid3$lambda, each = n),
-    Time = rep(mod_rt_covid3$x, k),
-    degree = 3
+len <- nrow(rtestim::cancovid) #1253
+k <- 50
+df_covid_Rt <- data.table(
+  Rt = c(as.vector(cv_mod_covid1$full_fit$Rt), as.vector(cv_mod_covid2$full_fit$Rt), as.vector(cv_mod_covid3$full_fit$Rt)),
+  lambda = c(rep(cv_mod_covid1$lambda, each = len), rep(cv_mod_covid2$lambda, each = len), rep(cv_mod_covid3$lambda, each = len)),
+  Time = rep(rtestim::cancovid$date, k*3),
+  degree = rep(c("1","2","3"), each = len*k)
 )
-df2 <- data.frame(
-    Rt = c(mod_rt_covid2$Rt),
-    lambda = rep(mod_rt_covid2$lambda, each = n),
-    Time = rep(mod_rt_covid2$x, k),
-    degree = 2
-)
-df1 <- data.frame(
-    Rt = c(mod_rt_covid1$Rt),
-    lambda = rep(mod_rt_covid1$lambda, each = n),
-    Time = rep(mod_rt_covid1$x, k),
-    degree = 1
-)
-df_covid_Rt<- rbind(df1, df2, df3)
-df_covid_Rt$degree <- as.factor(df_covid_Rt$degree)
 
 fig_covid_Rt <- df_covid_Rt %>%
   mutate(degree = fct_recode(degree,
@@ -1028,26 +2795,28 @@ fig_covid_Rt <- df_covid_Rt %>%
   ggplot(aes(Time, Rt, colour = lambda, group = lambda)) +
   geom_line() +
   facet_wrap(~ degree, scales = "free_y", ncol = 1) + 
-  labs(y ="Rt estimates for Covid-19 pandemic in BC", x = "Year", color = "\u03BB") +
-  scale_colour_viridis_c(trans = "log10") +
+  labs(y ="Rt estimates for Covid-19 pandemic in Canada", x = "Year", color = "\u03BB") +
+  scale_colour_viridis_c(trans = "log10", breaks = c(1, 1e2L, 1e4L, 1e6L), labels = c(1, expression(10^2), expression(10^4), expression(10^6))) +
   guides(color = guide_colorbar(barwidth = 10, barheight = 1)) +
-  scale_x_date(date_breaks = "12 months", date_labels = "%Y") +
+  scale_x_date(date_breaks = "6 months", date_labels = "%b %Y", expand = expansion(c(0, 0.05))) +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  coord_cartesian(ylim = c(0, 2)) + 
   geom_hline(yintercept = 1) +
   theme_bw() +
   theme(legend.position = "bottom")
   
 # CV-chosen Rt with CB
 rt_ci_covid3 <- as.data.table(rt_ci_covid3) %>% 
-  mutate(degree = 3, lambda = cv_mod_covid3$lambda.min) %>% 
-  mutate(Date = cases$Date) 
+  mutate(degree = "3", lambda = cv_mod_covid3$lambda.1se) %>% 
+  mutate(Date = rtestim::cancovid$date) 
 rt_ci_covid2 <- as.data.table(rt_ci_covid2) %>% 
-  mutate(degree = 2, lambda = cv_mod_covid2$lambda.min) %>% 
-  mutate(Date = cases$Date) 
+  mutate(degree = "2", lambda = cv_mod_covid2$lambda.1se) %>% 
+  mutate(Date = rtestim::cancovid$date) 
 rt_ci_covid1 <- as.data.table(rt_ci_covid1) %>% 
-  mutate(degree = 1, lambda = cv_mod_covid1$lambda.min) %>% 
-  mutate(Date = cases$Date) 
+  mutate(degree = "1", lambda = cv_mod_covid1$lambda.1se) %>% 
+  mutate(Date = rtestim::cancovid$date) 
 df_covid_ci <- rbind(rt_ci_covid1, rt_ci_covid2, rt_ci_covid3)
-df_covid_ci$degree = as.factor(df_covid_ci$degree)
+
 
 fig_covid_ci <- df_covid_ci %>% 
   mutate(degree = fct_recode(degree,
@@ -1063,67 +2832,67 @@ fig_covid_ci <- df_covid_ci %>%
     fill = "gray", alpha = 0.5
   ) +
   geom_hline(yintercept = 1, linetype = "dotted") +
-  scale_x_date(date_breaks = "12 months", date_labels = "%Y") +
+  coord_cartesian(ylim = c(0, 2)) + 
+  scale_x_date(date_breaks = "6 months", date_labels = "%b %Y", expand = expansion(c(0, 0.05))) +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
   labs(x = "Year", y = "") +
   theme_bw()
 
-Covid_BC_Rt <- ggarrange(fig_covid_Rt, fig_covid_ci,
+CanCovid_Rt_all <- ggpubr::ggarrange(fig_covid_Rt, fig_covid_ci,
                          ncol = 2, nrow = 1, 
                          common.legend = TRUE, legend = "bottom"
 )
-print(Covid_BC_Rt)
+print(CanCovid_Rt_all)
+
+ggsave(here::here("fig/covid_full_res.png"), CanCovid_Rt_all, width = 8.34, height = 6.19)
 ```
 
-```{r Fig8-display-influenza1918-data, eval=FALSE, include=FALSE}
+```{r Fig8-display-flu1918-data, eval=FALSE, include=FALSE}
 # get the flu data from `EpiEstim` package
 data("Flu1918")
-n <- length(Flu1918$incidence)
-flu_dat <- data.frame(Flu_incidence = Flu1918$incidence, Time = 1:n)
+len <- length(Flu1918$incidence)
+flu_dat <- data.frame(incidence = Flu1918$incidence, Day = 1:len)
+flu_delay_distn <- Flu1918$si_distr
+
 Flu_case <- flu_dat %>%
-  ggplot(aes(y = Flu_incidence, x = Time)) +
-  geom_line() +
+  ggplot(aes(x = Day)) +
+  geom_line(aes(y = incidence)) +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
   labs(x = "Days since start of epidemic", y = "1918 Influenza daily incidence in Baltimore") +
   theme_bw()
 print(Flu_case)
+
+ggsave(here::here("fig/flu_dat.png"), Flu_case, width = 6.5, height = 5)
 ```
 
-
-```{r Fig9-display-influenza1918-Rt-est, eval=FALSE, include=FALSE}
-mod_rt_flu3 <- estimate_rt(Flu1918$incidence, korder = 3, nsol = 50)
-cv_mod_flu3 <- cv_estimate_rt(Flu1918$incidence, korder = 3, nfold = 10, nsol = 50)
+```{r Fig9-display-flu1918-Rt-est, eval=FALSE, include=FALSE}
+cv_mod_flu3 <- cv_estimate_rt(
+  observed_counts = flu_dat$incidence, korder = 3, nfold = 10, maxiter = 1e7L, 
+  nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, 
+  delay_distn = flu_delay_distn)
 rt_ci_flu3 <- confband(cv_mod_flu3, "lambda.1se") 
 
-mod_rt_flu2 <- estimate_rt(Flu1918$incidence, korder = 2, nsol = 50)
-cv_mod_flu2 <- cv_estimate_rt(Flu1918$incidence, korder = 2, nfold = 10, nsol = 50)
+cv_mod_flu2 <- cv_estimate_rt(
+  observed_counts = flu_dat$incidence, korder = 2, nfold = 10, maxiter = 1e7L, 
+  nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, 
+  delay_distn = flu_delay_distn)
 rt_ci_flu2 <- confband(cv_mod_flu2, "lambda.1se") 
 
-mod_rt_flu1 <- estimate_rt(Flu1918$incidence, korder = 1, nsol = 50)
-cv_mod_flu1 <- cv_estimate_rt(Flu1918$incidence, korder = 1, nfold = 10, nsol = 50)
+cv_mod_flu1 <- cv_estimate_rt(
+  observed_counts = flu_dat$incidence, korder = 1, nfold = 10, maxiter = 1e7L, 
+  nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, 
+  delay_distn = flu_delay_distn)
 rt_ci_flu1 <- confband(cv_mod_flu1, "lambda.1se") 
 
 # Rt values with a candidate set
-n <- length(mod_rt_flu3$observed_counts)
-k <- length(mod_rt_flu3$lambda)
-df_flu3 <- data.frame(
-    Rt = c(mod_rt_flu3$Rt),
-    lambda = rep(mod_rt_flu3$lambda, each = n),
-    Time = rep(mod_rt_flu3$x, k),
-    degree = 3
+k <- length(cv_mod_flu1$lambda)
+df_flu_Rt <- data.table(
+  Rt = c(as.vector(cv_mod_flu1$full_fit$Rt), as.vector(cv_mod_flu2$full_fit$Rt), as.vector(cv_mod_flu3$full_fit$Rt)),
+  lambda = c(rep(cv_mod_flu1$lambda, each=len), rep(cv_mod_flu2$lambda, each=len), rep(cv_mod_flu3$lambda, each=len)),
+  Time = rep(1:len, k*3),
+  degree = rep(c("1","2","3"), each = len*k)
 )
-df_flu2 <- data.frame(
-    Rt = c(mod_rt_flu2$Rt),
-    lambda = rep(mod_rt_flu2$lambda, each = n),
-    Time = rep(mod_rt_flu2$x, k),
-    degree = 2
-)
-df_flu1 <- data.frame(
-    Rt = c(mod_rt_flu1$Rt),
-    lambda = rep(mod_rt_flu1$lambda, each = n),
-    Time = rep(mod_rt_flu1$x, k),
-    degree = 1
-)
-df_flu_Rt<- rbind(df_flu1, df_flu2, df_flu3)
-df_flu_Rt$degree <- as.factor(df_flu_Rt$degree)
 
 fig_flu_Rt <- df_flu_Rt %>%
   mutate(degree = fct_recode(degree,
@@ -1136,23 +2905,24 @@ fig_flu_Rt <- df_flu_Rt %>%
   geom_line() +
   facet_wrap(~ degree, scales = "free_y", ncol = 1) + 
   labs(y ="Rt estimates for 1918 Influenza in Baltimore", x = "Days since start of epidemic", color = "\u03BB") +
-  scale_colour_viridis_c(trans = "log10") +
+  scale_colour_viridis_c(trans = "log10", breaks = c(0.1, 1, 10, 100, 1000), labels = c(0.1, 1, 10, expression(10^2), expression(10^3))) +
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
   guides(color = guide_colorbar(barwidth = 10, barheight = 1)) +
   geom_hline(yintercept = 1) +
   theme_bw() +
   theme(legend.position = "bottom")
 
 rt_ci_flu3 <- as.data.table(rt_ci_flu3) %>% 
-  mutate(degree = 3, lambda = cv_mod_flu3$lambda.min) %>% 
-  mutate(Day = flu_dat$Time) 
+  mutate(degree = "3", lambda = cv_mod_flu3$lambda.1se) %>% 
+  mutate(Day = flu_dat$Day) 
 rt_ci_flu2 <- as.data.table(rt_ci_flu2) %>% 
-  mutate(degree = 2, lambda = cv_mod_flu2$lambda.min) %>% 
-  mutate(Day = flu_dat$Time) 
+  mutate(degree = "2", lambda = cv_mod_flu2$lambda.1se) %>% 
+  mutate(Day = flu_dat$Day) 
 rt_ci_flu1 <- as.data.table(rt_ci_flu1) %>% 
-  mutate(degree = 1, lambda = cv_mod_flu1$lambda.min) %>% 
-  mutate(Day = flu_dat$Time) 
+  mutate(degree = "1", lambda = cv_mod_flu1$lambda.1se) %>% 
+  mutate(Day = flu_dat$Day) 
 df_flu_ci <- rbind(rt_ci_flu1, rt_ci_flu2, rt_ci_flu3)
-df_flu_ci$degree = as.factor(df_flu_ci$degree)
 
 fig_flu_ci <- df_flu_ci %>% 
   mutate(degree = fct_recode(degree,
@@ -1167,6 +2937,8 @@ fig_flu_ci <- df_flu_ci %>%
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`),
     fill = "gray", alpha = 0.5
   ) +
+  scale_x_continuous(expand = expansion(c(0, 0.05))) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) + 
   geom_hline(yintercept = 1, linetype = "dotted") +
   labs(x = "Days since start of epidemic", y = "") +
   theme_bw()
@@ -1175,4 +2947,7 @@ Flu_Rt <- ggarrange(fig_flu_Rt, fig_flu_ci,
   ncol = 2, nrow = 1, common.legend = TRUE, legend = "bottom"
 )
 print(Flu_Rt)
+
+ggsave(here::here("fig/flu_full_res.png"), Flu_Rt, width = 6.5, height = 5)
 ```
+
