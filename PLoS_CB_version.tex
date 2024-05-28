@@ -140,7 +140,7 @@
 \renewcommand{\figurename}{Fig}
 
 % Use the PLoS provided BiBTeX style
-\bibliographystyle{plos2015}
+%\bibliographystyle{plos2015}
 
 % Remove brackets from numbering in List of References
 \makeatletter
@@ -466,9 +466,9 @@ use a time-varying serial interval distribution.
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=1.0\textwidth]{fig/Fig1.png}
+  %\includegraphics[width=1.0\textwidth]{fig/Fig1.png}
   \caption{{\bf A demonstration of instantaneous reproduction number estimation by
-  \RtEstim\ and the corresponding predicted incident cases} for the Covid-19
+  \RtEstim\ and the corresponding predicted incident cases.} The example is the Covid-19
   epidemic in Canada during the period from January 23, 2020 to June 28, 2023.
   In the top panel, the blue curve is the estimated piecewise quadratic
   $\calR_t$ and the colorful ribbon is the corresponding 95\% confidence band.
@@ -948,7 +948,7 @@ instantaneous reproduction number scenario is displayed in
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=1.0\linewidth]{fig/Fig2.png}
+  %\includegraphics[width=1.0\linewidth]{fig/Fig2.png}
   \caption{{\bf This figure displays example realizations for each $\calR_t$ setting.}
   Top row: the instantaneous reproduction numbers. Middle row: synthetic measles
   incidence (Poisson in blue, negative binomial in red) incidence. Bottom row:
@@ -1069,11 +1069,11 @@ experiment to investigate these global conclusions in more detail.
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=1.0\linewidth]{fig/Fig3.png}
-  \caption{{\bf Boxplot of mean KL divergence between $\hat{\calR}_t$ and the true
-  $\calR_t$} across 50 synthetic {\bf measles} epidemics for each approach given
-  Poisson incidence (top panels) and negative binomial incidence (bottom
-  panels). The average excludes the first week in all settings, since
+  %\includegraphics[width=1.0\linewidth]{fig/Fig3.png}
+  \caption{{\bf Boxplot of mean KL divergence between $\hat{\calR}_t$ and true
+  $\calR_t$ across 50 synthetic measles epidemics.} Performance of each approach given
+  Poisson incidence is in top panels and negative binomial incidence is in bottom
+  panels. The average excludes the first week in all settings, since
   \EpiEstim\ with a weekly sliding window does not provide estimates for the
   first week. Outliers beyond $1.5\times$IQR of each box are excluded for the
   sake of comparison with full range of the $y$-axis deferred to Figure A.3.1 in
@@ -1083,10 +1083,10 @@ experiment to investigate these global conclusions in more detail.
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=1.0\linewidth]{fig/Fig4.png}
-  \caption{{\bf Boxplot of mean KL divergence between $\hat{\calR}_t$ and the true
-  $\calR_t$} across 50 synthetic {\bf SARS} epidemics for each approach given Poisson
-  incidence (top panels) and negative binomial incidence (bottom panels). The
+  %\includegraphics[width=1.0\linewidth]{fig/Fig4.png}
+  \caption{{\bf Boxplot of mean KL divergence between $\hat{\calR}_t$ and true
+  $\calR_t$ across 50 synthetic SARS epidemics.} Performance of each approach given Poisson
+  incidence is in top panels and negative binomial incidence is in bottom panels. The
   average excludes the first week in all settings, since \EpiEstim\ with a
   weekly sliding window does not provide estimates for the first week. Outliers
   beyond $1.5\times$IQR of each box are excluded for the sake of comparison with
@@ -1121,7 +1121,7 @@ curves well in general, but tends to be more wiggly than other methods.
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=1.0\linewidth]{fig/Fig5.png}
+  %\includegraphics[width=1.0\linewidth]{fig/Fig5.png}
   \caption{{\bf $\calR_t$ estimates for realizations of a measles epidemic with
     Poisson observations.} An expanded visualization with each estimated
     $\calR_t$ curve displayed in a separate panel is provided in Figure A.6.1 in
@@ -1142,7 +1142,7 @@ siginificant difficulties in the periodic scenario.
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=1.0\linewidth]{fig/Fig6.png}
+  %\includegraphics[width=1.0\linewidth]{fig/Fig6.png}
   \caption{
     {\bf $\calR_t$ estimates for realizations of a SARS epidemic with
     negative binomial observations.} An expanded visualization with each estimated
@@ -1184,9 +1184,9 @@ $\lambda$ chosen by minimizing cross-validated KL divergence in
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=1.0\linewidth]{fig/Fig7.png}
+  %\includegraphics[width=1.0\linewidth]{fig/Fig7.png}
   \caption{{\bf Estimated instantaneous reproduction number based on Covid-19 daily
-  confirmed incident cases} between January 23rd, 2020 and June 28th, 2023 in
+  confirmed incident cases.} The epidemic is between January 23rd, 2020 and June 28th, 2023 in
   Canada. The left panels show estimates corresponding to 50 tuning parameters.
   The right panels show the CV-tuned estimate along with approximate 95\%
   confidence bands. The top, middle and bottom panels show the estimated
@@ -1236,7 +1236,7 @@ A.8.4 in \nameref{S1_supp}.
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=1.0\linewidth]{fig/Fig8.png}
+  %\includegraphics[width=1.0\linewidth]{fig/Fig8.png}
   \caption{{\bf Daily incident influenza cases in Baltimore, Maryland between September 
   and November 1918.}} 
   \label{fig:flu-dat}
@@ -1244,7 +1244,7 @@ A.8.4 in \nameref{S1_supp}.
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=1.0\linewidth]{fig/Fig9.png}
+  %\includegraphics[width=1.0\linewidth]{fig/Fig9.png}
   \caption{{\bf Estimated instantaneous reproduction numbers for influenza in
   Baltimore, Maryland in 1918.} The left panels show estimates for a set of 50
   tuning parameters. The right column displays the CV-tuned estimates with
