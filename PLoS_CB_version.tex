@@ -140,7 +140,7 @@
 \renewcommand{\figurename}{Fig}
 
 % Use the PLoS provided BiBTeX style
-\bibliographystyle{plos2015}
+%\bibliographystyle{plos2015}
 
 % Remove brackets from numbering in List of References
 \makeatletter
@@ -466,9 +466,9 @@ use a time-varying serial interval distribution.
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=.9\textwidth]{fig/intro-fig-new.png}
-  \caption{A demonstration of instantaneous reproduction number estimation by
-  \RtEstim\ and the corresponding predicted incident cases for the Covid-19
+  %\includegraphics[width=1.0\textwidth]{fig/Fig1.png}
+  \caption{{\bf A demonstration of instantaneous reproduction number estimation by
+  \RtEstim\ and the corresponding predicted incident cases.} The example is the Covid-19
   epidemic in Canada during the period from January 23, 2020 to June 28, 2023.
   In the top panel, the blue curve is the estimated piecewise quadratic
   $\calR_t$ and the colorful ribbon is the corresponding 95\% confidence band.
@@ -916,7 +916,7 @@ y_s,\ s<t] = \Lambda_t(1 +
 $(1 + \Lambda_t / \rho)> 1$ for  $0\leq\rho <\infty$, this parameterization results
 in overdispersion relative to the Poisson distribution, with smaller values of
 $\rho$ leading to greater overdispersion. For context on the observed dispersion
-of these synthetic experiments, Figure A.2.1 in the Supplement displays the
+of these synthetic experiments, Figure A.2.1 in \nameref{S1_supp} displays the
 ratio of the time-varying standard deviation to the mean. 
 
 We use serial interval (SI) distributions of measles (with mean $14.9$ and
@@ -948,8 +948,8 @@ instantaneous reproduction number scenario is displayed in
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=.9\linewidth]{fig/fig_samples.png}
-  \caption{This figure displays example realizations for each $\calR_t$ setting.
+  %\includegraphics[width=1.0\linewidth]{fig/Fig2.png}
+  \caption{{\bf This figure displays example realizations for each $\calR_t$ setting.}
   Top row: the instantaneous reproduction numbers. Middle row: synthetic measles
   incidence (Poisson in blue, negative binomial in red) incidence. Bottom row:
   synthetic SARS incidence. The 4 4 $\calR_t$ scenarios are shown in the
@@ -981,7 +981,7 @@ cross validation (CV) to choose the parameter $\lambda$ that minimizes
 out-of-sample prediction risk from a candidate set of size $50$, i.e.,
 $\boldsymbol{\lambda} = \{\lambda_1, \cdots, \lambda_{50}\}$, for long
 epidemics, and $5$-fold CV for short epidemics (results for this case are
-deferred to Sections A.3.2 and A.4.2 in the Supplement). We select the tuning
+deferred to Sections A.3.2 and A.4.2 in \nameref{S1_supp}). We select the tuning
 parameter that gives the lowest deviance between the estimated
 incidence and the held-out samples averaged over all folds. 
 
@@ -1029,7 +1029,7 @@ For the Poisson distribution the KL divergence is defined as
 \end{equation}
 We use the average KL divergence: $\overline{D}_{KL}(\calR \parallel
 \widehat{\calR}) := D_{KL}(\calR \parallel \widehat{\calR}) / n$. Details on the
-derivation of \eqref{eq:kl} is provided in Section A.1 of the Supplement. KL
+derivation of \eqref{eq:kl} is provided in Section A.1 of \nameref{S1_supp}. KL
 divergence is more appropriate for measuring accuracy because it connects
 directly to the Poisson likelihood used to generate the data, whereas standard
 measures like the mean-squared error correspond to Gaussian likelihood. Using
@@ -1069,28 +1069,28 @@ experiment to investigate these global conclusions in more detail.
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=.9\linewidth]{fig/fig_kl_week_measles.png}
-  \caption{Boxplot of mean KL divergence between $\hat{\calR}_t$ and the true
-  $\calR_t$ across 50 synthetic measles epidemics for each approach given
-  Poisson incidence (top panels) and negative binomial incidence (bottom
-  panels). The average excludes the first week in all settings, since
+  %\includegraphics[width=1.0\linewidth]{fig/Fig3.png}
+  \caption{{\bf Boxplot of mean KL divergence between $\hat{\calR}_t$ and true
+  $\calR_t$ across 50 synthetic measles epidemics.} Performance of each approach given
+  Poisson incidence is in top panels and negative binomial incidence is in bottom
+  panels. The average excludes the first week in all settings, since
   \EpiEstim\ with a weekly sliding window does not provide estimates for the
   first week. Outliers beyond $1.5\times$IQR of each box are excluded for the
   sake of comparison with full range of the $y$-axis deferred to Figure A.3.1 in
-  the Supplement.} 
+  \nameref{S1_supp}.} 
   \label{fig:kl-res-measles}
 \end{figure}
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=.9\linewidth]{fig/fig_kl_week_sars.png}
-  \caption{Boxplot of mean KL divergence between $\hat{\calR}_t$ and the true
-  $\calR_t$ across 50 synthetic SARS epidemics for each approach given Poisson
-  incidence (top panels) and negative binomial incidence (bottom panels). The
+  %\includegraphics[width=1.0\linewidth]{fig/Fig4.png}
+  \caption{{\bf Boxplot of mean KL divergence between $\hat{\calR}_t$ and true
+  $\calR_t$ across 50 synthetic SARS epidemics.} Performance of each approach given Poisson
+  incidence is in top panels and negative binomial incidence is in bottom panels. The
   average excludes the first week in all settings, since \EpiEstim\ with a
   weekly sliding window does not provide estimates for the first week. Outliers
   beyond $1.5\times$IQR of each box are excluded for the sake of comparison with
-  full range of the $y$-axis deferred to Figure A.3.1 in the Supplement.} 
+  full range of the $y$-axis deferred to Figure A.3.1 in \nameref{S1_supp}.} 
   \label{fig:kl-res-sars}
 \end{figure}
 
@@ -1098,7 +1098,7 @@ experiment to investigate these global conclusions in more detail.
 instantaneous reproduction number under the Poisson generative model in measles
 synthetic epidemics for all four scenarios. An expanded visualization with each
 estimated $\calR_t$ curve displayed in a separate panel is provided in Figure
-A.6.1 in the Supplement. Ignoring the start of the epidemics, all methods look
+A.6.1 in \nameref{S1_supp}. Ignoring the start of the epidemics, all methods look
 accurate and recover the underlying curves well, except \EpiEstim\ with monthly
 sliding windows, where the trajectories are shifted to the right. Compared to
 \EpiEstim\ and \EpiLPS, which have rather severe difficulties at the beginning
@@ -1121,18 +1121,18 @@ curves well in general, but tends to be more wiggly than other methods.
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=.9\linewidth]{fig/fig_res_pois_measles.png}
-  \caption{$\calR_t$ estimates for realizations of a measles epidemic with
-    Poisson observations. An expanded visualization with each estimated
+  %\includegraphics[width=1.0\linewidth]{fig/Fig5.png}
+  \caption{{\bf $\calR_t$ estimates for realizations of a measles epidemic with
+    Poisson observations.} An expanded visualization with each estimated
     $\calR_t$ curve displayed in a separate panel is provided in Figure A.6.1 in
-    the Supplement.}
+    \nameref{S1_supp}.}
   \label{fig:pois-est-measles}
 \end{figure}
 
 \autoref{fig:nb-est-sars} is similar to \autoref{fig:pois-est-measles} but
 shows estimated $\calR_t$ given negative binomial incidence in SARS epidemics
 for each setting. An expanded visualization with each estimated $\calR_t$ curve
-displayed in a separate panel is provided in Figure A.6.4 in the Supplement.
+displayed in a separate panel is provided in Figure A.6.4 in \nameref{S1_supp}.
 Compared to the \autoref{fig:pois-est-measles}, all methods perform worse
 overall due to two main reasons: larger incidence and overdispersed data. All
 methods are worse at the start of the epidemics. \EpiFilter\ is dramatically
@@ -1142,12 +1142,12 @@ siginificant difficulties in the periodic scenario.
 
 \begin{figure}[!t]
   \centering
-  \includegraphics*[width=.9\linewidth]{fig/fig_res_NB_sars.png}
+  %\includegraphics[width=1.0\linewidth]{fig/Fig6.png}
   \caption{
-    $\calR_t$ estimates for realizations of a SARS epidemic with
-    negative binomial observations. An expanded visualization with each estimated
+    {\bf $\calR_t$ estimates for realizations of a SARS epidemic with
+    negative binomial observations.} An expanded visualization with each estimated
     $\calR_t$ curve displayed in a separate panel is provided in Figure A.6.4 in
-    the Supplement.}
+    \nameref{S1_supp}.}
   \label{fig:nb-est-sars}
 \end{figure}
 
@@ -1168,7 +1168,7 @@ serial interval distributions for the four dominant variants (shown in
 \autoref{fig:intro-fig}) for the purposes of comparison with other methods, none
 of which allow time-varying delays. The estimates for \RtEstim\ are displayed in
 \autoref{fig:covid-rt} while the estimates of all competitors are deferred to
-Figures A.8.1 and A.8.2 in the Supplement. 
+Figures A.8.1 and A.8.2 in \nameref{S1_supp}. 
 
 Considering $k=1,2$ and 3, $\widehat{\calR}_t$ for Covid-19 in Canada is always
 less than $2$ except at the very early stage, which means that one distinct
@@ -1184,16 +1184,16 @@ $\lambda$ chosen by minimizing cross-validated KL divergence in
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=0.9\linewidth]{fig/covid_full_res.png}
-  \caption{Estimated instantaneous reproduction number based on Covid-19 daily
-  confirmed incident cases between January 23rd, 2020 and June 28th, 2023 in
+  %\includegraphics[width=1.0\linewidth]{fig/Fig7.png}
+  \caption{{\bf Estimated instantaneous reproduction number based on Covid-19 daily
+  confirmed incident cases.} The epidemic is between January 23rd, 2020 and June 28th, 2023 in
   Canada. The left panels show estimates corresponding to 50 tuning parameters.
   The right panels show the CV-tuned estimate along with approximate 95\%
   confidence bands. The top, middle and bottom panels show the estimated
   $\calR_t$ using the Poisson trend filtering in \eqref{eq:rt-ptf} with degrees
   $k=1,2,3$ respectively. All estimates use a constant serial interval
   distribution, which is the weighted sum of probabilities of the 4 dominant
-  variants used in \autoref{fig:intro-fig}.} 
+  variants used in \autoref{fig:intro-fig}.}
   \label{fig:covid-rt}
 \end{figure} 
 
@@ -1232,21 +1232,21 @@ decline ahead. The CV-tuned piecewise constant and linear estimates in
 supported by the fact that incident cases decline to zero at the end of the
 period, matching $\calR_t$ estimates in \cite{cori2013new}, which are all lower
 than one. Results from alternative software is deferred to Figures A.8.3 and
-A.8.4 in the Supplement.
+A.8.4 in \nameref{S1_supp}.
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=0.8\linewidth]{fig/flu_dat.png}
-  \caption{Daily incident influenza cases in Baltimore, Maryland between September 
-  and November 1918.} 
+  %\includegraphics[width=1.0\linewidth]{fig/Fig8.png}
+  \caption{{\bf Daily incident influenza cases in Baltimore, Maryland between September 
+  and November 1918.}} 
   \label{fig:flu-dat}
 \end{figure} 
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=0.9\linewidth]{fig/flu_full_res.png}
-  \caption{Estimated instantaneous reproduction numbers for influenza in
-  Baltimore, Maryland in 1918. The left panels show estimates for a set of 50
+  %\includegraphics[width=1.0\linewidth]{fig/Fig9.png}
+  \caption{{\bf Estimated instantaneous reproduction numbers for influenza in
+  Baltimore, Maryland in 1918.} The left panels show estimates for a set of 50
   tuning parameters. The right column displays the CV-tuned estimates with
   approximate 95\% confidence bands. The rows (top to bottom) show $\hat\calR_t$
   using Poisson trend filtering with $k=1,2,3$
@@ -1344,7 +1344,7 @@ Accurate statistical coverage of a function is a difficult problem, and the
 types of (frequentist) guarantees that can be made are not always what one would
 want \cite{genovese2008adaptive}. We examine the coverage of our approximate
 confidence interval in simulation, with details are deferred to Section A.6 in
-the Supplement. Empirically, our observations for our method, as well as all
+\nameref{S1_supp}. Empirically, our observations for our method, as well as all
 others we have seen, follow a similar (undesirable) pattern: when
 $\mathcal{R}_t$ is stable, they over cover dramatically (even implausibly narrow
 intervals have 100\% coverage); but when $\mathcal{R}_t$ changes abruptly, they
@@ -1364,6 +1364,20 @@ prespecified serial interval distribution, and a choice of degree $k$, \RtEstim\
 is able to produce accurate estimates of instantaneous reproduction number and
 provide efficient tuning parameter selection via cross validation. 
 
+\section*{Supporting information}
+
+\paragraph*{S1 Appendix.}
+\label{S1_supp}
+
+{\bf Supplement for RtEstim: Time-varying reproduction number estimation with trend filtering.} 
+This includes eight sections, Sections A.1--A.8. Section A.1: Derivation of Kullback Leibler divergence for accuracy comparison. 
+Section A.2: Supplmentary details on experimental settings.
+Section A.3: Supplementary experimental results on accuracy comparison.
+Section A.4: Experimental results on accuracy under misspecification of serial interval distributions.
+Section A.5: Time comparisons of all methods.
+Section A.6: Confidence interval coverage.
+Section A.7: Data examples and alternative visualizations of Figs 5 and 6.
+Section A.8: Application of RtEstim and all competitors on real epidemics.
 
 \section*{Acknowledgments}
 
@@ -1606,7 +1620,7 @@ and the Digital Research Alliance of Canada (alliancecan.ca).
   Tibshirani RJ.
   \newblock Divided differences, falling factorials, and discrete splines:
     Another look at trend filtering and related problems.
-  \newblock Foundations and Trends{\textregistered} in Machine Learning.
+  \newblock Foundations and Trends in Machine Learning.
     2022;15(6):694--846.
   
   \bibitem{sadhanala2024exponential}
@@ -1676,6 +1690,5 @@ and the Digital Research Alliance of Canada (alliancecan.ca).
 \end{thebibliography}
 
  
-\includepdf[pages=-]{src/supp.pdf}
 
 \end{document}
