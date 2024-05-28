@@ -1698,7 +1698,8 @@ fig_rt_fit <- data.table(rt_ci_covid, variant = can_pred_class$var) %>%
   labs(x = "Date", y = "Piecewise quadratic Rt with 95% CIs") +
   coord_cartesian(ylim = c(0, 2)) + 
   theme_bw() +
-  scale_fill_brewer(palette = "Dark2", name = "")
+  scale_fill_brewer(palette = "Dark2", name = "") +
+  theme(text = element_text(family = "sans", size = 10))
 fig_rt_fit
 
 # plot fitted incidence
@@ -1717,7 +1718,8 @@ fig_inc_fit <- data.table(inc_dat, variant = can_pred_class$var) %>%
   labs(x = "Date", y = "Fitted incidence (thousands)") +
   scale_y_continuous(expand = expansion(c(0, 0.05))) + 
   geom_vline(xintercept = start_dates$`min(date)`[-2], linetype = "dashed") +
-  theme_bw()
+  theme_bw() +
+  theme(text = element_text(family = "sans", size = 10))
 
 CANCovid_fig <- ggpubr::ggarrange(
   fig_rt_fit, fig_inc_fit,
@@ -1725,88 +1727,90 @@ CANCovid_fig <- ggpubr::ggarrange(
 )
 print(CANCovid_fig)
 
-ggsave(here::here("fig/intro-fig-new.png"), plot = CANCovid_fig, width = 6.5, height = 6.5)
+ggsave(here::here("fig/Fig1.png"), plot = CANCovid_fig, width = 6.5, height = 6.5)
+ggsave(here::here("fig/Fig1.tiff"), plot = CANCovid_fig, width = 6.5, height = 6.5)
 ```
 
 ```{r Fig2-display-data-examples, eval = FALSE, include = FALSE}
 # generate a random sample for each setting (of Rt scenario, incidence distribution, serial interval distribution)
-dat1_pois_measles <- data_generator(Rt_case = 1, dist = "poisson", si_type = "measles", seed = 9)
-dat2_pois_measles <- data_generator(Rt_case = 2, dist = "poisson", si_type = "measles", seed = 4)
-dat3_pois_measles <- data_generator(Rt_case = 3, dist = "poisson", si_type = "measles", seed = 9)
-dat4_pois_measles <- data_generator(Rt_case = 4, dist = "poisson", si_type = "measles", seed = 4)
-dat1_NB_measles <- data_generator(Rt_case = 1, dist = "NB", si_type = "measles", seed = 3)
-dat2_NB_measles <- data_generator(Rt_case = 2, dist = "NB", si_type = "measles", seed = 5)
-dat3_NB_measles <- data_generator(Rt_case = 3, dist = "NB", si_type = "measles", seed = 6)
-dat4_NB_measles <- data_generator(Rt_case = 4, dist = "NB", si_type = "measles", seed = 4)
-dat1_pois_SARS <- data_generator(Rt_case = 1, dist = "poisson", si_type = "SARS", seed = 792)
-dat2_pois_SARS <- data_generator(Rt_case = 2, dist = "poisson", si_type = "SARS", seed = 1)
-dat3_pois_SARS <- data_generator(Rt_case = 3, dist = "poisson", si_type = "SARS", seed = 792)
-dat4_pois_SARS <- data_generator(Rt_case = 4, dist = "poisson", si_type = "SARS", seed = 3)
-dat1_NB_SARS <- data_generator(Rt_case = 1, dist = "NB", si_type = "SARS", seed = 86)
-dat2_NB_SARS <- data_generator(Rt_case = 2, dist = "NB", si_type = "SARS", seed = 48)
-dat3_NB_SARS <- data_generator(Rt_case = 3, dist = "NB", si_type = "SARS", seed = 56)
-dat4_NB_SARS <- data_generator(Rt_case = 4, dist = "NB", si_type = "SARS", seed = 29)
+#dat1_pois_measles <- data_generator(Rt_case = 1, dist = "poisson", si_type = "measles", seed = 9)
+#dat2_pois_measles <- data_generator(Rt_case = 2, dist = "poisson", si_type = "measles", seed = 4)
+#dat3_pois_measles <- data_generator(Rt_case = 3, dist = "poisson", si_type = "measles", seed = 9)
+#dat4_pois_measles <- data_generator(Rt_case = 4, dist = "poisson", si_type = "measles", seed = 4)
+#dat1_NB_measles <- data_generator(Rt_case = 1, dist = "NB", si_type = "measles", seed = 3)
+#dat2_NB_measles <- data_generator(Rt_case = 2, dist = "NB", si_type = "measles", seed = 5)
+#dat3_NB_measles <- data_generator(Rt_case = 3, dist = "NB", si_type = "measles", seed = 6)
+#dat4_NB_measles <- data_generator(Rt_case = 4, dist = "NB", si_type = "measles", seed = 4)
+#dat1_pois_SARS <- data_generator(Rt_case = 1, dist = "poisson", si_type = "SARS", seed = 792)
+#dat2_pois_SARS <- data_generator(Rt_case = 2, dist = "poisson", si_type = "SARS", seed = 1)
+#dat3_pois_SARS <- data_generator(Rt_case = 3, dist = "poisson", si_type = "SARS", seed = 792)
+#dat4_pois_SARS <- data_generator(Rt_case = 4, dist = "poisson", si_type = "SARS", seed = 3)
+#dat1_NB_SARS <- data_generator(Rt_case = 1, dist = "NB", si_type = "SARS", seed = 86)
+#dat2_NB_SARS <- data_generator(Rt_case = 2, dist = "NB", si_type = "SARS", seed = 48)
+#dat3_NB_SARS <- data_generator(Rt_case = 3, dist = "NB", si_type = "SARS", seed = 56)
+#dat4_NB_SARS <- data_generator(Rt_case = 4, dist = "NB", si_type = "SARS", seed = 29)
 
 # combine the random samples as a data table  
-dat_example <- data.table(incidence = c(dat1_pois_measles$incidence, 
-                                        dat2_pois_measles$incidence,
-                                        dat3_pois_measles$incidence,
-                                        dat4_pois_measles$incidence,
-                                        dat1_NB_measles$incidence,
-                                        dat2_NB_measles$incidence,
-                                        dat3_NB_measles$incidence,
-                                        dat4_NB_measles$incidence,
-                                        dat1_pois_SARS$incidence,
-                                        dat2_pois_SARS$incidence,
-                                        dat3_pois_SARS$incidence,
-                                        dat4_pois_SARS$incidence,
-                                        dat1_NB_SARS$incidence,
-                                        dat2_NB_SARS$incidence,
-                                        dat3_NB_SARS$incidence,
-                                        dat4_NB_SARS$incidence),
-                          mean = c(dat1_pois_measles$mean, 
-                                   dat2_pois_measles$mean,
-                                   dat3_pois_measles$mean,
-                                   dat4_pois_measles$mean,
-                                   dat1_NB_measles$mean,
-                                   dat2_NB_measles$mean,
-                                   dat3_NB_measles$mean,
-                                   dat4_NB_measles$mean,
-                                   dat1_pois_SARS$mean,
-                                   dat2_pois_SARS$mean,
-                                   dat3_pois_SARS$mean,
-                                   dat4_pois_SARS$mean,
-                                   dat1_NB_SARS$mean,
-                                   dat2_NB_SARS$mean,
-                                   dat3_NB_SARS$mean,
-                                   dat4_NB_SARS$mean),
-                          trueRt = rep(c(dat1_pois_measles$Rt,
-                                         dat2_pois_measles$Rt,
-                                         dat3_pois_measles$Rt,
-                                         dat4_pois_measles$Rt), 4),
-                          time = rep(1:300, 4 * 4),
-                          Rt_case = rep(rep(1:4, each = 300), 4),
-                          dist = rep(rep(c("Poisson", "Negative Binomial"), each = 300 * 4), 2),
-                          si_type = rep(c("measles", "SARS"), each = 4 * 300 * 2)
-                          )
-dat_example <- dat_example %>%
-  mutate(dist = fct_relevel(
-    dist, 
-    "Poisson", 
-    "Negative Binomial"
-  )) %>%
-  mutate(Rt_case = as.character(Rt_case)) %>% 
-  mutate(Rt_case = fct_recode(
-    Rt_case,
-    "Scenario 1" = "1",
-    "Scenario 2" = "2",
-    "Scenario 3" = "3",
-    "Scenario 4" = "4"
-  ))
+#dat_example <- data.table(incidence = c(dat1_pois_measles$incidence, 
+#                                        dat2_pois_measles$incidence,
+#                                        dat3_pois_measles$incidence,
+#                                        dat4_pois_measles$incidence,
+#                                        dat1_NB_measles$incidence,
+#                                        dat2_NB_measles$incidence,
+#                                        dat3_NB_measles$incidence,
+#                                        dat4_NB_measles$incidence,
+#                                        dat1_pois_SARS$incidence,
+#                                        dat2_pois_SARS$incidence,
+#                                        dat3_pois_SARS$incidence,
+#                                        dat4_pois_SARS$incidence,
+#                                        dat1_NB_SARS$incidence,
+#                                        dat2_NB_SARS$incidence,
+#                                        dat3_NB_SARS$incidence,
+#                                        dat4_NB_SARS$incidence),
+#                          mean = c(dat1_pois_measles$mean, 
+#                                   dat2_pois_measles$mean,
+#                                   dat3_pois_measles$mean,
+#                                   dat4_pois_measles$mean,
+#                                   dat1_NB_measles$mean,
+#                                   dat2_NB_measles$mean,
+#                                   dat3_NB_measles$mean,
+#                                   dat4_NB_measles$mean,
+#                                   dat1_pois_SARS$mean,
+#                                   dat2_pois_SARS$mean,
+#                                   dat3_pois_SARS$mean,
+#                                   dat4_pois_SARS$mean,
+#                                   dat1_NB_SARS$mean,
+#                                   dat2_NB_SARS$mean,
+#                                   dat3_NB_SARS$mean,
+#                                   dat4_NB_SARS$mean),
+#                          trueRt = rep(c(dat1_pois_measles$Rt,
+#                                         dat2_pois_measles$Rt,
+#                                         dat3_pois_measles$Rt,
+#                                         dat4_pois_measles$Rt), 4),
+#                          time = rep(1:300, 4 * 4),
+#                          Rt_case = rep(rep(1:4, each = 300), 4),
+#                          dist = rep(rep(c("Poisson", "Negative Binomial"), each = 300 * 4), 2),
+#                          si_type = rep(c("measles", "SARS"), each = 4 * 300 * 2)
+#                          )
+#dat_example <- dat_example %>%
+#  mutate(dist = fct_relevel(
+#    dist, 
+#    "Poisson", 
+#    "Negative Binomial"
+#  )) %>%
+#  mutate(Rt_case = as.character(Rt_case)) %>% 
+#  mutate(Rt_case = fct_recode(
+#    Rt_case,
+#    "Scenario 1" = "1",
+#    "Scenario 2" = "2",
+#    "Scenario 3" = "3",
+#    "Scenario 4" = "4"
+#  ))
 
 # save examples
-saveRDS(dat_example, here::here("dat/data_example.RDS"))
+#saveRDS(dat_example, here::here("dat/data_example.RDS"))
 
+dat_example <- readRDS(here::here("dat/data_example.RDS"))
 # display Rt
 fig_true_rt <- dat_example %>%
   mutate(Rt_case = fct_recode(Rt_case,
@@ -1847,9 +1851,9 @@ fig_sars_data <- dat_example %>%
   theme_bw()
 
 # save plots
-ggsave(plot=fig_true_rt, here::here("fig/fig_true_rt.png"), width = 6.5, height = 5)
-ggsave(plot=fig_measles_data, here::here("fig/fig_measles_data.png"), width = 6.5, height = 5)
-ggsave(plot=fig_sars_data, here::here("fig/fig_sars_data.png"), width = 6.5, height = 5)
+#ggsave(plot=fig_true_rt, here::here("fig/fig_true_rt.png"), width = 6.5, height = 5)
+#ggsave(plot=fig_measles_data, here::here("fig/fig_measles_data.png"), width = 6.5, height = 5)
+#ggsave(plot=fig_sars_data, here::here("fig/fig_sars_data.png"), width = 6.5, height = 5)
 
 # combine the three figures above
 dat_example_Rt <- dat_example %>% select(trueRt, mean, time:dist)
@@ -1869,9 +1873,10 @@ fig_sample <- dat_example_long %>%
   scale_x_continuous(expand = expansion(c(0, 0.05))) + 
   scale_color_brewer(palette = "Set1") +
   theme_bw() +
-  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom", text = element_text(family = "sans", size = 12)) +
   guides(color = guide_legend(title = NULL))
-ggsave(here::here("fig/fig_samples.png"), fig_sample, width = 7.5, height = 6)
+ggsave(here::here("fig/Fig2.png"), fig_sample, width = 7.5, height = 6)
+ggsave(here::here("fig/Fig2.tiff"), fig_sample, width = 7.5, height = 6)
 ```
 
 ```{r Figs3+4-display-simulation-results, eval = FALSE, include = FALSE}
@@ -1898,6 +1903,7 @@ fig_kl_week_measles <- Rt_res_long_week_no_outliers %>%
   theme_bw() +
   theme(axis.text.x = element_blank(), legend.position = "bottom",
         axis.ticks.x = element_blank()) +
+  theme(text = element_text(family = "sans", size = 12)) +
   guides(color = guide_legend(title = NULL, byrow=TRUE))
 print(fig_kl_week_measles)
 
@@ -1914,11 +1920,14 @@ fig_kl_week_sars <- Rt_res_long_week_no_outliers %>%
   theme_bw() +
   theme(axis.text.x = element_blank(), legend.position = "bottom",
         axis.ticks.x = element_blank()) +
+  theme(text = element_text(family = "sans", size = 12)) +
   guides(color = guide_legend(title = NULL, byrow=TRUE))
 print(fig_kl_week_sars)
 
-ggsave(plot=fig_kl_week_measles, here::here("fig/fig_kl_week_measles.png"), width = 6.5, height = 5)
-ggsave(plot=fig_kl_week_sars, here::here("fig/fig_kl_week_sars.png"), width = 6.5, height = 5)
+ggsave(plot=fig_kl_week_measles, here::here("fig/Fig3.png"), width = 6.5, height = 5)
+ggsave(plot=fig_kl_week_sars, here::here("fig/Fig4.png"), width = 6.5, height = 5)
+ggsave(plot=fig_kl_week_measles, here::here("fig/Fig3.tiff"), width = 6.5, height = 5)
+ggsave(plot=fig_kl_week_sars, here::here("fig/Fig4.tiff"), width = 6.5, height = 5)
 ```
 
 ```{r save-fitted-rt, eval = FALSE, include = FALSE}
@@ -2691,6 +2700,7 @@ saveRDS(res_dat, here::here("dat/data_example_estimates.RDS"))
 ```
 
 ```{r Figs5+6-display-fitted-rt, eval = FALSE, include = FALSE}
+res_dat <- readRDS(here::here("dat/data_example_estimates.RDS"))
 #res_dat_long <- res_dat %>%
 #  pivot_longer(EpiWeek_Rt:RtEstim3_Rt, names_to = "method", values_to = "Rt_value") %>%
 #  mutate(method = fct_recode(method,
@@ -2725,6 +2735,7 @@ fig_res_pois_measles <- res_dat_long %>%
   coord_cartesian(ylim = c(0, 4)) + 
   theme_bw() +
   theme(legend.position = "bottom") +
+  theme(text = element_text(family = "sans", size = 10)) +
   guides(color = guide_legend(title = NULL, byrow=TRUE))
 print(fig_res_pois_measles)
 
@@ -2742,11 +2753,14 @@ fig_res_NB_sars <- res_dat_long %>%
   coord_cartesian(ylim = c(0, 4)) + 
   theme_bw() +
   theme(legend.position = "bottom") +
+  theme(text = element_text(family = "sans", size = 10)) +
   guides(color = guide_legend(title = NULL, byrow=TRUE))
 print(fig_res_NB_sars)
 
-ggsave(plot=fig_res_pois_measles, here::here("fig/fig_res_pois_measles.png"), width = 6.5, height = 5)
-ggsave(plot=fig_res_NB_sars, here::here("fig/fig_res_NB_sars.png"), width = 6.5, height = 5)
+ggsave(plot=fig_res_pois_measles, here::here("fig/Fig5.png"), width = 6.5, height = 5)
+ggsave(plot=fig_res_NB_sars, here::here("fig/Fig6.png"), width = 6.5, height = 5)
+ggsave(plot=fig_res_pois_measles, here::here("fig/Fig5.tiff"), width = 6.5, height = 5)
+ggsave(plot=fig_res_NB_sars, here::here("fig/Fig6.tiff"), width = 6.5, height = 5)
 ```
 
 ```{r Fig7-display-cancovid-Rt-est, eval=FALSE, include=FALSE}
@@ -2795,15 +2809,17 @@ fig_covid_Rt <- df_covid_Rt %>%
   ggplot(aes(Time, Rt, colour = lambda, group = lambda)) +
   geom_line() +
   facet_wrap(~ degree, scales = "free_y", ncol = 1) + 
-  labs(y ="Rt estimates for Covid-19 pandemic in Canada", x = "Year", color = "\u03BB") +
+  labs(y ="Rt estimates for Covid-19 pandemic in Canada", x = "Month", color = "\u03BB") +
   scale_colour_viridis_c(trans = "log10", breaks = c(1, 1e2L, 1e4L, 1e6L), labels = c(1, expression(10^2), expression(10^4), expression(10^6))) +
   guides(color = guide_colorbar(barwidth = 10, barheight = 1)) +
-  scale_x_date(date_breaks = "6 months", date_labels = "%b %Y", expand = expansion(c(0, 0.05))) +
+  scale_x_date(date_breaks = "8 months", date_labels = "%b %Y", expand = expansion(c(0, 0.05))) +
   scale_y_continuous(expand = expansion(c(0, 0.05))) + 
   coord_cartesian(ylim = c(0, 2)) + 
   geom_hline(yintercept = 1) +
   theme_bw() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom") +
+  theme(text = element_text(family = "sans", size = 10),
+        axis.text = element_text(family = "sans", size = 8))
   
 # CV-chosen Rt with CB
 rt_ci_covid3 <- as.data.table(rt_ci_covid3) %>% 
@@ -2833,10 +2849,12 @@ fig_covid_ci <- df_covid_ci %>%
   ) +
   geom_hline(yintercept = 1, linetype = "dotted") +
   coord_cartesian(ylim = c(0, 2)) + 
-  scale_x_date(date_breaks = "6 months", date_labels = "%b %Y", expand = expansion(c(0, 0.05))) +
+  scale_x_date(date_breaks = "8 months", date_labels = "%b %Y", expand = expansion(c(0, 0.05))) +
   scale_y_continuous(expand = expansion(c(0, 0.05))) + 
-  labs(x = "Year", y = "") +
-  theme_bw()
+  labs(x = "Month", y = "") +
+  theme_bw() +
+  theme(text = element_text(family = "sans", size = 10),
+        axis.text = element_text(family = "sans", size = 8))
 
 CanCovid_Rt_all <- ggpubr::ggarrange(fig_covid_Rt, fig_covid_ci,
                          ncol = 2, nrow = 1, 
@@ -2844,7 +2862,8 @@ CanCovid_Rt_all <- ggpubr::ggarrange(fig_covid_Rt, fig_covid_ci,
 )
 print(CanCovid_Rt_all)
 
-ggsave(here::here("fig/covid_full_res.png"), CanCovid_Rt_all, width = 8.34, height = 6.19)
+ggsave(here::here("fig/Fig7.png"), CanCovid_Rt_all, width = 7.5, height = 6)
+ggsave(here::here("fig/Fig7.tiff"), CanCovid_Rt_all, width = 7.5, height = 6)
 ```
 
 ```{r Fig8-display-flu1918-data, eval=FALSE, include=FALSE}
@@ -2860,10 +2879,13 @@ Flu_case <- flu_dat %>%
   scale_y_continuous(expand = expansion(c(0, 0.05))) + 
   scale_x_continuous(expand = expansion(c(0, 0.05))) + 
   labs(x = "Days since start of epidemic", y = "1918 Influenza daily incidence in Baltimore") +
-  theme_bw()
+  theme_bw() +
+  theme(text = element_text(family = "sans", size = 12),
+        axis.text = element_text(family = "sans", size = 10))
 print(Flu_case)
 
-ggsave(here::here("fig/flu_dat.png"), Flu_case, width = 6.5, height = 5)
+ggsave(here::here("fig/Fig8.png"), Flu_case, width = 6.5, height = 5)
+ggsave(here::here("fig/Fig8.tiff"), Flu_case, width = 6.5, height = 5)
 ```
 
 ```{r Fig9-display-flu1918-Rt-est, eval=FALSE, include=FALSE}
@@ -2911,7 +2933,9 @@ fig_flu_Rt <- df_flu_Rt %>%
   guides(color = guide_colorbar(barwidth = 10, barheight = 1)) +
   geom_hline(yintercept = 1) +
   theme_bw() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom") +
+  theme(text = element_text(family = "sans", size = 10),
+        axis.text = element_text(family = "sans", size = 8))
 
 rt_ci_flu3 <- as.data.table(rt_ci_flu3) %>% 
   mutate(degree = "3", lambda = cv_mod_flu3$lambda.1se) %>% 
@@ -2941,13 +2965,16 @@ fig_flu_ci <- df_flu_ci %>%
   scale_y_continuous(expand = expansion(c(0, 0.05))) + 
   geom_hline(yintercept = 1, linetype = "dotted") +
   labs(x = "Days since start of epidemic", y = "") +
-  theme_bw()
+  theme_bw() +
+  theme(text = element_text(family = "sans", size = 10),
+        axis.text = element_text(family = "sans", size = 8))
 
 Flu_Rt <- ggarrange(fig_flu_Rt, fig_flu_ci,
   ncol = 2, nrow = 1, common.legend = TRUE, legend = "bottom"
 )
 print(Flu_Rt)
 
-ggsave(here::here("fig/flu_full_res.png"), Flu_Rt, width = 6.5, height = 5)
+ggsave(here::here("fig/Fig9.png"), Flu_Rt, width = 6.5, height = 5)
+ggsave(here::here("fig/Fig9.tiff"), Flu_Rt, width = 6.5, height = 5)
 ```
 
