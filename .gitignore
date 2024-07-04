@@ -46,3 +46,5 @@
 *.synctex.gz
 *.synctex.gz(busy)
 *.pdfsync
+
+PLoS-rebuttal*
