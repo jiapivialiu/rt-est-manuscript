@@ -202,7 +202,7 @@
 \DeclareMathOperator*{\argmax}{argmax}
 \newcommand{\Argmax}[1]{\underset{#1}{\argmax\ }}
 \def\sumN{\sum_{i=1}^n}
-\def\RtEstim{\texttt{RtEstim}}
+\def\RtEstim{\texttt{rtestim}}
 \def\EpiEstim{\texttt{EpiEstim}}
 \def\EpiLPS{\texttt{EpiLPS}}
 \def\EpiFilter{\texttt{EpiFilter}}
@@ -316,10 +316,9 @@ While many estimation approaches exist, their utility may be limited.
 Challenges of surveillance data collection, model assumptions
 that are unverifiable with data alone, and 
 computationally inefficient frameworks are critical limitations for many
-existing approaches. We propose a discrete spline-based approach called 
-\RtEstim\ that solves a convex optimization problem---Poisson trend filtering---using the proximal Newton method. It produces a locally adaptive 
+existing approaches. We propose a discrete spline-based approach that solves a convex optimization problem---Poisson trend filtering---using the proximal Newton method. It produces a locally adaptive 
 estimator for instantaneous reproduction number estimation with heterogeneous 
-smoothness. \RtEstim\ remains accurate even under some process 
+smoothness. Our methodology remains accurate even under some process 
 misspecifications and is computationally efficient, even for large-scale 
 data. The implementation is easily accessible in a lightweight \R\ 
 package \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
@@ -446,13 +445,13 @@ that are robust to measurement errors in incidence data.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% our approach %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-We propose an instantaneous reproduction number estimator, called \RtEstim\ that
+We propose an instantaneous reproduction number estimator, that
 requires only incidence data. Our model makes the conditional Poisson
 assumption, similar to much of the prior work described above, but is
 empirically more robust to misspecification. This estimator is defined by a
 convex optimization problem with Poisson loss and $\ell_1$ penalty on the
 temporal evolution of $\log(\calR_t)$ to impose smoothness over time. As a
-result, \RtEstim\ generates discrete splines, and the estimated curves (on the
+result, it generates discrete splines, and the estimated curves (on the
 logarithmic scale) appear to be piecewise polynomials of an order selected by
 the user. Importantly, the estimates are locally adaptive, meaning that
 different time ranges may possess heterogeneous smoothness. Because we penalize
@@ -462,7 +461,8 @@ handle large or small incidence measurements, and are automatically (reasonably)
 robust to outliers without additional constraints (a feature of the $\ell_1$
 penalty). A small illustration using three years of Covid-19 case data in Canada
 \cite{CovidTimelineCanada} is shown in \autoref{fig:intro-fig}, where we
-use a time-varying serial interval distribution. 
+use a time-varying serial interval distribution. The implementation is easily
+accessible in a lightweight \R\ called \texttt{rtestim}.
 
 \begin{figure}[!t]
   \centering
@@ -508,15 +508,16 @@ degrees of misspecification of incidence distribution, serial interval
 distribution, and the order of graphical curvature. 
 
 
-The manuscript proceeds as follows. We first introduce the methodology of
-\RtEstim\ including the renewal equation and the development of Poisson trend
-filtering estimator. We explain how this method could be interpreted from the
-Bayesian perspective, connecting it to previous work in this context. We provide
-illustrative experiments comparing our estimator to other Bayesian alternatives.
-We then apply our \RtEstim\ on the Covid-19 pandemic in Canada and the 1918
-influenza pandemic in the United States. Finally, we conclude with a discussion
-of the advantages and limitations of our approach and describe some practical
-considerations for instantaneous reproduction number estimation.
+The manuscript proceeds as follows. We first introduce our $\cal{R}_t$
+estimation methodology including the renewal equation and the development of
+Poisson trend filtering estimator. We explain how this method could be
+interpreted from the Bayesian perspective, connecting it to previous work in
+this context. We provide illustrative experiments comparing our estimator to
+other Bayesian alternatives. We then apply our methodology to the Covid-19
+pandemic in Canada and the 1918 influenza pandemic in the United States.
+Finally, we conclude with a discussion of the advantages and limitations of our
+approach and describe some practical considerations for instantaneous
+reproduction number estimation.
 
 
 \section{Methods}
@@ -1000,7 +1001,7 @@ methods including \EpiEstim\ with weekly or monthly sliding windows, \EpiLPS,
 curves. We have not made any effort to tune these (and other choices) more
 carefully.
 
-For \RtEstim, The choice of $k$ explicitly controls the function space to which
+For \RtEstim, the choice of $k$ explicitly controls the function space to which
 the solution will belong \cite{tibshirani2022divided}, providing the analyst
 with a mathematical understanding of the result. When faced with real data, the
 choice of $k$ for \RtEstim\ should be done either (1) based on the analyst's
@@ -1049,23 +1050,23 @@ deferred to the supplementary document.
 
 \subsection{Results for synthetic data}
 
-\RtEstim\ generally performs at least as well as the other competitors in the
+In general, \RtEstim\ performs at least as well as the other competitors in the
 experimental study. \autoref{fig:kl-res-measles} and \autoref{fig:kl-res-sars}
 visualize the KL divergence across the seven methods. For low incidence in
 measles epidemics, \RtEstim\ is the most accurate for all $\calR_t$ scenarios
 given both Poisson and negative binomial incidence. The best performance of
-\RtEstim\ has the lowest median and has low or no overlap with other methods.
-For Scenario 1, \EpiFilter\ is a competitive alternative given Poisson
-incidence, which has similar median to the best performance of our \RtEstim\ and
-with a small variation, however for negative binomial incidence, \EpiFilter\
-loses its advantage and has the largest medians of any method in Scenarios 1 and
-2. The large incidence in SARS epidemics is more difficult for all methods. For
-Poisson incidence, results are similar to the previous setting. However, for
-negative binomial incidence, \EpiLPS\ performs at least as well if not better
-than \RtEstim, especially in Scenarios 2 and 4. Nonetheless, \RtEstim\ is
-largely similar, with simulation uncertainty suggesting comparable performance.
-We will examine a single realization of each
-experiment to investigate these global conclusions in more detail.
+\RtEstim\ has the lowest median and has little or no overlap with other methods.
+For Scenario 1 with Poisson incidence, \EpiFilter\ has a similar median to that
+of \RtEstim\ and small variability, making it a competitive alternative. However
+for negative binomial incidence, \EpiFilter\ loses its advantage and has the
+largest medians of any method in Scenarios 1 and 2. The large incidence in SARS
+epidemics is more difficult for all methods. For Poisson incidence, results are
+similar to the previous setting. However, for negative binomial incidence,
+\EpiLPS\ performs at least as well if not better than \RtEstim, especially in
+Scenarios 2 and 4. Nonetheless, \RtEstim\ is largely similar, with simulation
+uncertainty suggesting comparable performance. We will examine a single
+realization of each experiment to investigate these global conclusions in more
+detail.
 
 \begin{figure}[!t]
   \centering
@@ -1098,25 +1099,26 @@ experiment to investigate these global conclusions in more detail.
 instantaneous reproduction number under the Poisson generative model in measles
 synthetic epidemics for all four scenarios. An expanded visualization with each
 estimated $\calR_t$ curve displayed in a separate panel is provided in Figure
-A.6.1 in \nameref{S1_supp}. Ignoring the start of the epidemics, all methods look
-accurate and recover the underlying curves well, except \EpiEstim\ with monthly
-sliding windows, where the trajectories are shifted to the right. Compared to
-\EpiEstim\ and \EpiLPS, which have rather severe difficulties at the beginning
-of the period, \RtEstim\ and \EpiFilter\ estimates are more accurate without
-suffering from the initialization problem. The edge problem in \EpiEstim\ and
-\EpiLPS\ may be due to their priors, with the bias persisting for many days.
-\RtEstim\ can also have edge problem though, it is less severe for smaller $k$.
-Besides the edge problem, \EpiEstim\ (especially, with the monthly sliding
-window) and \EpiLPS\ produce ``smooth'' estimated curves that are continuous at
-the changepoints in Scenarios 1--3, resulting in large errors for a long period.
-Since the piecewise constant \RtEstim\ estimator does not force any smoothness
-in $\calR_t$, it easily captures the sharp change and nearly overlaps with the
-true values in Scenario 1. \RtEstim\ with higher $k$ can work nearly as well due
-to the $\ell_1$ penalty's ability to allow heterogenous smoothness. However,
-similar to other methods, \RtEstim\ has some difficulty with the first few
-timepoints, especially in the periodic scenario, where all methods fail to
-capture the first peak with an accurately. \EpiFilter\ recovers the $\calR_t$
-curves well in general, but tends to be more wiggly than other methods. 
+A.6.1 in \nameref{S1_supp}. Ignoring the start of the epidemics, all methods
+look accurate and recover the underlying curves well, except \EpiEstim\ with
+monthly sliding windows, where the trajectories are shifted to the right.
+Compared to \EpiEstim\ and \EpiLPS, which have rather severe difficulties at the
+beginning of the period, \RtEstim\ and \EpiFilter\ estimates are more accurate
+without suffering from the initialization problem. The edge problem in
+\EpiEstim\ and \EpiLPS\ may be due to their priors, with the bias persisting for
+many days. A similar edge problem is possible for \RtEstim\ though it tends to
+be less severe for smaller $k$. Besides the edge problem, \EpiEstim\
+(especially, with the monthly sliding window) and \EpiLPS\ produce ``smooth''
+estimated curves that are continuous at the changepoints in Scenarios 1--3,
+resulting in large errors for a long period. Since the piecewise constant
+\RtEstim\ estimator does not enforce any smoothness, it easily
+captures the sharp change and nearly overlaps with the true values in Scenario
+1. For larger $k$, \RtEstim\ can work nearly as well due to the
+$\ell_1$ penalty's ability to allow heterogenous smoothness. However, similar to
+other methods, \RtEstim\ has some difficulty with the first few timepoints,
+especially in the periodic scenario, where all methods fail to capture the first
+peak with much accuracy. \EpiFilter\ recovers the $\calR_t$ curves well in
+general, but tends to be more wiggly than other methods. 
 
 
 \begin{figure}[!t]
@@ -1134,11 +1136,11 @@ shows estimated $\calR_t$ given negative binomial incidence in SARS epidemics
 for each setting. An expanded visualization with each estimated $\calR_t$ curve
 displayed in a separate panel is provided in Figure A.6.4 in \nameref{S1_supp}.
 Compared to the \autoref{fig:pois-est-measles}, all methods perform worse
-overall due to two main reasons: larger incidence and overdispersed data. All
+overall for two main reasons: larger incidence and overdispersed data. All
 methods are worse at the start of the epidemics. \EpiFilter\ is dramatically
-wiggly. Our \RtEstim\ estimates are close to the best
-performance in the first three $\calR_t$ scenarios, though they have
-siginificant difficulties in the periodic scenario. 
+wiggly. The performance of \RtEstim\ is among the best
+in the first three $\calR_t$ scenarios, though it has
+significant difficulties in the periodic scenario. 
 
 \begin{figure}[!t]
   \centering
@@ -1153,11 +1155,11 @@ siginificant difficulties in the periodic scenario.
 
 Finally, it is important to provide a brief comparison of the running times of
 all three models across the $8$ experimental settings. We find that almost all
-models across all experiments complete within $10$ seconds. \RtEstim\ generally
-takes the longest, due to a relatively large number of estimates---$50$ values
-of $\lambda$ and $10$ folds of cross validation require $550$ estimates---while
-other models run only a single time for a fixed setting of hyperparameters per
-experiment. 
+models across all experiments operate within $10$ seconds. Generally, \RtEstim\
+takes the longest due to a relatively large number of estimates---$50$ values of
+$\lambda$ and $10$ folds of cross validation require $550$ estimates---while
+other models run only a single time for a fixed setting of their hyperparameters
+per experiment. 
 
 
 \subsection{Real-data results: Covid-19 incident cases in Canada}
@@ -1166,9 +1168,9 @@ We return to the data for Covid-19 confirmed incident cases in Canada examined
 in \autoref{sec:intro}. In this section, we use the weighted average of the
 serial interval distributions for the four dominant variants (shown in
 \autoref{fig:intro-fig}) for the purposes of comparison with other methods, none
-of which allow time-varying delays. The estimates for \RtEstim\ are displayed in
-\autoref{fig:covid-rt} while the estimates of all competitors are deferred to
-Figures A.8.1 and A.8.2 in \nameref{S1_supp}. 
+of which allow time-varying delays. The estimates produced by \RtEstim\ are
+displayed in \autoref{fig:covid-rt} while the estimates of all competitors are
+deferred to Figures A.8.1 and A.8.2 in \nameref{S1_supp}. 
 
 Considering $k=1,2$ and 3, $\widehat{\calR}_t$ for Covid-19 in Canada is always
 less than $2$ except at the very early stage, which means that one distinct
@@ -1258,7 +1260,7 @@ A.8.4 in \nameref{S1_supp}.
 \section{Discussion}
 \label{sec:disc}
 
-The \RtEstim\ methodology provides a locally adaptive estimator using Poisson
+Our methodology provides a locally adaptive estimator using Poisson
 trend filtering. It captures the heterogeneous smoothness of instantaneous
 reproduction numbers given observed incidence data rather than resulting in
 global smoothness. This is a nonparametric regression model which can be written
@@ -1320,24 +1322,24 @@ groups. The result was a sudden change that would render $\calR_t$ estimates on
 either side of this timepoint incommensurable.
 
 
-Our \RtEstim\ implementation can take a fixed serial interval throughout the
-period of study (as implemented in simulation and in the real epidemics) or 
-use time-varying serial interval distributions (as implemented 
-in \autoref{fig:intro-fig} for Covid-19 data in Canada). In reality, the serial
-interval may vary due to changes in the factors such as population immunity 
-\cite{nash2023estimating}. One issue regarding the serial interval distribution 
-relates to equating serial and generation intervals (also mentioned above). 
-The serial interval distribution is generally wider than that 
-of the generation interval, because the serial interval involves the convolution
-of two distributions, and is unlikely to actually follow a named distribution
-like gamma, though it may be reasonably well approximated by one. Our
-implementation allows for an arbitrary distribution to be used, but requires the
-user to specify the discretization explicitly, requiring more nuanced knowledge
-than is typically available. Pushing this analysis further, to accommodate other
-types of incidence data (hospitalizations or deaths), a modified generation
-interval distribution would be necessary, and further assumptions would be
-required as well. Or else, one would first need to deconvolve deaths to
-infection onset before using our software.
+Our implementation in the software package \RtEstim\ can accommodate a fixed
+serial interval throughout the period of study (as implemented in simulation and
+in the real epidemics) or use time-varying serial interval distributions (as
+implemented in \autoref{fig:intro-fig} for Covid-19 data in Canada). In reality,
+the serial interval may vary due to changes in the factors such as population
+immunity \cite{nash2023estimating}. One issue regarding the serial interval
+distribution relates to equating serial and generation intervals (also mentioned
+above). The serial interval distribution is generally wider than that of the
+generation interval, because the serial interval involves the convolution of two
+distributions, and is unlikely to actually follow a named distribution like
+gamma, though it may be reasonably well approximated by one. Our implementation
+allows for an arbitrary distribution to be used, but requires the user to
+specify the discretization explicitly, requiring more nuanced knowledge than is
+typically available. Pushing this analysis further, to accommodate other types
+of incidence data (hospitalizations or deaths), a modified generation interval
+distribution would be necessary, and further assumptions would be required as
+well. Or else, one would first need to deconvolve deaths to infection onset
+before using our software.
 
 
 Accurate statistical coverage of a function is a difficult problem, and the
@@ -1369,7 +1371,9 @@ provide efficient tuning parameter selection via cross validation.
 \paragraph*{S1 Appendix.}
 \label{S1_supp}
 
-{\bf Supplement for RtEstim: Time-varying reproduction number estimation with trend filtering.} 
+{\bf Supplement for ``rtestim: Time-varying reproduction number estimation with
+trend filtering''} 
+
 This includes eight sections, Sections A.1--A.8. Section A.1: Derivation of Kullback Leibler divergence for accuracy comparison. 
 Section A.2: Supplmentary details on experimental settings.
 Section A.3: Supplementary experimental results on accuracy comparison.
@@ -1377,7 +1381,7 @@ Section A.4: Experimental results on accuracy under misspecification of serial i
 Section A.5: Time comparisons of all methods.
 Section A.6: Confidence interval coverage.
 Section A.7: Data examples and alternative visualizations of Figs 5 and 6.
-Section A.8: Application of RtEstim and all competitors on real epidemics.
+Section A.8: Application of \RtEstim\ and all competitors on real epidemics.
 
 \section*{Acknowledgments}
 
