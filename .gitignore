@@ -5,6 +5,13 @@
 .DS_Store
 ._wordcount_selection.tex
 
+*.aux
+*.blg
+*.fdb_latexmk
+*.log
+*.out
+*.synctex.gz
+*.fls
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

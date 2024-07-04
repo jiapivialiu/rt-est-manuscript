@@ -59,17 +59,23 @@
 %\usepackage{appendix}
 \usepackage{titlesec}
 
-\usepackage{caption}
+%\usepackage{caption}
+%\PassOptionsToPackage{numbers,square,sort&compress}{natbib}
+%\bibliographystyle{plainnat}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
+\usepackage[fit]{truncate}
+\fancyhead[LE,RO]{\nouppercase{\truncate{0.5\headwidth}{\rightmark}}}
+\fancyhead[LO,RE]{\nouppercase{\truncate{0.5\headwidth}{\leftmark}}}
+
 %\fancyhf{}
 %\renewcommand{\thepage}{\roman{page}}
 \pagenumbering{roman}
 %\setlength{\headheight}{14.5pt}
 
 % references
-\usepackage[authoryear,round,sort&compress]{natbib}%,round,compress,elide,comma
-\bibliographystyle{plainnat}
+%\usepackage[authoryear,round,sort&compress]{natbib}%,round,compress,elide,comma
+%\bibliographystyle{plainnat}
 %\usepackage[american]{babel}
 
 
@@ -86,3 +92,4 @@
 %\Crefname{appsec}{Appendix}{Appendices}
 
 \newcommand{\attn}[1]{\textcolor{red}{ATTN: #1}}
+\renewcommand{\hat}{\widehat}

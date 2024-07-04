@@ -149,7 +149,7 @@ write our estimator as the solution to the optimization problem
   = \Argmin{\theta\in\bbR^n} \eta^\top \exp(\theta) - \bfy^\top \theta + \lambda 
   \snorm{D^{(k+1)} \theta}_1,
 \end{equation}
-where $\exp(\cdot)$ applies elementwise.
+where $\exp(\cdot)$ applies elementwise and $\snorm{.}_1 := \sum |.|$ is the $\ell_1$ norm.
 Here, $D^{(k+1)} \in \bbZ^{(n-k-1)\times n}$ is the $(k+1)\th$ order divided
 difference matrix for any $k \in \{0,\ldots,n-1\}$. $D^{(k+1)}$ is defined 
 recursively as $D^{(k+1)} := D^{(1)} D^{(k)}$, where 
@@ -163,6 +163,7 @@ $D^{(1)} \in \{-1,0,1\}^{(n-k-1)\times (n-k)}$ is a sparse matrix with diagonal 
     & & & -1 & 1 
   \end{pmatrix}.
 \end{equation}
+$D^{(1)} \in \{-1,0,1\}^{(n-1)\times n}$ is the divided difference matrix for $k=0$.
 The tuning parameter (hyperparameter) $\lambda$ balances data
 fidelity with desired smoothness. When $\lambda=0$, the problem in
 \eqref{eq:rt-ptf} reduces to the MLE in \eqref{eq:mle}. Larger tuning parameters
