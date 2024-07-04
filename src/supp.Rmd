@@ -1,6 +1,6 @@
 ---
 title: "Supplement for"
-subtitle: "\\texttt{RtEstim}: Time-varying reproduction number estimation with trend filtering"
+subtitle: "\\texttt{rtestim}: Time-varying reproduction number estimation with trend filtering"
 author: "Jiaping Liu, Zhenglun Cai, Paul Gustafson, and Daniel J. McDonald"
 date: ""
 output: 
@@ -18,7 +18,7 @@ header-includes:
   - \def\flu{\texttt{flu}}
   - \def\meass{\texttt{adj\_measles}}
   - \def\flus{\texttt{adj\_flu}}
-  - \def\RtEstim{\texttt{RtEstim}}
+  - \def\RtEstim{\texttt{rtestim}}
   - \def\EpiEstim{\texttt{EpiEstim}}
   - \def\EpiLPS{\texttt{EpiLPS}}
   - \def\EpiFilter{\texttt{EpiFilter}}
@@ -236,17 +236,17 @@ Rt_result <- Rt_result %>%
   mutate(method = fct_recode(method,
     "EpiEstim (weekly)" = "EpiEstim(week)",
     "EpiEstim (monthly)" = "EpiEstim(month)",
-    "RtEstim (k=0)" = "RtEstim(k=0)",
-    "RtEstim (k=1)" = "RtEstim(k=1)",
-    "RtEstim (k=2)" = "RtEstim(k=2)",
-    "RtEstim (k=3)" = "RtEstim(k=3)"
+    "rtestim (k=0)" = "RtEstim(k=0)",
+    "rtestim (k=1)" = "RtEstim(k=1)",
+    "rtestim (k=2)" = "RtEstim(k=2)",
+    "rtestim (k=3)" = "RtEstim(k=3)"
   )) %>%
   mutate(method = fct_relevel(
     method, 
     "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS",
     "EpiFilter", "EpiNow2",
-    "RtEstim (k=0)", "RtEstim (k=1)",
-    "RtEstim (k=2)", "RtEstim (k=3)"
+    "rtestim (k=0)", "rtestim (k=1)",
+    "rtestim (k=2)", "rtestim (k=3)"
   )) %>%
   mutate(dist = fct_recode(dist,
     "Poisson" = "poisson",
@@ -577,7 +577,7 @@ is very fast, and on average can be less than 0.02 seconds. The other methods
 only run once for a fixed set of hyperparameters for each experiment. 
 
 ```{r display-time-long, echo = FALSE, fig.height = 5, fig.width = 6.6, fig.cap = "Running time comparison of all methods for long (measles and SARS) epidemics across all cases. Y-axis is on a logarithmic scale."}
-runtime_epi_long <- Rt_result %>% #RtEstim with k=1,2,3 sometimes runs much slower
+runtime_epi_long <- Rt_result %>% # rtestim with k=1,2,3 sometimes runs much slower
   filter(len != 50, si_type == "measles") |>
   group_by(dist, Rt_case, method) %>%
   ggplot(aes(x = method, y = runtime / 1e6)) +
@@ -720,10 +720,10 @@ generally coincides with the findings in the KL divergence estimates.
 #    "EpiEstim (monthly)" = "EpiMonth_Rt",
 #    "EpiLPS" = "EpiLPS_Rt",
 #    "EpiFilter" = "EpiFilter_Rt",
-#    "RtEstim (k=0)" = "RtEstim0_Rt",
-#    "RtEstim (k=1)" = "RtEstim1_Rt",
-#    "RtEstim (k=2)" = "RtEstim2_Rt",
-#    "RtEstim (k=3)" = "RtEstim3_Rt"
+#    "rtestim (k=0)" = "RtEstim0_Rt",
+#    "rtestim (k=1)" = "RtEstim1_Rt",
+#    "rtestim (k=2)" = "RtEstim2_Rt",
+#    "rtestim (k=3)" = "RtEstim3_Rt"
 #  ))
 #resLo95 <- res_dat %>%
 #  select(time, Rt_case, dist, si_type, EpiWeek_Lo95:RtEstim3_Lo95) %>%
@@ -733,10 +733,10 @@ generally coincides with the findings in the KL divergence estimates.
 #    "EpiEstim (monthly)" = "EpiMonth_Lo95",
 #    "EpiLPS" = "EpiLPS_Lo95",
 #    "EpiFilter" = "EpiFilter_Lo95",
-#    "RtEstim (k=0)" = "RtEstim0_Lo95",
-#    "RtEstim (k=1)" = "RtEstim1_Lo95",
-#    "RtEstim (k=2)" = "RtEstim2_Lo95",
-#    "RtEstim (k=3)" = "RtEstim3_Lo95"
+#    "rtestim (k=0)" = "RtEstim0_Lo95",
+#    "rtestim (k=1)" = "RtEstim1_Lo95",
+#    "rtestim (k=2)" = "RtEstim2_Lo95",
+#    "rtestim (k=3)" = "RtEstim3_Lo95"
 #  ))
 #resUp95 <- res_dat %>%
 #  select(time, Rt_case, dist, si_type, EpiWeek_Up95:RtEstim3_Up95) %>%
@@ -746,19 +746,19 @@ generally coincides with the findings in the KL divergence estimates.
 #    "EpiEstim (monthly)" = "EpiMonth_Up95",
 #    "EpiLPS" = "EpiLPS_Up95",
 #    "EpiFilter" = "EpiFilter_Up95",
-#    "RtEstim (k=0)" = "RtEstim0_Up95",
-#    "RtEstim (k=1)" = "RtEstim1_Up95",
-#    "RtEstim (k=2)" = "RtEstim2_Up95",
-#    "RtEstim (k=3)" = "RtEstim3_Up95"
+#    "rtestim (k=0)" = "RtEstim0_Up95",
+#    "rtestim (k=1)" = "RtEstim1_Up95",
+#    "rtestim (k=2)" = "RtEstim2_Up95",
+#    "rtestim (k=3)" = "RtEstim3_Up95"
 #  ))
 ##res_dat_long <- ljoin(res_Rt, resLo95, by = c("time", "Rt_case", "dist", "si_type", "method"))
-#res_dat_long <- data.table(res_Rt, Lower_bound = resLo95$Lower_bound, Upper_bound = #resUp95$Upper_bound)
+#res_dat_long <- data.table(res_Rt, Lower_bound = resLo95$Lower_bound, Upper_bound = resUp95$Upper_bound)
 #
 #res_dat_long <- res_dat_long %>%
 #  mutate(method = fct_relevel(
 #    method, 
 #    "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS", "EpiFilter", 
-#    "RtEstim (k=0)", "RtEstim (k=1)", "RtEstim (k=2)", "RtEstim (k=3)"
+#    "rtestim (k=0)", "rtestim (k=1)", "rtestim (k=2)", "rtestim (k=3)"
 #  )) %>%
 #  mutate(dist = fct_relevel(dist, "Poisson", "Negative Binomial")) %>%
 #  filter(Rt_value > 0)  
@@ -910,10 +910,10 @@ This is consistent with the findings in the accuracy comparison (using KL values
 and the illustration of sample epidemics in Figures
 \@ref(fig:ci-example-measles-pois)--\@ref(fig:ci-example-sars-nb), where 
 \EpiLPS is the most accurate. 
-\RtEstim with degrees $k=1,2,3$ has 100\% coverage at most timepoints except the
+Our method \RtEstim with degrees $k=1,2,3$ has 100\% coverage at most timepoints except the
 changepoints. The exception is the hardest case, where larger degrees tend to have higher
 percentages of coverge at most timepoints. 
-\RtEstim with $k=0$ tends to produce overly narrow intervals, leading to lower coverage. 
+Our method \RtEstim with $k=0$ tends to produce overly narrow intervals, leading to lower coverage. 
 \EpiEstim with weekly sliding windows fails to cover the true 
 $\calR_t$ more frequently under negative binomial incidence compared to Poisson,
 and performs worse for larger incidence.
@@ -935,10 +935,10 @@ CI_result <- CI_result %>%
     method,
     "EpiEstim (weekly)" = "EpiEstim(week)",
     "EpiEstim (monthly)" = "EpiEstim(month)",
-    "RtEstim (k=0)" = "RtEstim(k=0)",
-    "RtEstim (k=1)" = "RtEstim(k=1)",
-    "RtEstim (k=2)" = "RtEstim(k=2)",
-    "RtEstim (k=3)" = "RtEstim(k=3)"
+    "rtestim (k=0)" = "RtEstim (k=0)",
+    "rtestim (k=1)" = "RtEstim (k=1)",
+    "rtestim (k=2)" = "RtEstim (k=2)",
+    "rtestim (k=3)" = "RtEstim (k=3)"
   )) %>%
   mutate(method = fct_relevel(
     method, 
@@ -946,10 +946,10 @@ CI_result <- CI_result %>%
     "EpiEstim (monthly)", 
     "EpiLPS", 
     "EpiFilter",
-    "RtEstim (k=0)", 
-    "RtEstim (k=1)", 
-    "RtEstim (k=2)", 
-    "RtEstim (k=3)"
+    "rtestim (k=0)", 
+    "rtestim (k=1)", 
+    "rtestim (k=2)", 
+    "rtestim (k=3)"
   )) %>%
   mutate(dist = fct_recode(
     dist,
@@ -1075,7 +1075,7 @@ print(ci_percent_sars)
 
 Figures \@ref(fig:ci-score-measles) and \@ref(fig:ci-score-sars) display the 
 interval scores of 95% CI averaged over 50 random \meas and \sars epidemics 
-respectively. \RtEstim always has the lowest or close to the lowest interval
+respectively. Our method always has the lowest or close to the lowest interval
 scores. For Poisson, \EpiFilter has the lowest interval scores, 
 and the scores of \RtEstim are slightly higher. \EpiLPS has very large interval 
 scores due to its large estimates at the early stage of the epidemic. These large 
@@ -1265,7 +1265,7 @@ print(fig_res_nb_sars_alter)
 ```
 
 \clearpage
-# Application of RtEstim and all competitors on real epidemics 
+# Application of rtestim and all competitors on real epidemics 
 
 We apply all methods on Covid19 incidence in Canada, and the estimates are displayed 
 in \@ref(fig:plot-cancovid-ci). An alternative display which plots all estimated 
@@ -1311,7 +1311,7 @@ covid_delay_distn <- covid_delay_distn / sum(covid_delay_distn)
 alpha <- 0.05
 # EpiNow2: cannot work for long epidemics
 
-# RtEstim k = 0 ----
+# rtestim k = 0 ----
 fit_cancovid_RtEstim0 <- cv_estimate_rt(
   x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 0, nfold = 10, maxiter = 1e7L, 
   nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn)
@@ -1321,7 +1321,7 @@ RtEstim0_Rt_cancovid <- ci_cancovid_RtEstim0[,1][[1]]
 RtEstim0_95Lo_cancovid <- ci_cancovid_RtEstim0[,2][[1]]
 RtEstim0_95Up_cancovid <- ci_cancovid_RtEstim0[,3][[1]]
 
-# RtEstim k=1,2,3 ----
+# rtestim k=1,2,3 ----
 fit_cancovid_RtEstim1 <- cv_estimate_rt(
   x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 1, nfold = 10, maxiter = 1e7L, 
   nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = covid_delay_distn)
@@ -1411,7 +1411,7 @@ EpiFilter_95Up_cancovid <- R_smoother[[2]][2,]
 # results ----
 dat_cancovid_fitted_long <- data.table(
   Date = rep(rtestim::cancovid$date, 8),
-  Method = rep(c("RtEstim (k=0)", "RtEstim (k=1)", "RtEstim (k=2)", "RtEstim (k=3)", 
+  Method = rep(c("rtestim (k=0)", "rtestim (k=1)", "rtestim (k=2)", "rtestim (k=3)", 
                  "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS", "EpiFilter"), each = len),
   fitted_Rt = c(RtEstim0_Rt_cancovid, RtEstim1_Rt_cancovid, RtEstim2_Rt_cancovid, RtEstim3_Rt_cancovid, 
                 EpiWeek_Rt_cancovid, EpiMonth_Rt_cancovid, EpiLPS_Rt_cancovid, EpiFilter_Rt_cancovid),
@@ -1424,8 +1424,8 @@ dat_cancovid_fitted_long <- dat_cancovid_fitted_long %>%
   mutate(Method = fct_relevel(
     Method, 
     "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS", "EpiFilter",
-    "RtEstim (k=0)", "RtEstim (k=1)",
-    "RtEstim (k=2)", "RtEstim (k=3)"
+    "rtestim (k=0)", "rtestim (k=1)",
+    "rtestim (k=2)", "rtestim (k=3)"
   ))
 saveRDS(dat_cancovid_fitted_long, here::here("dat/dat_cancovid_fitted.RDS"))
 ```
@@ -1487,7 +1487,7 @@ alpha <- 0.05
 flu_delay_distn <- Flu1918$si_distr
 time <- 1:len
 
-# RtEstim k = 0
+# rtestim k = 0
 fit_flu_RtEstim0 <- cv_estimate_rt(
   observed_counts = Flu1918$incidence, korder = 0, nfold = 10, maxiter = 1e7L, 
   nsol = 50, error_measure = "deviance", lambda_min_ratio = 1e-6, delay_distn = flu_delay_distn)
@@ -1586,7 +1586,7 @@ EpiFilter_95Up_flu <- R_smoother[[2]][2,]
 # combine all results
 dat_flu_fitted_long <- data.table(
   Date = rep(1:len, 8),
-  Method = rep(c("RtEstim (k=0)", "RtEstim (k=1)", "RtEstim (k=2)", "RtEstim (k=3)", 
+  Method = rep(c("rtestim (k=0)", "rtestim (k=1)", "rtestim (k=2)", "rtestim (k=3)", 
                  "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS", "EpiFilter"), each = len),
   fitted_Rt = c(RtEstim0_Rt_flu, RtEstim1_Rt_flu, RtEstim2_Rt_flu, RtEstim3_Rt_flu, 
                 EpiWeek_Rt_flu, EpiMonth_Rt_flu, EpiLPS_Rt_flu, EpiFilter_Rt_flu),
@@ -1599,8 +1599,8 @@ dat_flu_fitted_long <- dat_flu_fitted_long %>%
   mutate(Method = fct_relevel(
     Method, 
     "EpiEstim (weekly)", "EpiEstim (monthly)", "EpiLPS", "EpiFilter",
-    "RtEstim (k=0)", "RtEstim (k=1)",
-    "RtEstim (k=2)", "RtEstim (k=3)"
+    "rtestim (k=0)", "rtestim (k=1)",
+    "rtestim (k=2)", "rtestim (k=3)"
   ))
 head(dat_flu_fitted_long)
 saveRDS(dat_flu_fitted_long, here::here("dat/dat_flu_fitted_long.RDS"))
@@ -2700,7 +2700,7 @@ saveRDS(res_dat, here::here("dat/data_example_estimates.RDS"))
 ```
 
 ```{r Figs5+6-display-fitted-rt, eval = FALSE, include = FALSE}
-res_dat <- readRDS(here::here("dat/data_example_estimates.RDS"))
+#res_dat <- readRDS(here::here("dat/data_example_estimates.RDS"))
 #res_dat_long <- res_dat %>%
 #  pivot_longer(EpiWeek_Rt:RtEstim3_Rt, names_to = "method", values_to = "Rt_value") %>%
 #  mutate(method = fct_recode(method,
@@ -2764,7 +2764,7 @@ ggsave(plot=fig_res_NB_sars, here::here("fig/Fig6.tiff"), width = 6.5, height = 
 ```
 
 ```{r Fig7-display-cancovid-Rt-est, eval=FALSE, include=FALSE}
-## estimate Rt using RtEstim
+## estimate Rt using rtestim
 # k=1
 cv_mod_covid1 <- cv_estimate_rt(
   x = rtestim::cancovid$date, rtestim::cancovid$incident_cases, korder = 1, nfold = 10,
