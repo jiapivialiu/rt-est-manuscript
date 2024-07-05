@@ -635,7 +635,7 @@ print(runtime_epi_sars)
 
 Figure \@ref(fig:display-time-flu-all) displays the running time of all methods 
 for short (\flu) epidemics. All methods except \EpiNow2 converge within 
-$\sim$1 second. Figure \@ref(fig:display-time-flu) displays 
+$\sim 1$ second. Figure \@ref(fig:display-time-flu) displays 
 the running times for each setting separately, and finds similar results as in 
 the overall running time comparison. 
 
@@ -1263,7 +1263,7 @@ print(fig_res_nb_sars_alter)
 ```
 
 \clearpage
-# Application of \rtestim and all competitors on real epidemics 
+# Application of \RtEstim and all competitors on real epidemics 
 
 We apply all methods on Covid19 incidence in Canada, and the estimates are displayed 
 in \@ref(fig:plot-cancovid-ci). An alternative display which plots all estimated 
