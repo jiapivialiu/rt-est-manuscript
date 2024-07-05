@@ -64,38 +64,28 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{5}
-% definitions for citeproc citations
-\NewDocumentCommand\citeproctext{}{}
-\NewDocumentCommand\citeproc{mm}{%
-  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
-\makeatletter
- % allow citations to break across lines
- \let\@cite@ofmt\@firstofone
- % avoid brackets around text for \cite:
- \def\@biblabel#1{}
- \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
-\makeatother
 \newlength{\cslhangindent}
 \setlength{\cslhangindent}{1.5em}
 \newlength{\csllabelwidth}
 \setlength{\csllabelwidth}{3em}
-\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
- {\begin{list}{}{%
-  \setlength{\itemindent}{0pt}
-  \setlength{\leftmargin}{0pt}
-  \setlength{\parsep}{0pt}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
   % turn on hanging indent if param 1 is 1
   \ifodd #1
-   \setlength{\leftmargin}{\cslhangindent}
-   \setlength{\itemindent}{-1\cslhangindent}
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
   \fi
   % set entry spacing
-  \setlength{\itemsep}{#2\baselineskip}}}
- {\end{list}}
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
 \usepackage{calc}
-\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
-\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
-\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
 \newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 \input{header}
 \input{defs}
@@ -104,7 +94,7 @@
 \def\flu{\texttt{flu}}
 \def\meass{\texttt{adj\_measles}}
 \def\flus{\texttt{adj\_flu}}
-\def\RtEstim{\texttt{RtEstim}}
+\def\RtEstim{\texttt{rtestim}}
 \def\EpiEstim{\texttt{EpiEstim}}
 \def\EpiLPS{\texttt{EpiLPS}}
 \def\EpiFilter{\texttt{EpiFilter}}
@@ -133,7 +123,7 @@
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
-\usepackage{bookmark}
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
@@ -149,7 +139,7 @@
   \apptocmd{\@title}{\par {\large #1 \par}}{}{}
 }
 \makeatother
-\subtitle{\texttt{RtEstim}: Time-varying reproduction number estimation with trend filtering}
+\subtitle{\texttt{rtestim}: Time-varying reproduction number estimation with trend filtering}
 \author{Jiaping Liu, Zhenglun Cai, Paul Gustafson, and Daniel J. McDonald}
 \date{}
 
@@ -160,7 +150,8 @@
 \setcounter{tocdepth}{2}
 \tableofcontents
 }
-\section{Derivation of Kullback Leibler divergence for accuracy comparison}\label{derivation-of-kullback-leibler-divergence-for-accuracy-comparison}
+\hypertarget{derivation-of-kullback-leibler-divergence}{%
+\section{Derivation of Kullback Leibler divergence}\label{derivation-of-kullback-leibler-divergence}}
 
 We provide the detailed derivation of the Kullback Leibler (KL) divergence in
 Eq. (11) in the manuscript that is used to compare the accuracy of the estimated
@@ -173,7 +164,7 @@ and \(f_0(y;\eta,\calR) = \prod_{t=1}^n \frac{(\eta_t\calR_t)^{y_t} e^{-\eta_t\c
 for independent \(y_t,t=1,\cdots,n\). Because this is a natural exponential family
 with log-partition function \(\exp(\cdot)\) and parameter \(\log(\eta_t\calR_t)\),
 then, the KL divergence between them can be written in terms of the Bregman
-divergence for \(\exp\), e.g. Wainwright and Jordan (\citeproc{ref-WainwrightJordan2008}{2008}),
+divergence for \(\exp\), e.g. Wainwright and Jordan (\protect\hyperlink{ref-WainwrightJordan2008}{2008}),
 \begin{align*}
     &D_{KL}(\calR \parallel \hat{\calR})\\ 
     &= D_{KL}(f_0(y;\eta,\calR) \parallel f_1(y;\eta,\hat{\calR})) \\
@@ -188,38 +179,39 @@ We use mean KL divergence (denoted,
 which is the KL divergence divided by the sequence length) in experiments for
 accuracy comparison.
 
-\section{Supplmentary details on experimental settings}\label{supplmentary-details-on-experimental-settings}
+\hypertarget{additional-details-on-experimental-settings}{%
+\section{Additional details on experimental settings}\label{additional-details-on-experimental-settings}}
 
 We compare the accuracy of the estimated instantaneous reproduction numbers using
-the mean Kullback Leibler (KL) divergence with Poisson distributional assumption
-on incidence (we say (mean) KL divergence for short in the following) in (11) across
-our \texttt{RtEstim} and several alternative
+the average Kullback Leibler (KL) divergence under Poisson
+incidence (we say mean KL divergence for short when clear) in (11) across
+\texttt{rtestim} and several alternative
 methods, including \texttt{EpiEstim} with weekly and monthly sliding windows, \texttt{EpiLPS},
-\texttt{EpiFilter}, \texttt{EpiNow2}, and \texttt{RtEstim} with degrees k=0,1,2,3, which yields \(9\)
-methods in total. We consider two lengths of epidemics with \(n=50\) or \(n=300\)
-timepoints respectively. Since \texttt{EpiNow2} takes too long to converge (e.g., for
-a long \texttt{measles} epidemic, it takes almost 2 hours on the
+\texttt{EpiFilter}, \texttt{EpiNow2}, and \texttt{rtestim} with degrees k=0,1,2,3, resulting in \(9\)
+methods in total. We consider two durations of epidemics with \(n=50\) or \(n=300\)
+timepoints respectively. Since \texttt{EpiNow2} may take too long to converge (for example,
+a long \texttt{measles} epidemic requires nearly 2 hours to converge on the
 Cedar cluster provided by Digital Research Alliance of Canada), we only compare it with
 other methods for short \texttt{flu} epidemics.
 
-We consider the serial interval (SI) distributions of \texttt{measles} and \texttt{SARS} to generate
-long synthetic epidemics, and \texttt{flu} for short epidemics, inspired by Cori et al. (\citeproc{ref-cori2013new}{2013})
-which used SI from real epidemics to illustrate the performance of their method.
-The means and standard deviations of SI distributions are estimated by existing
-studies; specifically, \((14.9, 3.9)\) for \texttt{measles} (Groendyke, Welch, and Hunter (\citeproc{ref-groendyke2011bayesian}{2011})),
-\((8.4,3.8)\) for \texttt{SARS} (Lipsitch et al. (\citeproc{ref-lipsitch2003transmission}{2003})), and \((2.6,1.5)\) for
-\texttt{flu} (Ferguson et al. (\citeproc{ref-ferguson2005strategies}{2005}), Boëlle et al. (\citeproc{ref-boelle2011transmission}{2011})).
-Incident cases in synthetic \texttt{measles} epidemics are relatively low (within \(1000\) at
-the peak overall), and \texttt{SARS} incident cases are relatively large (between \(15000\)
-and \(20000\) at the peak overall).
+We use the serial interval (SI) distributions of \texttt{measles} and \texttt{SARS} to generate
+long synthetic epidemics, and \texttt{flu} for short epidemics, inspired by Cori et al. (\protect\hyperlink{ref-cori2013new}{2013})
+which used the SI from real epidemics to illustrate the performance of their method.
+The means and standard deviations of the SI distributions are based on existing
+studies; specifically, \((14.9, 3.9)\) for \texttt{measles} (Groendyke, Welch, and Hunter (\protect\hyperlink{ref-groendyke2011bayesian}{2011})),
+\((8.4,3.8)\) for \texttt{SARS} (Lipsitch et al. (\protect\hyperlink{ref-lipsitch2003transmission}{2003})), and \((2.6,1.5)\) for
+\texttt{flu} (Ferguson et al. (\protect\hyperlink{ref-ferguson2005strategies}{2005}), Boëlle et al. (\protect\hyperlink{ref-boelle2011transmission}{2011})).
+Incident cases in synthetic \texttt{measles} epidemics are relatively low (generally \(<1000\) at
+the peak), while \texttt{SARS} incident cases are relatively large (between \(15000\)
+and \(20000\) at the peak).
 
-We consider a reasonably large
-overdispersion level of negative binomial incidence with size 5. Figure
-\ref{fig:NB-overdispersion} displays the ratio of the variance over
+We consider reasonably large
+overdispersion for negative binomial incidence with size 5. Figure
+\ref{fig:NB-overdispersion} displays the ratio of the variance to the
 mean across different settings
 using the same set of sample epidemics in Fig 5 and Fig 6, and all figures in
 Section \ref{sec:samples}. For Poisson, this ratio is constant at 1. However,
-the negative binomial incidence appears results in significant overdispersion.
+the negative binomial incidence results in significant overdispersion.
 
 \begin{figure}[!ht]
 
@@ -227,11 +219,11 @@ the negative binomial incidence appears results in significant overdispersion.
 
 }
 
-\caption{Dispersion level of incidence of sample negative binomial epidemics.}\label{fig:NB-overdispersion}
+\caption{Dispersion level of incidence for sample negative binomial epidemics.}\label{fig:NB-overdispersion}
 \end{figure}
 
 In model fitting, we use both true and misspecified serial interval (SI)
-distributions to test the robustness of our method, compared to other alternatives.
+distributions to test the robustness of our method, compared with alternatives.
 The misspecification of serial interval distributions are either
 ``mild'' or ``major'', where, in the major misspecification, we use a completely different
 pair of SI parameters, e.g., we use the SI of \texttt{SARS} for generated \texttt{measles} epidemics,
@@ -240,7 +232,7 @@ misspecification, we consider slightly adjusted parameters for both \texttt{meas
 \texttt{flu} epidemics, where the mean is decreased by \(2\) for \texttt{measles} and increased by \(2\)
 for \texttt{flu} and the standard deviation is increased by \(10\%\), denoted as \texttt{adj\_flu} and
 \texttt{adj\_measles} respectively. These settings result in 7 pairs of SI distributions
-(for epidemic generating, model fitting), i.e., (\texttt{measles}, \texttt{measles}), (\texttt{SARS}, \texttt{SARS}),
+(for epidemic generating, model fitting): (\texttt{measles}, \texttt{measles}), (\texttt{SARS}, \texttt{SARS}),
 (\texttt{measles}, \texttt{adj\_measles}), (\texttt{measles}, \texttt{SARS}) for long epidemics and (\texttt{flu}, \texttt{flu}),
 (\texttt{flu}, \texttt{adj\_flu}), (\texttt{flu}, \texttt{measles}) for short epidemics. Figure \ref{fig:si-dist}
 displays all SI distributions (\texttt{measles}, \texttt{adj\_measles}, \texttt{SARS}, \texttt{flu}, and \texttt{adj\_flu}) used in
@@ -252,7 +244,7 @@ the experiments.
 
 }
 
-\caption{Density curves of serial interval distributions used in the experiments.}\label{fig:si-dist}
+\caption{Probability densities of serial interval distributions used in the experiments.}\label{fig:si-dist}
 \end{figure}
 
 Table \ref{tab:df-exp} summarizes the aforementioned experimental setting for
@@ -283,13 +275,15 @@ Section \ref{sec:exp-accuracy}.
 
 \clearpage
 
-\section{Supplementary experimental results on accuracy comparison}\label{sec:exp-accuracy}
+\hypertarget{sec:exp-accuracy}{%
+\section{Additional accuracy comparisons}\label{sec:exp-accuracy}}
 
-\subsection{Long epidemics}\label{long-epidemics}
+\hypertarget{long-epidemics}{%
+\subsection{Long epidemics}\label{long-epidemics}}
 
-We have displayed the accuracy of all methods (where EpiEstim uses weekly
+We have displayed the accuracy of all methods (where \texttt{EpiEstim} uses a weekly
 sliding window) for \texttt{measles} and \texttt{SARS} sample epidemics using KL divergence
-excluding the first week since EpiEstim does not provide estimates in the first
+excluding the first week since \texttt{EpiEstim} does not provide estimates in the first
 week in Fig 3 and Fig 4 in the manuscript, where we exclude the outliers.
 A full visualization including the outliers is in Figure
 \ref{fig:display-KL-weekly-long}.
@@ -297,13 +291,13 @@ A full visualization including the outliers is in Figure
 Figure \ref{fig:display-KL-monthly-long} compares \texttt{EpiEstim} with \emph{monthly}
 sliding windows with other methods. We average the KL divergence per coordinate
 excluding the timepoints in the first month for all approaches, since \texttt{EpiEstim} 
-estimates with the monthly sliding windows are not available until the second month.
+estimates with monthly sliding windows are not available until the second month.
 The \(y\)-axis is displayed on a logarithmic scale for a better visualization.
 
 The relative performance of \texttt{EpiEstim} with monthly sliding windows, in general,
 is not as good as its weekly sliding window based on the relative positions of
-its boxes and the counterparts of the other methods. It can be explained that
-\texttt{EpiEstim} with longer sliding windows assume similarity of neighbouring \(\calR_t\)
+its boxes and the counterparts of the other methods. This is likely because
+\texttt{EpiEstim} with longer sliding windows assumes similarity of neighbouring \(\calR_t\)
 across longer periods, and thus, is smoother and less accurate compared to the
 one with shorter sliding windows.
 
@@ -313,7 +307,7 @@ one with shorter sliding windows.
 
 }
 
-\caption{The mean KL divergence excluding the first week for measles and SARS epidemics, since EpiEstim with the weekly sliding window does not provide estimates for the first week. Y-axes are on a logarithmic scale.}\label{fig:display-KL-weekly-long}
+\caption{The mean KL divergence excluding the first week for measles and SARS epidemics, since \texttt{EpiEstim}with the weekly sliding window does not provide estimates for the first week. Y-axes are on a logarithmic scale.}\label{fig:display-KL-weekly-long}
 \end{figure}
 
 \begin{figure}[!ht]
@@ -322,23 +316,24 @@ one with shorter sliding windows.
 
 }
 
-\caption{The mean KL divergence excluding the first month for measles and SARS epidemics, since EpiEstim with the monthly sliding window does not provide estimates for the first month. Y-axes are on a logarithmic scale.}\label{fig:display-KL-monthly-long}
+\caption{The mean KL divergence excluding the first month for measles and SARS epidemics, since \texttt{EpiEstim}with the monthly sliding window does not provide estimates for the first month. Y-axes are on a logarithmic scale.}\label{fig:display-KL-monthly-long}
 \end{figure}
 
 \clearpage
 
-\subsection{Short epidemics}\label{short-epidemics}
+\hypertarget{short-epidemics}{%
+\subsection{Short epidemics}\label{short-epidemics}}
 
 Figures \ref{fig:display-KL-weekly-flu} and \ref{fig:display-KL-monthly-flu}
 display the KL divergence for short epidemics aggregated over time
-excluding the first week and month respectively to compare EpiEstim with weekly
+excluding the first week and month respectively to compare \texttt{EpiEstim} with weekly
 and monthly sliding windows with other methods including \texttt{EpiNow2}.
-The difference in accuracy is more obvious given Poisson distributional assumption
-in incidence. To estimate ``true'' piecewise linear \(\calR_t\), piecewise constant and linear
-\texttt{RtEstim}~(with \(k=0,1\)) are the most accurate for Poisson incidence, \texttt{RtEstim} 
+The difference in accuracy is more obvious for Poisson incidence.
+To estimate true piecewise linear \(\calR_t\), piecewise constant and linear
+\texttt{rtestim}~(with \(k=0,1\)) are the most accurate for Poisson incidence, \texttt{rtestim} 
 (\(k=2,3\)), \texttt{EpiLPS}~and \texttt{EpiFilter}~are accurate as well with median KL estimates around 1.
-For negative binomial incidence, the advantage of \texttt{RtEstim}~is less obvious,
-but \texttt{RtEstim}~with all degrees still has the lowest median with a small IQR.
+For negative binomial incidence, the advantage of \texttt{rtestim}~is less obvious,
+but \texttt{rtestim}~with all degrees still has the lowest median with a small IQR.
 
 \begin{figure}[!ht]
 
@@ -360,19 +355,21 @@ but \texttt{RtEstim}~with all degrees still has the lowest median with a small I
 
 \clearpage
 
-\section{Experimental results on accuracy under misspecification of serial interval distributions}\label{experimental-results-on-accuracy-under-misspecification-of-serial-interval-distributions}
+\hypertarget{experimental-results-under-misspecification-of-the-serial-interval-distributions}{%
+\section{Experimental results under misspecification of the serial interval distributions}\label{experimental-results-under-misspecification-of-the-serial-interval-distributions}}
 
-\subsection{SI misspecification for long epidemics}\label{si-misspecification-for-long-epidemics}
+\hypertarget{si-misspecification-for-long-epidemics}{%
+\subsection{SI misspecification for long epidemics}\label{si-misspecification-for-long-epidemics}}
 
 Figures \ref{fig:display-KL-weekly-mis-si-measles} and
 \ref{fig:display-KL-monthly-mis-si-measles} display KL divergence (excluding
 the first week and the first month respectively) for all 8 methods with ``mild''
-misspecification (using shaped and scaled \texttt{measles} SI parameters) and ``major''
+misspecification (using adjusted \texttt{measles} SI parameters) and ``major''
 misspecification (using \texttt{SARS} SI parameters) for long \texttt{measles} epidemics across all
-settings. \texttt{RtEstim}~is reasonably robust to misspecification of SI parameters:
+settings. \texttt{rtestim}~is reasonably robust to misspecification of the SI parameters:
 median KL error for each problem design is almost always the lowest with the lowest
-IQR. \texttt{EpiLPS}~is a strong competitor given negative binomial incidence, since it
-assumes incidence to follow negative binomial distributions. \texttt{EpiFilter}~is also
+IQR. \texttt{EpiLPS}~is a strong competitor under negative binomial incidence since it
+it uses the correct loss function. \texttt{EpiFilter}~is also
 quite robust to SI misspecification under Poisson incidence.
 
 \begin{figure}[!ht]
@@ -381,7 +378,7 @@ quite robust to SI misspecification under Poisson incidence.
 
 }
 
-\caption{The mean KL divergence excluding the first week for measles epidemics with SI misspecification, since EpiEstim with the weekly sliding window does not provide estimates for the first week. Y-axes are on a logarithmic scale.}\label{fig:display-KL-weekly-mis-si-measles}
+\caption{The mean KL divergence excluding the first week for measles epidemics with SI misspecification. Y-axes are on a logarithmic scale.}\label{fig:display-KL-weekly-mis-si-measles}
 \end{figure}
 
 \begin{figure}[!ht]
@@ -390,23 +387,24 @@ quite robust to SI misspecification under Poisson incidence.
 
 }
 
-\caption{The mean KL divergence excluding the first month for measles epidemics with SI misspecification, since EpiEstim with the monthly sliding window does not provide estimates for the first month. Y-axes are on a logarithmic scale.}\label{fig:display-KL-monthly-mis-si-measles}
+\caption{The mean KL divergence excluding the first month for measles epidemics with SI misspecification. Y-axes are on a logarithmic scale.}\label{fig:display-KL-monthly-mis-si-measles}
 \end{figure}
 
 \clearpage
 
-\subsection{SI misspecification for short epidemics}\label{si-misspecification-for-short-epidemics}
+\hypertarget{si-misspecification-for-short-epidemics}{%
+\subsection{SI misspecification for short epidemics}\label{si-misspecification-for-short-epidemics}}
 
 Figures \ref{fig:display-KL-weekly-mis-si-flu} and
-\ref{fig:display-KL-monthly-mis-si-flu} display KL divergence (excluding the
-first week and the first month respectively) for all 9 methods with ``minor''
+\ref{fig:display-KL-monthly-mis-si-flu} display KL divergence, excluding the
+first week and the first month respectively, for all 9 methods with ``minor''
 misspecification (using slightly modified \texttt{flu} SI parameters) and ``major''
 misspecification (using \texttt{measles} parameters) for short \texttt{flu} epidemics across all
-settings, yielding similar conclusions as in short epidemics. We also note that
+settings. Conclusions are similar to those for short epidemics. We also note that
 \texttt{EpiNow2} is quite robust to major misspecification in SI parameters, while
-\texttt{EpiLPS}~is less satisfactory in major misspecification excluding the first
-week in KL computation. It might be due to the large estimates at the beginning
-of the epidemics beyond the first week, but eliminated within the first month.
+\texttt{EpiLPS}~is less satisfactory when only the first
+week is excluded. This may be due to the overly large estimates at the beginning
+of the epidemics persisting beyond the first week, but not the first month.
 
 \begin{figure}[!ht]
 
@@ -414,7 +412,7 @@ of the epidemics beyond the first week, but eliminated within the first month.
 
 }
 
-\caption{The mean KL divergence excluding the first week for flu epidemics with SI misspecification, since EpiEstim with the weekly sliding window does not provide estimates for the first week. Y-axes are on a logarithmic scale.}\label{fig:display-KL-weekly-mis-si-flu}
+\caption{The mean KL divergence excluding the first week for flu epidemics with SI misspecification. Y-axes are on a logarithmic scale.}\label{fig:display-KL-weekly-mis-si-flu}
 \end{figure}
 
 \begin{figure}[!ht]
@@ -423,31 +421,32 @@ of the epidemics beyond the first week, but eliminated within the first month.
 
 }
 
-\caption{The mean KL divergence excluding the first month for flu epidemics with SI misspecification, since EpiEstim with the monthly sliding window does not provide estimates for the first month. Y-axes are on a logarithmic scale.}\label{fig:display-KL-monthly-mis-si-flu}
+\caption{The mean KL divergence excluding the first month for flu epidemics with SI misspecification. Y-axes are on a logarithmic scale.}\label{fig:display-KL-monthly-mis-si-flu}
 \end{figure}
 
 \clearpage
 
-\section{Time comparisons of all methods}\label{time-comparisons-of-all-methods}
+\hypertarget{time-comparisons-of-all-methods}{%
+\section{Time comparisons of all methods}\label{time-comparisons-of-all-methods}}
 
 Figures \ref{fig:display-time-long} show the time comparisons across all methods
 for long (\texttt{measles} and \texttt{SARS}) epidemics.
-\texttt{EpiEstim} with both sliding windows are very fast and converge in less than 0.1
-seconds. Piecewise constant \texttt{RtEstim} (with k=0) estimates can be generated
+\texttt{EpiEstim} with both sliding windows is very fast and converges in less than 0.1
+seconds. Piecewise constant \texttt{rtestim} (with k=0) estimates can be generated
 within 0.1 seconds as well. \texttt{EpiLPS} is slightly slower, but still very fast and
-within 1 second for all experiments. \texttt{EpiFilter}~is in a similar scale of our method
-with higher than \(0\) degrees. Piecewise linear and cubic \texttt{RtEstim} (with
-\(k=1\) and \(k=3\) respectively) are slower, but mostly within 10 seconds.
+within 1 second for all experiments. \texttt{EpiFilter}~is typically similar to our method
+with \(k>0\). Piecewise linear and cubic \texttt{rtestim} (with
+\(k=1\) and \(k=3\) respectively) are slower, but generally complete within 10 seconds.
 We also provide an alternative view with the running time of each case in a
 separate panel in Figures \ref{fig:display-time-meas} and
 \ref{fig:display-time-sars} for \texttt{measles} and \texttt{SARS} epidemics respectively.
-We find similar results as in Figure \ref{fig:display-time-long} in all panels.
+We find similar results as in Figure \ref{fig:display-time-long}.
 
-It is remarkable that our \texttt{RtEstim} computes 50 lambda values with 10-fold CV for
+It is remarkable that \texttt{rtestim} computes 50 lambda values with 10-fold CV for
 each experiment, which results in \(550\times\) the number of models estimated per experiment
 (including modelling for all folds). The running times are no more than 10 seconds
-for most of the experiments, which means the running time for each time of estimate
-is very fast, and on average can be less than 0.02 seconds. The other methods
+for most of the experiments, which means the running time for each estimate
+is very fast: on average less than 0.02 seconds. The other methods
 only run once for a fixed set of hyperparameters for each experiment.
 
 \begin{figure}[!ht]
@@ -465,7 +464,7 @@ only run once for a fixed set of hyperparameters for each experiment.
 
 }
 
-\caption{Running time comparison of all methods for measles epidemics with each pair of SI parameters (measles, adjusted measles, and SARS) for modelling per incidence distribution per Rt scenario (excluding outliers for better illustration). Y-axes are on a logarithmic scale.}\label{fig:display-time-meas}
+\caption{Running time comparison of all methods for measles epidemics with each pair of SI parameters (measles, adjusted measles, and SARS; excluding outliers for better illustration). Y-axes are on a logarithmic scale.}\label{fig:display-time-meas}
 \end{figure}
 
 \begin{figure}[!ht]
@@ -474,12 +473,12 @@ only run once for a fixed set of hyperparameters for each experiment.
 
 }
 
-\caption{Running time comparison of all methods for SARS epidemics with each choice of SI parameter for modelling per incidence distribution per Rt scenario. Y-axes are on a logarithmic scale.}\label{fig:display-time-sars}
+\caption{Running time comparison of all methods for SARS epidemics with each choice of SI distribution. Y-axes are on a logarithmic scale.}\label{fig:display-time-sars}
 \end{figure}
 
 Figure \ref{fig:display-time-flu-all} displays the running time of all methods
-for short (\texttt{flu}) epidemics. All methods except \texttt{EpiNow2} can converge with in
-around 1 second. Figure \ref{fig:display-time-flu} displays
+for short (\texttt{flu}) epidemics. All methods except \texttt{EpiNow2} converge within
+\(\sim 1\) second. Figure \ref{fig:display-time-flu} displays
 the running times for each setting separately, and finds similar results as in
 the overall running time comparison.
 
@@ -489,7 +488,7 @@ the overall running time comparison.
 
 }
 
-\caption{Time comparisons of methods for short (flu) epidemics across all pairs of SI parameters per incidence distribution. Y-axes are on a logarithmic scale.}\label{fig:display-time-flu-all}
+\caption{Time comparisons of methods for short (flu) epidemics across all pairs of SI distribution. Y-axes are on a logarithmic scale.}\label{fig:display-time-flu-all}
 \end{figure}
 
 \begin{figure}[!ht]
@@ -503,34 +502,34 @@ the overall running time comparison.
 
 \clearpage
 
-\section{Confidence interval coverage}\label{confidence-interval-coverage}
+\hypertarget{confidence-interval-coverage}{%
+\section{Confidence interval coverage}\label{confidence-interval-coverage}}
 
-\subsection{Estimates and confidence intervals for sample epidemics}\label{sec:samples}
+\hypertarget{sec:samples}{%
+\subsection{Estimates and confidence intervals for sample epidemics}\label{sec:samples}}
 
 Fig 5 and Fig 6 in the manuscript provided \(\calR_t\) estimates by all methods on
 sample \texttt{measles} epidemics with Poisson incidence and \texttt{SARS} epidemics with negative
 binomial incidence respectively. Figures \ref{fig:ci-example-measles-pois} and
 \ref{fig:ci-example-sars-nb} provide a clearer view of each method with its
 95\% confidence interval in a separate panel. The full display of sample epidemics
-for other settings are visualized in Figures \ref{fig:ci-example-measles-nb} and
+for other settings are shown in Figures \ref{fig:ci-example-measles-nb} and
 \ref{fig:ci-example-sars-pois}.
 
-All methods (except EpiEstim with the monthly sliding window) fit the epidemics
-with Poisson incidence well with estimate \(\hat{\calR}_t\) close to the true
+All methods (except \texttt{EpiEstim} with the monthly sliding window) fit the epidemics
+with Poisson incidence well with \(\hat{\calR}_t\) close to the true
 \(\calR_t\) and 95\% CI covering the true value at most timepoints.
-Under negative binomial incidence, \texttt{RtEstim} with \(k=0\) fails to recover the
+Under negative binomial incidence, \texttt{rtestim} with \(k=0\) fails to recover the
 curvature in \(\calR_t\), especially in the exponential and periodic scenarios.
 \texttt{EpiEstim}~with weekly sliding windows and \texttt{EpiFilter}~are more wiggly, and
 \texttt{EpiLPS}~has wider confidence intervals given negative binomial incidence
 compared to Poisson incidence. For large incidence under the negative binomial distribution,
-\texttt{EpiFilter}~is extremely wiggly, and it is difficult for \texttt{RtEstim}~(k=0) to recover
+\texttt{EpiFilter}~is extremely wiggly, and it is difficult for \texttt{rtestim}~(k=0) to recover
 many changepoints and the curvature especially in exponential and periodic scenarios.
 \texttt{EpiLPS}~performs well overall, but returns large estimates at the beginning of
 the epidemics, estimates which remain inflated well after the first week. Overall, our method with different
 degrees can recover the changepoints and graphical curvature of \(\calR_t\) in all
-scenarios, except in the case of the periodic \(\calR_t\) curve with large incidence
-from negative binomial distribution, where \texttt{EpiLPS}~has a clear advantage, ignoring the large
-estimates at the early stage.
+scenarios, except in the case of the periodic \(\calR_t\) curve with large negative binomial incidence, where \texttt{EpiLPS}~has a clear advantage ignoring the inflated estimates at the early stage.
 The accuracy across different settings by different methods
 generally coincides with the findings in the KL divergence estimates.
 
@@ -540,7 +539,7 @@ generally coincides with the findings in the KL divergence estimates.
 
 }
 
-\caption{Example measles epidemics with Poisson incidence. Y-axes beyond 5 are truncated for a better illustration of small values.}\label{fig:ci-example-measles-pois}
+\caption{Example measles epidemics with Poisson incidence. Y-axes beyond 5 are truncated for better illustration of small values.}\label{fig:ci-example-measles-pois}
 \end{figure}
 
 \begin{figure}[!ht]
@@ -572,18 +571,19 @@ generally coincides with the findings in the KL divergence estimates.
 
 \clearpage
 
-\subsection{Experimental settings for coverage comparisons of confidence intervals}\label{experimental-settings-for-coverage-comparisons-of-confidence-intervals}
+\hypertarget{coverage-comparisons-of-confidence-intervals}{%
+\subsection{Coverage comparisons of confidence intervals}\label{coverage-comparisons-of-confidence-intervals}}
 
 We focus on a specific \(\calR_t\) scenario, the piecewise linear case, and only
 long epidemics to compare the coverage of 95\% confidence intervals across all 8
 methods. We use the true serial interval distributions, those used to generate
 the synthetic epidemics, in this case.
 Table \ref{tab:df-ci-exp} summarizes the experimental settings.
-For each setting, we generate 50 random synthetic epidemics.
+For each setting, we generate 50 synthetic epidemics.
 
 \begin{table}
 \centering
-\caption{\label{tab:df-ci-exp}Summary of experimental setting on coverage of confidence intervals}
+\caption{\label{tab:df-ci-exp}Summary of experimental settings on coverage of confidence intervals}
 \centering
 \begin{tabular}[t]{rlrlll}
 \toprule
@@ -601,56 +601,57 @@ We measure the coverage of 95\% confidence intervals using three metrics:
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  percentage of coverage per coordinate (if available) across all synthetic data,
+  percent coverage per coordinate (if available) across all synthetic data,
 \item
-  percentage of overall coverage for all available coordinates, and
+  percent overall coverage over all available coordinates, and
 \item
-  interval score (\citeproc{ref-Bracher_2021}{Bracher et al. 2021}) averaged over all available coordinates.
+  interval score (\protect\hyperlink{ref-Bracher_2021}{Bracher et al. 2021}) averaged over all available coordinates.
 \end{enumerate}
 
-The first metric results in the percentage of coverage (across the 50 replicates)
+The first metric results in the percent coverage (across the 50 replicates)
 at each time point for each setting and method. In some cases, this is not available
-for every time point, for example, \texttt{EpiEstim} with weekly sliding window
+for every time point, for example, \texttt{EpiEstim} with a weekly sliding window
 does not provide estimates for the first week. The second metric aggregates across
 all time and replications.
-The third metric, interval score (\citeproc{ref-Bracher_2021}{Bracher et al. 2021}), is defined as
+The third metric, interval score (\protect\hyperlink{ref-Bracher_2021}{Bracher et al. 2021}), is defined as
 \[\textrm{IS}_{\alpha}(\calR,u,l) = \frac{1}{n} \sum_{t=1}^n (u_t-l_t) + \frac{2}{\alpha}(l_t-\calR_t)\boldsymbol{1}_{(\calR_t<l_t)} + \frac{2}{\alpha}(\calR_t-u_t)\boldsymbol{1}_{(\calR_t>u_t)},\]
 where \(\alpha=0.05\) is the significance level, \(l,u\) are the lower and upper
 bounds and
-\(\mathbf{1}_{X}\) is the indicator function of the condition \(X\).
+\(\mathbf{1}_{X}\) is the indicator function of the condition \(X\), taking the value 1 if \(X\) and zero otherwise.
 A confidence band that covers the true values more frequently with shorter
 interval widths will have a lower interval score.
 
 \clearpage
 
-\subsection{Experimental results on interval coverage comparison}\label{experimental-results-on-interval-coverage-comparison}
+\hypertarget{experimental-results-on-interval-coverage}{%
+\subsection{Experimental results on interval coverage}\label{experimental-results-on-interval-coverage}}
 
 Figures \ref{fig:ci-coverage-measles} and \ref{fig:ci-coverage-sars} displays
-the percentages of coverage of 95\% CI per coordinate over 50 random samples for
+the percentages of coverage of 95\% CIs per coordinate over 50 random samples for
 \texttt{measles} and \texttt{SARS} epidemics respectively.
 Low Poisson incidence is the easiest for all methods, with coverage near 100\% at most
 timepoints and 0 at the change point. Large negative binomial incidence is the hardest:
-\texttt{EpiLPS} does the best here with averged coverage at all timepoints close to 1.
+\texttt{EpiLPS} does the best here with averge coverage over all timepoints close to 1 (higher than nominal).
 This is consistent with the findings in the accuracy comparison (using KL values)
 and the illustration of sample epidemics in Figures
 \ref{fig:ci-example-measles-pois}--\ref{fig:ci-example-sars-nb}, where
 \texttt{EpiLPS} is the most accurate.
-\texttt{RtEstim} with degrees \(k=1,2,3\) has 100\% coverage at most timepoints except the
+Using \texttt{rtestim} with \(k=1,2,3\) has 100\% coverage at most timepoints except the
 changepoints. The exception is the hardest case, where larger degrees tend to have higher
-percentages of coverge at most timepoints.
-\texttt{RtEstim} with \(k=0\) tends to produce overly narrow intervals, leading to lower coverage.
+percent coverge at most timepoints.
+On the other hand, \texttt{rtestim} with \(k=0\) tends to produce overly narrow intervals, leading to lower coverage.
 \texttt{EpiEstim} with weekly sliding windows fails to cover the true
 \(\calR_t\) more frequently under negative binomial incidence compared to Poisson,
 and performs worse for larger incidence.
 Its point estimates are quite accurate, but since its 95\% confidence band is overly
-narrow, and the estimated curves are quite wiggly, so it often fails to cover the true values.
-\texttt{EpiEstim} with monthly sliding windows has low percentages of interval coverage
+narrow, and the estimated curves are quite wiggly, it often fails to cover the true values.
+\texttt{EpiEstim} with monthly sliding windows has low percent coverage
 at more timepoints than other methods, especially under negative binomial
 noise. This is consistent with the findings in Section \ref{sec:samples},
-where the point estimates miss \(\calR_t\) value frequently. It also has relatively
-narrow intervals. \texttt{EpiFilter} has lower percentages of coverage
+where the point estimates miss \(\calR_t\) frequently. It also has relatively
+narrow intervals. \texttt{EpiFilter} has lower percent coverage
 under negative binomial incidence than under Poisson incidence, which is consistent
-to its performance in accuracy of point estimation, and is to be expected given
+with its performance for point estimation and is to be expected given
 the misspecified data model.
 
 \begin{figure}[!ht]
@@ -659,7 +660,7 @@ the misspecified data model.
 
 }
 
-\caption{Percent of CI coverage per coordinate across 50 synthetic measles epidemics.}\label{fig:ci-coverage-measles}
+\caption{Percent coverage of CIs per coordinate across 50 synthetic measles epidemics.}\label{fig:ci-coverage-measles}
 \end{figure}
 
 \begin{figure}[!ht]
@@ -668,15 +669,15 @@ the misspecified data model.
 
 }
 
-\caption{Percent of CI coverage per coordinate across 50 synthetic SARS epidemics.}\label{fig:ci-coverage-sars}
+\caption{Percent coverage of CIs per coordinate across 50 synthetic SARS epidemics.}\label{fig:ci-coverage-sars}
 \end{figure}
 
 Figures \ref{fig:ci-percentage-measles} and \ref{fig:ci-percentage-sars}
-displays the percent coverage of 95\% CI averaged over all timepoints
+display the percent coverage of 95\% CIs averaged over all timepoints and
 50 random replications of \texttt{measles} and \texttt{SARS} epidemics respectively.
-CIs of \texttt{RtEstim} with \(k=1,2,3\) have nearly 100\% coverage across all timepoints
+CIs of \texttt{rtestim} with \(k=1,2,3\) have nearly 100\% coverage across all timepoints
 for all random samples except in the hardest problem, where the incidence is
-large and overdispersed. The coverage of \texttt{RtEstim} \(k=0\) is lower than for other
+large and overdispersed. The coverage of \texttt{rtestim} \(k=0\) is lower than for other
 degrees, similar to the above.
 \texttt{EpiFilter} has better coverage under Poisson
 incidence compared to negative binomial incidence. \texttt{EpiEstim} with weekly sliding
@@ -691,7 +692,7 @@ in the hardest problem, its empirical coverage is quite accurate.
 
 }
 
-\caption{Percentages of CI coverage over all timepoints for 50 synthetic measles epidemics. The orange dashed line represents 95\% percentage of coverage across all timepoints.}\label{fig:ci-percentage-measles}
+\caption{Percent coverage of CIs over all timepoints for 50 synthetic measles epidemics. The orange dashed line represents 95\% percentage of coverage across all timepoints.}\label{fig:ci-percentage-measles}
 \end{figure}
 
 \begin{figure}[!ht]
@@ -700,14 +701,14 @@ in the hardest problem, its empirical coverage is quite accurate.
 
 }
 
-\caption{Percentages of CI coverage over all timepoints for 50 synthetic SARS epidemics. The orange dashed line represents 95\% percentage of coverage across all timepoints.}\label{fig:ci-percentage-sars}
+\caption{Percent coverage of CIs over all timepoints for 50 synthetic SARS epidemics. The orange dashed line represents 95\% percentage of coverage across all timepoints.}\label{fig:ci-percentage-sars}
 \end{figure}
 
 Figures \ref{fig:ci-score-measles} and \ref{fig:ci-score-sars} display the
-interval scores of 95\% CI averaged over 50 random \texttt{measles} and \texttt{SARS} epidemics
-respectively. \texttt{RtEstim} always has the lowest or close to the lowest interval
+interval scores of the 95\% CIs averaged over 50 random \texttt{measles} and \texttt{SARS} epidemics
+respectively. Our method always has the lowest or close to the lowest interval
 scores. For Poisson, \texttt{EpiFilter} has the lowest interval scores,
-and the scores of \texttt{RtEstim} are slightly higher. \texttt{EpiLPS} has very large interval
+and the scores of \texttt{rtestim} are slightly higher. \texttt{EpiLPS} has very large interval
 scores due to its large estimates at the early stage of the epidemic. These large
 misses (much larger than the true values) are multiplied by
 \(\frac{2}{\alpha},\alpha=0.05\) when computing the interval score, resulting in
@@ -733,9 +734,11 @@ very poor performance on this metric.
 
 \clearpage
 
-\section{Data examples and alternative visualizations of Figs 5 and 6}\label{data-examples-and-alternative-visualizations-of-figs-5-and-6}
+\hypertarget{data-examples-and-alternative-visualizations-of-figs-5-and-6}{%
+\section{Data examples and alternative visualizations of Figs 5 and 6}\label{data-examples-and-alternative-visualizations-of-figs-5-and-6}}
 
-\subsection{More visualization of example epidemics}\label{more-visualization-of-example-epidemics}
+\hypertarget{more-visualization-of-example-epidemics}{%
+\subsection{More visualization of example epidemics}\label{more-visualization-of-example-epidemics}}
 
 We generate \texttt{measles} and \texttt{SARS} epidemics using Poisson and negative binomial
 incidence distributions for each experimental setting. The condensed display of estimates
@@ -768,7 +771,8 @@ more wiggly under negative binomial incidence.
 
 \clearpage
 
-\subsection{Alternative view of the difference between fitted and true Rt estimates}\label{alternative-view-of-the-difference-between-fitted-and-true-rt-estimates}
+\hypertarget{alternative-view-of-the-difference-between-fitted-and-true-rt-estimates}{%
+\subsection{Alternative view of the difference between fitted and true Rt estimates}\label{alternative-view-of-the-difference-between-fitted-and-true-rt-estimates}}
 
 We also provide an alternative view of Fig 5 \& Fig 6 in the manuscript by
 plotting \(\calR_t - \hat{\calR}_t\) in Figures
@@ -821,13 +825,14 @@ behaviour is missed.
 
 \clearpage
 
-\section{Application of RtEstim and all competitors on real epidemics}\label{application-of-rtestim-and-all-competitors-on-real-epidemics}
+\hypertarget{application-of-and-all-competitors-on-real-epidemics}{%
+\section{\texorpdfstring{Application of \texttt{rtestim} and all competitors on real epidemics}{Application of and all competitors on real epidemics}}\label{application-of-and-all-competitors-on-real-epidemics}}
 
 We apply all methods on Covid19 incidence in Canada, and the estimates are displayed
 in \ref{fig:plot-cancovid-ci}. An alternative display which plots all estimated
 curves in one panel for an easier comparison is provided in
 \ref{fig:plot-cancovid-one}. All methods provide similar \(\hat{\calR}_t\) curves
-beyond the early stage. Many methods, including \texttt{RtEstim} \((k=1,2)\), \texttt{EpiLPS}, and
+beyond the early stage. Many methods, including \texttt{rtestim} \((k=1,2)\), \texttt{EpiLPS}, and
 \texttt{EpiEstim} (weekly sliding window), all have large estimates (larger than 3) at
 the early stage of the epidemic. \texttt{EpiFilter} is much more wiggly than other estimates.
 All methods agree that the instantaneous reproduction number
@@ -856,10 +861,10 @@ afterwards, and then decreases slowly until an outbreak at the end of 2021.
 
 We also apply all methods on Flu in 1918. The results are visualized in Figures
 \ref{fig:plot-flu-ci} and \ref{fig:plot-flu-one}.
-\texttt{EpiEstim} with weekly sliding windows, \texttt{EpiFilter} and \texttt{RtEstim} \((k=0)\) capture
+\texttt{EpiEstim} with weekly sliding windows, \texttt{EpiFilter} and \texttt{rtestim} \((k=0)\) capture
 the peak of \(\calR_t\) (close to 3)
 at around day 30 since the start of the epidemic. While \texttt{EpiEstim} with monthly
-sliding windows, \texttt{EpiLPS}, \texttt{RtEstim} \((k=2,3)\) captures the increase around day 30,
+sliding windows, \texttt{EpiLPS}, \texttt{rtestim} \((k=2,3)\) captures the increase around day 30,
 but have smaller estimates otherwise. Most methods agree that after day 50, the
 instantaneous reproduction number decreases to, and remains below, 1.
 
@@ -883,30 +888,31 @@ instantaneous reproduction number decreases to, and remains below, 1.
 
 \clearpage
 
-\section*{References}\label{references}
+\hypertarget{references}{%
+\section*{References}\label{references}}
 \addcontentsline{toc}{section}{References}
 
-\phantomsection\label{refs}
+\hypertarget{refs}{}
 \begin{CSLReferences}{1}{0}
-\bibitem[\citeproctext]{ref-boelle2011transmission}
+\leavevmode\vadjust pre{\hypertarget{ref-boelle2011transmission}{}}%
 Boëlle, Pierre-Yves, Severine Ansart, Anne Cori, and Alain-Jacques Valleron. 2011. {``Transmission Parameters of the {A/H1N1} (2009) Influenza Virus Pandemic: A Review.''} \emph{Influenza and Other Respiratory Viruses} 5 (5): 306--16.
 
-\bibitem[\citeproctext]{ref-Bracher_2021}
+\leavevmode\vadjust pre{\hypertarget{ref-Bracher_2021}{}}%
 Bracher, Johannes, Evan L. Ray, Tilmann Gneiting, and Nicholas G. Reich. 2021. {``Evaluating Epidemic Forecasts in an Interval Format.''} Edited by Virginia E. Pitzer. \emph{PLoS Computational Biology} 17 (2): e1008618. \url{https://doi.org/10.1371/journal.pcbi.1008618}.
 
-\bibitem[\citeproctext]{ref-cori2013new}
+\leavevmode\vadjust pre{\hypertarget{ref-cori2013new}{}}%
 Cori, Anne, Neil M Ferguson, Christophe Fraser, and Simon Cauchemez. 2013. {``A New Framework and Software to Estimate Time-Varying Reproduction Numbers During Epidemics.''} \emph{American Journal of Epidemiology} 178 (9): 1505--12.
 
-\bibitem[\citeproctext]{ref-ferguson2005strategies}
+\leavevmode\vadjust pre{\hypertarget{ref-ferguson2005strategies}{}}%
 Ferguson, Neil M, Derek AT Cummings, Simon Cauchemez, Christophe Fraser, Steven Riley, Aronrag Meeyai, Sopon Iamsirithaworn, and Donald S Burke. 2005. {``Strategies for Containing an Emerging Influenza Pandemic in Southeast Asia.''} \emph{Nature} 437 (7056): 209--14.
 
-\bibitem[\citeproctext]{ref-groendyke2011bayesian}
+\leavevmode\vadjust pre{\hypertarget{ref-groendyke2011bayesian}{}}%
 Groendyke, Chris, David Welch, and David R Hunter. 2011. {``Bayesian Inference for Contact Networks Given Epidemic Data.''} \emph{Scandinavian Journal of Statistics} 38 (3): 600--616.
 
-\bibitem[\citeproctext]{ref-lipsitch2003transmission}
+\leavevmode\vadjust pre{\hypertarget{ref-lipsitch2003transmission}{}}%
 Lipsitch, Marc, Ted Cohen, Ben Cooper, James M Robins, Stefan Ma, Lyn James, Gowri Gopalakrishna, et al. 2003. {``Transmission Dynamics and Control of Severe Acute Respiratory Syndrome.''} \emph{Science} 300 (5627): 1966--70.
 
-\bibitem[\citeproctext]{ref-WainwrightJordan2008}
+\leavevmode\vadjust pre{\hypertarget{ref-WainwrightJordan2008}{}}%
 Wainwright, Martin J., and Michael I. Jordan. 2008. {``Graphical Models, Exponential Families, and Variational Inference.''} \emph{Foundations and Trends in Machine Learning} 1 (1--2): 1--305. \url{https://doi.org/10.1561/2200000001}.
 
 \end{CSLReferences}
