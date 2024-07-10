@@ -1,84 +1,107 @@
 \section{Discussion}
+\label{sec:disc}
 
-The \RtEstim\ methodology provides a locally adaptive estimator using Poisson
-trend filtering on univariate data. It captures the heterogeneous smoothness of
-effective reproduction numbers given observed incidence data rather than
-resulting in global smoothness. This is a nonparametric regression model which
-can be written as a convex optimization (minimization) problem. Minimizing the
-distance (KL divergence across all coordinates) between the estimators and
-(functions of) observations guarantees data fidelity while the penalty on divided
-differences between pairs of neighbouring parameters imposes smoothness. The
-$\ell_1$-regularization results in sparsity of the divided differences, which
-leads to heterogeneous smoothness across time. 
+Our methodology provides a locally adaptive estimator using Poisson
+trend filtering. It captures the heterogeneous smoothness of instantaneous
+reproduction numbers given observed incidence data rather than resulting in
+global smoothness. This is a nonparametric regression model which can be written
+as a convex optimization problem. Minimizing the negative logliklihood of
+observations guarantees data fidelity while the penalty on divided differences
+between pairs of neighbouring parameters imposes smoothness. The
+$\ell_1$-regularization results in sparsity of the divided differences,
+leading to heterogeneous smoothness across time. 
 
 
 The property of local adaptivity (heterogenous smoothness) is useful to
 automatically distinguish, for example, seasonal outbreaks from outbreaks driven
 by other factors (behavioural changes, foreign introduction, etc.). Given a
-well-chosen polynomial degree, the growth rates can be quickly detected, 
-potentially advising public health to implement policy changes. The effective
-reproduction numbers can be estimated retrospectively to examine the efficacy of
-such policies, whether they result in $\calR_t$ falling below 1 or the speed of
-their effects. The smoothness of $\calR_t$ curves (including the polynomial 
-degrees and tuning parameters) should be chosen based on the purpose of the 
-study in practice, e.g., epidemic forecasting may require less smoothness
-while retrospective studies that 
-solely target understanding of the pandemic may prefer a smoother estimate. 
+well-chosen polynomial degree, the growth rates can be quickly detected,
+potentially advising public health authorities to implement policy changes. The
+instantaneous reproduction numbers can be estimated retrospectively to examine
+the efficacy of such policies, whether they result in $\calR_t$ falling below 1
+or the speed of their effects. The smoothness of $\calR_t$ curves (including the
+polynomial degrees and tuning parameters) should be chosen based on the purpose
+of the study in practice or with data-driven risk estimation by cross validation. 
 
 
-Our method \RtEstim\ provides a natural way to deal with missing data, for
-example, on weekends and holidays or due to changes in reporting frequency.
-While solving the convex optimization problem, our method can easily 
-handle uneven spacing or irregular reporting. Computing the total
-primary infectiousness is also easily generalized to irregular reporting by
-modifying the discretization of the serial interval distribution. Additionally,
-because the $\ell_1$ penalty introduces sparsity (operating like a median
-rather than a mean), this procedure is relatively insensitive to outliers
-compared to $\ell_2$ regularization.
+Our method provides a natural way to deal with missing data, for example, on
+weekends and holidays or due to changes in reporting frequency. While solving
+the convex optimization problem, our method can easily handle uneven spacing or
+irregular reporting. Computing the total primary infectiousness is also easily
+generalized to irregular reporting through automatic modifications of the
+discretization of the serial interval distribution. However, there are many
+other aspects to be considered in choosing the delay distribution to improve
+accuracy \citep{park2024estimating}. Additionally, because the $\ell_1$ penalty
+introduces sparsity (operating like a median rather than a mean), this procedure
+is relatively insensitive to spurious outliers compared to $\ell_2$
+regularization. 
 
 
-There are a number of limitations that may influence the quality of
-$\calR_t$ estimation. While our model is generic for incidence data 
-rather than tailored to any specific disease, it does assume that the 
-generation interval is short relative to the period of data collection. 
-More specialized methodologies would be required for diseases with long 
-incubation periods such as HIV or Hepatitis. 
+There are a number of limitations that may influence the quality of $\calR_t$
+estimation. While our model is generic for incidence data rather than tailored
+to any specific disease, it does assume that the generation interval is short
+relative to the period of data collection. More specialized methodologies would
+be required for diseases with long incubation periods such as HIV or Hepatitis.
 Our approach, does not explicitly model imported cases, nor distinguish between
-subpopulations that may have different mixing behaviour. 
+subpopulations that may have different mixing behaviour. However, a natural
+extension to handle imported cases is to follow the suggested procedure of
+\cite{thompson2019improved}. By including imported cases only in $\eta_t$ rather
+than in both $y_t$ and $\eta_t$, we exclude individuals who were infected
+elsewhere, lowering $\calR_t$, but correctly reflecting the number of new
+primary infectees.
+
 While the Poisson assumption is common, it does not handle overdispersion
 (observation variance larger than the mean). The negative binomial distribution
-is a good alternative, but more difficult to estimate in this context.
-As described in \autoref{sec:intro}, the expression for $\calR$ 
-assumes that a relatively constant proportion of true infections is reported. 
-However, if this proportion varies with time (say, due to changes in surveillance
-practices or testing recommendations), the estimates may be biased over this
-window. A good example is in early January 2022, during the height of the
-Omicron wave, British Columbia moved from testing all symptomatic individuals to
-testing only those in at-risk groups. The result was a sudden change that would
-render $\calR_t$ estimates on either side of this timepoint incommensurable.
+is a good alternative, but more difficult to estimate in this context. As
+described in \autoref{sec:intro}, the expression for $\calR$ assumes that a
+relatively constant proportion of true infections is reported. However, if this
+proportion varies with time (say, due to changes in surveillance practices or
+testing recommendations), the estimates may be biased over this window. A good
+example is in early January 2022, during the height of the Omicron wave, Canada
+moved from testing all symptomatic individuals to testing only those in at-risk
+groups. The result was a sudden change that would render $\calR_t$ estimates on
+either side of this timepoint incommensurable.
 
 
-As currently implemented, \RtEstim\ uses a fixed serial interval throughout the
-period of study, but as factors such as population immunity vary, the serial
-interval may vary as well \citep{nash2023estimating}.  
-Another issue relates to equating serial and generation intervals (also
-mentioned above). The serial interval distribution is generally wider than that
-of the generation interval, because the serial interval involves the convolution
-of two distributions, and is unlikely to actually follow a named distribution
-like Gamma, though it may be reasonably well approximated by one. Our
-implementation allows for an arbitrary distribution to be used, but requires the
-user to specify the discretization explicitly, requiring more nuanced knowledge
-than is typically available. Pushing this analysis further, to accommodate other
-types of incidence data (hospitalizations or deaths), a modified generation
-interval distribution would be necessary, and further assumptions would be
-required as well. Or else, one would first need to deconvolve deaths to
-infection onset before using our software.
+Our implementation in the software package \RtEstim\ can accommodate a fixed
+serial interval throughout the period of study (as implemented in simulation and
+in the real epidemics) or use time-varying serial interval distributions (as
+implemented in \autoref{fig:intro-fig} for Covid-19 data in Canada). In reality,
+the serial interval may vary due to changes in the factors such as population
+immunity \citep{nash2023estimating}. One issue regarding the serial interval
+distribution relates to equating serial and generation intervals (also mentioned
+above). The serial interval distribution is generally wider than that of the
+generation interval, because the serial interval involves the convolution of two
+distributions, and is unlikely to actually follow a named distribution like
+gamma, though it may be reasonably well approximated by one. Our implementation
+allows for an arbitrary distribution to be used, but requires the user to
+specify the discretization explicitly, requiring more nuanced knowledge than is
+typically available. Pushing this analysis further, to accommodate other types
+of incidence data (hospitalizations or deaths), a modified generation interval
+distribution would be necessary, and further assumptions would be required as
+well. Or else, one would first need to deconvolve deaths to infection onset
+before using our software.
 
 
-Nonetheless, our methodology is implemented in a lightweight \R\ package 
-\texttt{rtestim} and computed efficiently, especially for large-scale data, 
-with a proximal Newton solver coded in \cpp. 
-Given available incident case data, prespecified serial interval
-distribution, and a choice of degree $k$, \RtEstim\ is able to produce
-accurate estimates of effective reproduction number and provide efficient
-tuning parameter selection via cross validation. 
+Accurate statistical coverage of a function is a difficult problem, and the
+types of (frequentist) guarantees that can be made are not always what one would
+want \citep{genovese2008adaptive}. We examine the coverage of our approximate
+confidence interval in simulation, with details are deferred to Section A.6 in the Supplement. Empirically, our observations for our method, as well as all
+others we have seen, follow a similar (undesirable) pattern: when
+$\mathcal{R}_t$ is stable, they over cover dramatically (even implausibly narrow
+intervals have 100\% coverage); but when $\mathcal{R}_t$ changes abruptly, they
+under cover. Theoretically, whether these intervals should be expected to
+provide $(1-\alpha)\%$ coverage simultaneously over all time while being narrow
+enough to provide useful uncertainty quantification is neither easy nor settled.
+An alternative to our approximation in \autoref{sec:conf-band}, which we defer
+to future work, is to use the data fission method proposed by
+\cite{leiner2023data}, which provides post-selection inference for trend
+filtering.
+
+
+Nonetheless, our methodology is implemented in a lightweight \R\ package
+\texttt{rtestim} and computed efficiently, especially for large-scale data, with
+a proximal Newton solver coded in \cpp. Given available incident case data,
+prespecified serial interval distribution, and a choice of degree $k$, \RtEstim\
+is able to produce accurate estimates of instantaneous reproduction number and
+provide efficient tuning parameter selection via cross validation. 

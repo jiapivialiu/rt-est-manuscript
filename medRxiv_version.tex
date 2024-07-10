@@ -16,7 +16,7 @@
 \newcommand{\email}[1]{\href{mailto:#1}{#1}}
 \usepackage[final]{pdfpages}
 
-\title{RtEstim: Effective reproduction number estimation with trend filtering}
+\title{\RtEstim: Time-varying reproduction number estimation with trend filtering}
 
 \author[a,1]{Jiaping Liu}
 \author[b]{Zhenglun Cai}
@@ -33,22 +33,19 @@ British Columbia}
 
 \begin{abstract}
   To understand the transmissibility and spread of infectious diseases,
-  epidemiologists turn to estimates of the effective reproduction number.
-  While many estimation approaches exist, their utility may be limited. 
-  Challenges of surveillance data collection, model assumptions
-  that are unverifiable with data alone, and 
-  computationally inefficient frameworks are critical limitations for many
-  existing approaches. We propose a discrete spline-based approach 
-  \RtEstim\ that solves a convex optimization 
-  problem---Poisson trend filtering---using the proximal Newton method. 
-  It produces a locally adaptive 
-  estimator for effective reproduction number estimation with heterogeneous 
-  smoothness. \RtEstim\ remains accurate even under some process 
-  misspecifications and is computationally efficient, even for large-scale 
-  data. The implementation is easily accessible in a lightweight \R\ 
-  package \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
+epidemiologists turn to estimates of the instantaneous reproduction number.
+While many estimation approaches exist, their utility may be limited. 
+Challenges of surveillance data collection, model assumptions
+that are unverifiable with data alone, and 
+computationally inefficient frameworks are critical limitations for many
+existing approaches. We propose a discrete spline-based approach that solves a convex optimization problem---Poisson trend filtering---using the proximal Newton method. It produces a locally adaptive 
+estimator for instantaneous reproduction number estimation with heterogeneous 
+smoothness. Our methodology remains accurate even under some process 
+misspecifications and is computationally efficient, even for large-scale 
+data. The implementation is easily accessible in a lightweight \R\ 
+package \href{https://dajmcdon.github.io/rtestim/index.html}{\texttt{rtestim}}.
 
-  {\bf Keywords:} discrete splines $|$ piecewise polynomials
+  {\bf Keywords:} Reproduction number $|$ infectious disease $|$ discrete spline $|$ trend filtering
 \end{abstract}
 
 
@@ -63,10 +60,20 @@ British Columbia}
 \input{doc/results}
 \input{doc/discussion}
 
+
+
+\section*{Acknowledgments}
+
+This research was enabled in part by support provided by 
+BC DRI group who manages Cedar cloud (https://docs.alliancecan.ca/wiki/Cedar)
+and the Digital Research Alliance of Canada (alliancecan.ca).
+
+
+
 \addcontentsline{toc}{section}{References}
 
 \bibliographystyle{doc/rss.bst}
-\bibliography{doc/ptf}
+\bibliography{doc/rt}
 
 
 \includepdf[pages=-]{src/supp.pdf}
