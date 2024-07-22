@@ -282,7 +282,7 @@ its boxes and the counterparts of the other methods. This is likely because
 across longer periods, and thus, is smoother and less accurate compared to the 
 one with shorter sliding windows. 
 
-```{r display-KL-weekly-long, echo=FALSE, fig.height=6, fig.width=6.2, fig.cap = "The mean KL divergence excluding the first week for measles and SARS epidemics, since \\EpiEstim with the weekly sliding window does not provide estimates for the first week. Y-axes are on a logarithmic scale."}
+```{r display-KL-weekly-long, echo=FALSE, fig.height=6, fig.width=6.2, fig.cap = "The mean KL divergence excluding the first week for measles and SARS epidemics, since EpiEstim with the weekly sliding window does not provide estimates for the first week. Y-axes are on a logarithmic scale."}
 Rt_res_long_week <- Rt_result %>% 
   filter(len == 300, !method %in% c("EpiEstim (monthly)", "EpiNow2")) %>% 
   select(Rt_case, dist, method, Rt_kl, si_type, si_pars) %>% 
@@ -305,7 +305,7 @@ fig_kl_week_long <- Rt_res_long_week %>% #
 print(fig_kl_week_long)
 ```
 
-```{r display-KL-monthly-long, echo=FALSE, fig.height=6, fig.width=6.2, fig.cap = "The mean KL divergence excluding the first month for measles and SARS epidemics, since \\EpiEstim with the monthly sliding window does not provide estimates for the first month. Y-axes are on a logarithmic scale."}
+```{r display-KL-monthly-long, echo=FALSE, fig.height=6, fig.width=6.2, fig.cap = "The mean KL divergence excluding the first month for measles and SARS epidemics, since EpiEstim with the monthly sliding window does not provide estimates for the first month. Y-axes are on a logarithmic scale."}
 Rt_res_long_month_no_outliers <- Rt_result %>% 
   filter(len == 300, !method %in% c("EpiEstim (weekly)", "EpiNow2")) %>% 
   select(Rt_case, dist, method, Rt_kl_month, si_type, si_pars) %>% 
