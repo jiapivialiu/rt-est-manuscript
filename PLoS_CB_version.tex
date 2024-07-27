@@ -435,7 +435,7 @@ additional spatial penalties, and with Poisson loss. Pascal et
 al.~\cite{pascal2022nonsmooth} extended this procedure by adding a penalty on
 outliers. Pircalabelu et al.~\cite{pircalabelu2023spline} proposed a
 spline-based model relying on the assumption of exponential-family distributed
-incidence. Ho et al.~\cite{ho2023accounting} estimates $\calR_t$ while
+incidence. Ho et al.~\cite{ho2023accounting} estimated $\calR_t$ while
 monitoring the time-varying level of overdispersion. There are other
 spline-based approaches such as
 \cite{azmon2014estimation,gressani2021approximate}, autoregressive models with
@@ -462,8 +462,7 @@ robust to outliers without additional constraints (a feature of the $\ell_1$
 penalty). A small illustration using three years of Covid-19 case data in Canada
 \cite{CovidTimelineCanada} is shown in \autoref{fig:intro-fig}, where we
 use a time-varying serial interval distribution. The implementation is easily
-accessible in a lightweight \R\ called \texttt{rtestim}.
-
+accessible in a lightweight \R\ package called \texttt{rtestim}.
 \begin{figure}[!t]
   \centering
   %\includegraphics[width=1.0\textwidth]{fig/Fig1.png}
@@ -473,10 +472,7 @@ accessible in a lightweight \R\ called \texttt{rtestim}.
   In the top panel, the blue curve is the estimated piecewise quadratic
   $\calR_t$ and the colorful ribbon is the corresponding 95\% confidence band.
   The colors represent the variants whose serial interval distributions are used
-  to estimate $\calR_t$. The dominant circulating variants are based on a
-  multinomial logistic regression model with variant probabilities from
-  \cite{duotang_2023}. The time-varying serial interval distributions are 
-  based on results from \cite{xu2023assessing}. 
+  to estimate $\calR_t$. 
   In the bottom panel, the black curve is the observed Covid-19
   daily confirmed cases, and the orange curve on top of it is the predicted
   incident cases corresponding to the estimated $\calR_t$. The three vertical
@@ -790,7 +786,7 @@ We estimate model accuracy over the candidate set through $V$-fold cross
 validation (CV) to choose the best tuning parameter. Specifically, we divide
 $\bfy$ (except the first and last observations) roughly evenly and randomly into
 $V$ folds, estimate $\calR_t$ for all $\boldsymbol{\lambda}$ leaving one fold
-out, and then predict the held-out observations. Alternativly, one could use
+out, and then predict the held-out observations. Alternatively, one could use
 regular splitting, assigning every $v\th$ observation into the same fold. Note
 that our approach is most closely related to non-parametric regression rather
 than time series forecasting. That said, under some conditions, one can
@@ -917,7 +913,7 @@ y_s,\ s<t] = \Lambda_t(1 +
 $(1 + \Lambda_t / \rho)> 1$ for  $0\leq\rho <\infty$, this parameterization results
 in overdispersion relative to the Poisson distribution, with smaller values of
 $\rho$ leading to greater overdispersion. For context on the observed dispersion
-of these synthetic experiments, Figure A.2.1 in \nameref{S1_supp} displays the
+of these synthetic experiments, Fig A.2.1 in \nameref{S1_supp} displays the
 ratio of the time-varying standard deviation to the mean. 
 
 We use serial interval (SI) distributions of measles (with mean $14.9$ and
@@ -938,8 +934,7 @@ epidemics (nearly 2 hours to converge for a measles epidemic with 300
 timepoints) than other methods. Besides using the correct SI distributions to
 estimate $\calR_t$, we also consider the scenarios where the SI is misspecified.
 More details on experimental settings and results for shorter epidemics and
-misspecification of SI distributions are given in Sections A.2.1 and A.3 in the
-supplementary document respectively. 
+misspecification of SI distributions are given in Sections A.2.1 and A.3 in \nameref{S1_supp} respectively. 
 
 For each problem setting (including SI distribution, an $\calR_t$ scenario, and
 an incidence distribution), we generate 50 random samples, resulting in $800$
@@ -953,7 +948,7 @@ instantaneous reproduction number scenario is displayed in
   \caption{{\bf This figure displays example realizations for each $\calR_t$ setting.}
   Top row: the instantaneous reproduction numbers. Middle row: synthetic measles
   incidence (Poisson in blue, negative binomial in red) incidence. Bottom row:
-  synthetic SARS incidence. The 4 4 $\calR_t$ scenarios are shown in the
+  synthetic SARS incidence. The 4 $\calR_t$ scenarios are shown in the
   columns.} 
   \label{fig:samples}
 \end{figure}
@@ -966,9 +961,9 @@ Gamma prior and Poisson distributed observations over a trailing window, under
 the assumption that the instantaneous reproduction number is constant during
 that window. A larger window averages out more fluctuations, leading to smoother
 estimates, whereas a shorter window is more responsive to sudden spikes or
-declines. We used weekly sliding and monthly windows, however, since neither
+declines. We used weekly and monthly sliding windows, however, since neither
 considerably outperforms the other across all scenarios, we defer the monthly
-results to the supplementary document. \EpiLPS\ is another Bayesian approach
+results to Section A.3.1 in \nameref{S1_supp}. \EpiLPS\ is another Bayesian approach
 that estimates P-splines based on the Laplace approximation to the conditional
 posterior with negative binomial likelihood. It should more easily handle the
 negative binomial scenarios as it matches the data generating process.
@@ -1051,8 +1046,9 @@ deferred to the supplementary document.
 \subsection{Results for synthetic data}
 
 In general, \RtEstim\ performs at least as well as the other competitors in the
-experimental study. \autoref{fig:kl-res-measles} and \autoref{fig:kl-res-sars}
-visualize the KL divergence across the seven methods. For low incidence in
+experimental study. \autoref{fig:kl-res-measles} visualizes the KL divergence 
+across the seven methods with measles epidemics, and \autoref{fig:kl-res-sars}
+visualizes the counterparts with SARS epidemics. For low incidence in
 measles epidemics, \RtEstim\ is the most accurate for all $\calR_t$ scenarios
 given both Poisson and negative binomial incidence. The best performance of
 \RtEstim\ has the lowest median and has little or no overlap with other methods.
@@ -1077,7 +1073,7 @@ detail.
   panels. The average excludes the first week in all settings, since
   \EpiEstim\ with a weekly sliding window does not provide estimates for the
   first week. Outliers beyond $1.5\times$IQR of each box are excluded for the
-  sake of comparison with full range of the $y$-axis deferred to Figure A.3.1 in
+  sake of comparison with full range of the $y$-axis deferred to Fig A.3.1 in
   \nameref{S1_supp}.} 
   \label{fig:kl-res-measles}
 \end{figure}
@@ -1091,14 +1087,14 @@ detail.
   average excludes the first week in all settings, since \EpiEstim\ with a
   weekly sliding window does not provide estimates for the first week. Outliers
   beyond $1.5\times$IQR of each box are excluded for the sake of comparison with
-  full range of the $y$-axis deferred to Figure A.3.1 in \nameref{S1_supp}.} 
+  full range of the $y$-axis deferred to Fig A.3.1 in \nameref{S1_supp}.} 
   \label{fig:kl-res-sars}
 \end{figure}
 
 \autoref{fig:pois-est-measles} shows one realization for the estimated
 instantaneous reproduction number under the Poisson generative model in measles
 synthetic epidemics for all four scenarios. An expanded visualization with each
-estimated $\calR_t$ curve displayed in a separate panel is provided in Figure
+estimated $\calR_t$ curve displayed in a separate panel is provided in Fig
 A.6.1 in \nameref{S1_supp}. Ignoring the start of the epidemics, all methods
 look accurate and recover the underlying curves well, except \EpiEstim\ with
 monthly sliding windows, where the trajectories are shifted to the right.
@@ -1126,7 +1122,7 @@ general, but tends to be more wiggly than other methods.
   %\includegraphics[width=1.0\linewidth]{fig/Fig5.png}
   \caption{{\bf $\calR_t$ estimates for realizations of a measles epidemic with
     Poisson observations.} An expanded visualization with each estimated
-    $\calR_t$ curve displayed in a separate panel is provided in Figure A.6.1 in
+    $\calR_t$ curve displayed in a separate panel is provided in Fig A.6.1 in
     \nameref{S1_supp}.}
   \label{fig:pois-est-measles}
 \end{figure}
@@ -1134,7 +1130,7 @@ general, but tends to be more wiggly than other methods.
 \autoref{fig:nb-est-sars} is similar to \autoref{fig:pois-est-measles} but
 shows estimated $\calR_t$ given negative binomial incidence in SARS epidemics
 for each setting. An expanded visualization with each estimated $\calR_t$ curve
-displayed in a separate panel is provided in Figure A.6.4 in \nameref{S1_supp}.
+displayed in a separate panel is provided in Fig A.6.4 in \nameref{S1_supp}.
 Compared to the \autoref{fig:pois-est-measles}, all methods perform worse
 overall for two main reasons: larger incidence and overdispersed data. All
 methods are worse at the start of the epidemics. \EpiFilter\ is dramatically
@@ -1148,7 +1144,7 @@ significant difficulties in the periodic scenario.
   \caption{
     {\bf $\calR_t$ estimates for realizations of a SARS epidemic with
     negative binomial observations.} An expanded visualization with each estimated
-    $\calR_t$ curve displayed in a separate panel is provided in Figure A.6.4 in
+    $\calR_t$ curve displayed in a separate panel is provided in Fig A.6.4 in
     \nameref{S1_supp}.}
   \label{fig:nb-est-sars}
 \end{figure}
@@ -1165,12 +1161,15 @@ per experiment.
 \subsection{Real-data results: Covid-19 incident cases in Canada}
 
 We return to the data for Covid-19 confirmed incident cases in Canada examined
-in \autoref{sec:intro}. In this section, we use the weighted average of the
-serial interval distributions for the four dominant variants (shown in
-\autoref{fig:intro-fig}) for the purposes of comparison with other methods, none
+in \autoref{sec:intro}, where the dominant circulating variants are based on a
+multinomial logistic regression model with variant probabilities from
+\cite{duotang_2023} and the corresponding serial interval distributions are 
+based on results from \cite{xu2023assessing}. Unlike in \autoref{fig:intro-fig}, where 
+we consider a time-varying serial interval distribution, in this section we use the weighted average of the 
+serial interval distributions for the four dominant variants for the purposes of comparison with other methods, none
 of which allow time-varying delays. The estimates produced by \RtEstim\ are
 displayed in \autoref{fig:covid-rt} while the estimates of all competitors are
-deferred to Figures A.8.1 and A.8.2 in \nameref{S1_supp}. 
+deferred to Figs A.8.1 and A.8.2 in \nameref{S1_supp}. 
 
 Considering $k=1,2$ and 3, $\widehat{\calR}_t$ for Covid-19 in Canada is always
 less than $2$ except at the very early stage, which means that one distinct
@@ -1233,7 +1232,7 @@ decline ahead. The CV-tuned piecewise constant and linear estimates in
 \autoref{fig:flu-res} both suggest a steady decline. This conclusion is
 supported by the fact that incident cases decline to zero at the end of the
 period, matching $\calR_t$ estimates in \cite{cori2013new}, which are all lower
-than one. Results from alternative software is deferred to Figures A.8.3 and
+than one. Results from alternative software is deferred to Figs A.8.3 and 
 A.8.4 in \nameref{S1_supp}.
 
 \begin{figure}[!t]
@@ -1366,23 +1365,6 @@ prespecified serial interval distribution, and a choice of degree $k$, \RtEstim\
 is able to produce accurate estimates of instantaneous reproduction number and
 provide efficient tuning parameter selection via cross validation. 
 
-\section*{Supporting information}
-
-\paragraph*{S1 Appendix.}
-\label{S1_supp}
-
-{\bf Supplement for ``rtestim: Time-varying reproduction number estimation with
-trend filtering''} 
-
-This includes eight sections, Sections A.1--A.8. Section A.1: Derivation of Kullback Leibler divergence.
-Section A.2: Additional details on experimental settings.
-Section A.3: Additional accuracy comparisons.
-Section A.4: Experimental results under misspecification of the serial interval distributions.
-Section A.5: Time comparisons of all methods.
-Section A.6: Confidence interval coverage.
-Section A.7: Data examples and alternative visualizations of Figs 5 and 6.
-Section A.8: Application of \RtEstim\ and all competitors on real epidemics.
-
 \section*{Acknowledgments}
 
 This research was enabled in part by support provided by 
@@ -1390,7 +1372,6 @@ BC DRI group who manages Cedar cloud (https://docs.alliancecan.ca/wiki/Cedar)
 and the Digital Research Alliance of Canada (alliancecan.ca).
 
 \nolinenumbers
-
 
 \begin{thebibliography}{10}
 
@@ -1557,19 +1538,15 @@ and the Digital Research Alliance of Canada (alliancecan.ca).
   Berry I, O'Neill M, Sturrock SL, Wright JE, Acharya K, Brankston G, et~al.
   \newblock A sub-national real-time epidemiological and vaccination database for
     the {COVID}-19 pandemic in Canada.
-  \newblock Scientific Data. 2021;8(1):{10.1038/s41597-021-00955-2}.
+  \newblock Scientific Data. 2021;8(1).
+  \newblock doi:{10.1038/s41597-021-00955-2}.
   
-  \bibitem{duotang_2023}
-  Coronavirus Variants Rapid Response Network Computational~Analysis M, Group
-    EOC. CoVaRR-NET/duotang: Release for Zenodo Archive; 2023.
-  \newblock Available from: \url{https://doi.org/10.5281/zenodo.10367461}.
-  
-  \bibitem{xu2023assessing}
-  Xu X, Wu Y, Kummer AG, Zhao Y, Hu Z, Wang Y, et~al.
-  \newblock Assessing changes in incubation period, serial interval, and
-    generation time of SARS-CoV-2 variants of concern: a systematic review and
-    meta-analysis.
-  \newblock BMC medicine. 2023;21(1):374.
+  \bibitem{tibshirani2022divided}
+  Tibshirani RJ.
+  \newblock Divided differences, falling factorials, and discrete splines:
+    Another look at trend filtering and related problems.
+  \newblock Foundations and Trends in Machine Learning.
+    2022;15(6):694--846.
   
   \bibitem{park2021forward}
   Park SW, Sun K, Champredon D, Li M, Bolker BM, Earn DJ, et~al.
@@ -1603,6 +1580,7 @@ and the Digital Research Alliance of Canada (alliancecan.ca).
   \newblock Differences between the true reproduction number and the apparent
     reproduction number of an epidemic time series.
   \newblock Epidemics. 2024;46:100742.
+  \newblock doi:{https://doi.org/10.1016/j.epidem.2024.100742}.
   
   \bibitem{park2024estimating}
   Park SW, Akhmetzhanov AR, Charniga K, Cori A, Davies NG, Dushoff J, et~al.
@@ -1620,13 +1598,6 @@ and the Digital Research Alliance of Canada (alliancecan.ca).
   \newblock Adaptive piecewise polynomial estimation via trend filtering.
   \newblock The Annals of Statistics. 2014;42(1):285--323.
   
-  \bibitem{tibshirani2022divided}
-  Tibshirani RJ.
-  \newblock Divided differences, falling factorials, and discrete splines:
-    Another look at trend filtering and related problems.
-  \newblock Foundations and Trends in Machine Learning.
-    2022;15(6):694--846.
-  
   \bibitem{sadhanala2024exponential}
   Sadhanala V, Bassett R, Sharpnack J, McDonald DJ.
   \newblock Exponential family trend filtering on lattices.
@@ -1637,6 +1608,7 @@ and the Digital Research Alliance of Canada (alliancecan.ca).
   \newblock A note on the validity of cross-validation for evaluating
     autoregressive time series prediction.
   \newblock Computational Statistics \& Data Analysis. 2018;120:70--83.
+  \newblock doi:{https://doi.org/10.1016/j.csda.2017.11.003}.
   
   \bibitem{vaiter2017degrees}
   Vaiter S, Deledalle C, Fadili J, Peyr{\'e} G, Dossal C.
@@ -1651,7 +1623,7 @@ and the Digital Research Alliance of Canada (alliancecan.ca).
   
   \bibitem{Gressani2021}
   Gressani O. {EpiLPS: {A} {F}ast and {F}lexible {B}ayesian {T}ool for
-    {E}stimating {E}pidemiological {P}arameters.} 2021.
+    {E}stimating {E}pidemiological {P}arameters.}; 2021.
   \newblock \url{https://epilps.com/}.
   
   \bibitem{kpzoo2020}
@@ -1667,7 +1639,18 @@ and the Digital Research Alliance of Canada (alliancecan.ca).
   Lipsitch M, Cohen T, Cooper B, Robins JM, Ma S, James L, et~al.
   \newblock Transmission dynamics and control of severe acute respiratory
     syndrome.
-  \newblock science. 2003;300(5627):1966--1970.
+  \newblock Science. 2003;300(5627):1966--1970.
+  
+  \bibitem{duotang_2023}
+  CAMEO~Group CVRRN. CoVaRR-NET/duotang: Release for Zenodo Archive; 2023.
+  \newblock Available from: \url{https://doi.org/10.5281/zenodo.10367461}.
+  
+  \bibitem{xu2023assessing}
+  Xu X, Wu Y, Kummer AG, Zhao Y, Hu Z, Wang Y, et~al.
+  \newblock Assessing changes in incubation period, serial interval, and
+    generation time of SARS-CoV-2 variants of concern: a systematic review and
+    meta-analysis.
+  \newblock BMC medicine. 2023;21(1):374.
   
   \bibitem{frost1919influenza}
   Frost WH, Sydenstricker E.
@@ -1691,8 +1674,24 @@ and the Digital Research Alliance of Canada (alliancecan.ca).
   \newblock Data fission: splitting a single data point.
   \newblock Journal of the American Statistical Association. 2023; p. 1--12.
   
-\end{thebibliography}
-
+\end{thebibliography}  
  
+
+\section*{Supporting information}
+
+\paragraph*{S1 Appendix.}
+\label{S1_supp}
+
+{\bf Supplement for ``rtestim: Time-varying reproduction number estimation with
+trend filtering''} 
+
+This includes eight sections, Sections A.1--A.8. Section A.1: Derivation of Kullback Leibler divergence.
+Section A.2: Additional details on experimental settings.
+Section A.3: Additional accuracy comparisons.
+Section A.4: Experimental results under misspecification of the serial interval distributions.
+Section A.5: Time comparisons of all methods.
+Section A.6: Confidence interval coverage.
+Section A.7: Data examples and alternative visualizations of Figs 5 and 6.
+Section A.8: Application of \RtEstim\ and all competitors on real epidemics.
 
 \end{document}
