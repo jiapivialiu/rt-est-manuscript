@@ -118,7 +118,7 @@ We consider reasonably large
 overdispersion for negative binomial incidence with size 5. Fig 
 \@ref(fig:NB-overdispersion) displays the ratio of the variance to the
 mean across different settings 
-using the same set of sample epidemics in Fig 5 and Fig 6, and all figures in 
+using the same set of sample epidemics in Figs 5 and 6, and all figures in 
 Section \@ref(sec:samples). For Poisson, this ratio is constant at 1. However,
 the negative binomial incidence results in significant overdispersion. 
 
@@ -269,7 +269,7 @@ Rt_result <- Rt_result %>%
 We have displayed the accuracy of all methods (where \EpiEstim uses a weekly 
 sliding window) for \meas and \sars sample epidemics using KL divergence 
 excluding the first week since \EpiEstim does not provide estimates in the first 
-week in Fig 3 and Fig 4 in the manuscript, where we exclude the outliers. 
+week in Figs 3 and 4 in the manuscript, where we exclude the outliers. 
 A full visualization including the outliers is in Fig 
 \@ref(fig:display-KL-weekly-long). 
 
@@ -344,7 +344,7 @@ print(fig_kl_month_long)
 \clearpage
 ## Short epidemics
 
-Fig \@ref(fig:display-KL-weekly-flu) and Fig \@ref(fig:display-KL-monthly-flu)
+Figs \@ref(fig:display-KL-weekly-flu) and \@ref(fig:display-KL-monthly-flu)
 display the KL divergence for short epidemics aggregated over time
 excluding the first week and month respectively to compare \EpiEstim with weekly
 and monthly sliding windows with other methods including \EpiNow2. 
@@ -423,7 +423,7 @@ print(fig_kl_short_month)
 
 ## SI misspecification for long epidemics
 
-Fig \@ref(fig:display-KL-weekly-mis-si-measles) and Fig 
+Figs \@ref(fig:display-KL-weekly-mis-si-measles) and 
 \@ref(fig:display-KL-monthly-mis-si-measles) display KL divergence (excluding 
 the first week and the first month respectively) for all 8 methods with "mild" 
 misspecification (using adjusted \meas SI parameters) and "major" 
@@ -500,7 +500,7 @@ print(fig_kl_full_month_si)
 \clearpage
 ## SI misspecification for short epidemics
 
-Fig \@ref(fig:display-KL-weekly-mis-si-flu) and Fig 
+Figs \@ref(fig:display-KL-weekly-mis-si-flu) and 
 \@ref(fig:display-KL-monthly-mis-si-flu) display KL divergence, excluding the 
 first week and the first month respectively, for all 9 methods with "minor" 
 misspecification (using slightly modified \flu SI parameters) and "major" 
@@ -569,7 +569,7 @@ within 1 second for all experiments. \EpiFilter\ is typically similar to our met
 with $k>0$. Piecewise linear and cubic \RtEstim (with 
 $k=1$ and $k=3$ respectively) are slower, but generally complete within 10 seconds.
 We also provide an alternative view with the running time of each case in a 
-separate panel in Fig \@ref(fig:display-time-meas) and Fig 
+separate panel in Figs \@ref(fig:display-time-meas) and 
 \@ref(fig:display-time-sars) for \meas and \sars epidemics respectively. 
 We find similar results as in Fig \@ref(fig:display-time-long). 
 
@@ -685,12 +685,12 @@ print(runtime_epi_flu)
 
 ## Estimates and confidence intervals for sample epidemics {#sec:samples}
 
-Fig 5 and Fig 6 in the manuscript provided $\calR_t$ estimates by all methods on 
+Figs 5 and 6 in the manuscript provided $\calR_t$ estimates by all methods on 
 sample \meas epidemics with Poisson incidence and \sars epidemics with negative 
-binomial incidence respectively. Fig \@ref(fig:ci-example-measles-pois) and Fig 
+binomial incidence respectively. Figs \@ref(fig:ci-example-measles-pois) and 
 \@ref(fig:ci-example-sars-nb) provide a clearer view of each method with its 
 95\% confidence interval in a separate panel. The full display of sample epidemics
-for other settings are shown in Fig \@ref(fig:ci-example-measles-nb) and Fig 
+for other settings are shown in Figs \@ref(fig:ci-example-measles-nb) and 
 \@ref(fig:ci-example-sars-pois).
 
 All methods (except \EpiEstim with the monthly sliding window) fit the epidemics 
@@ -902,15 +902,15 @@ interval widths will have a lower interval score.
 \clearpage
 ## Experimental results on interval coverage
 
-Fig \@ref(fig:ci-coverage-measles) and Fig \@ref(fig:ci-coverage-sars) displays 
+Figs \@ref(fig:ci-coverage-measles) and \@ref(fig:ci-coverage-sars) displays 
 the percentages of coverage of 95% CIs per coordinate over 50 random samples for 
 \meas and \sars epidemics respectively. 
 Low Poisson incidence is the easiest for all methods, with coverage near 100\% at most
 timepoints and 0 at the change point. Large negative binomial incidence is the hardest:
 \EpiLPS does the best here with averge coverage over all timepoints close to 1 (higher than nominal). 
 This is consistent with the findings in the accuracy comparison (using KL values) 
-and the illustration of sample epidemics in Fig
-\@ref(fig:ci-example-measles-pois)--Fig \@ref(fig:ci-example-sars-nb), where 
+and the illustration of sample epidemics in Figs
+\@ref(fig:ci-example-measles-pois)--\@ref(fig:ci-example-sars-nb), where 
 \EpiLPS is the most accurate. 
 Using \RtEstim with $k=1,2,3$ has 100\% coverage at most timepoints except the
 changepoints. The exception is the hardest case, where larger degrees tend to have higher
@@ -1024,7 +1024,7 @@ ci_cover_sars <- Rt_res_ci_noNAs %>%
 print(ci_cover_sars)
 ```
 
-Fig \@ref(fig:ci-percentage-measles) and Fig \@ref(fig:ci-percentage-sars) 
+Figs \@ref(fig:ci-percentage-measles) and \@ref(fig:ci-percentage-sars) 
 display the percent coverage of 95% CIs averaged over all timepoints and
 50 random replications of \meas and \sars epidemics respectively. 
 CIs of \RtEstim with $k=1,2,3$ have nearly 100\% coverage across all timepoints 
@@ -1075,7 +1075,7 @@ print(ci_percent_sars)
 ```
 
 
-Fig \@ref(fig:ci-score-measles) and Fig \@ref(fig:ci-score-sars) display the 
+Figs \@ref(fig:ci-score-measles) and \@ref(fig:ci-score-sars) display the 
 interval scores of the 95% CIs averaged over 50 random \meas and \sars epidemics 
 respectively. Our method always has the lowest or close to the lowest interval
 scores. For Poisson, \EpiFilter has the lowest interval scores, 
@@ -1127,10 +1127,10 @@ print(ci_score_sars)
 We generate \meas and \sars epidemics using Poisson and negative binomial
 incidence distributions for each experimental setting. The condensed display of estimates 
 for \meas with Poisson incidence and \sars with negative binomial incidence are provided in 
-Fig 5 and Fig 6 in the manuscript. A full visualization of each case is provided 
+Figs 5 and 6 in the manuscript. A full visualization of each case is provided 
 in Section \@ref(sec:samples). 
-Here, we provide the condensed visualization of the other cases in Fig 
-\@ref(fig:display-example-pois-sars) and Fig \@ref(fig:display-example-nb-meas). 
+Here, we provide the condensed visualization of the other cases in Figs 
+\@ref(fig:display-example-pois-sars) and \@ref(fig:display-example-nb-meas). 
 All methods provide accurate point estimates given large incidence from the Poisson 
 distribution, while \EpiEstim (with weekly sliding window) and \EpiFilter are 
 more wiggly under negative binomial incidence.
@@ -1177,13 +1177,13 @@ print(fig_res_NB_measles)
 \clearpage
 ## Alternative view of the difference between fitted and true Rt estimates
 
-We also provide an alternative view of Fig 5 \& Fig 6 in the manuscript by 
-plotting $\calR_t - \hat{\calR}_t$ in Fig 
-\@ref(fig:display-example-pois-meas-alter) and Fig 
+We also provide an alternative view of Figs 5 \& 6 in the manuscript by 
+plotting $\calR_t - \hat{\calR}_t$ in Figs 
+\@ref(fig:display-example-pois-meas-alter) and 
 \@ref(fig:display-example-nb-sars-alter) respectively. 
-Fig \@ref(fig:display-example-pois-sars-alter) and Fig 
-\@ref(fig:display-example-nb-meas-alter) provide the alternative view of Fig 
-\@ref(fig:display-example-pois-sars) and Fig \@ref(fig:display-example-nb-meas) respectively.
+Figs \@ref(fig:display-example-pois-sars-alter) and 
+\@ref(fig:display-example-nb-meas-alter) provide the alternative view of Figs 
+\@ref(fig:display-example-pois-sars) and \@ref(fig:display-example-nb-meas) respectively.
 As is to be expected, the difference is largest at the changepoints for most methods. 
 In the sinusoidal periodic scenario, the difference also displays a
 periodic pattern. This makes sense since $\calR_t$ is
@@ -1270,8 +1270,8 @@ print(fig_res_nb_sars_alter)
 # Application of \RtEstim and all competitors on real epidemics 
 
 We apply all methods on Covid19 incidence in Canada, and the estimates are displayed 
-in \@ref(fig:plot-cancovid-ci). An alternative display which plots all estimated 
-curves in one panel for an easier comparison is provided in 
+in Fig \@ref(fig:plot-cancovid-ci). An alternative display which plots all estimated 
+curves in one panel for an easier comparison is provided in Fig 
 \@ref(fig:plot-cancovid-one). All methods provide similar $\hat{\calR}_t$ curves
 beyond the early stage. Many methods, including \RtEstim $(k=1,2)$, \EpiLPS, and 
 \EpiEstim (weekly sliding window), all have large estimates (larger than 3) at 
@@ -1472,8 +1472,8 @@ dat_cancovid_fitted_long %>%
 
 \clearpage
 
-We also apply all methods on Flu in 1918. The results are visualized in Fig 
-\@ref(fig:plot-flu-ci) and Fig \@ref(fig:plot-flu-one). 
+We also apply all methods on Flu in 1918. The results are visualized in Figs 
+\@ref(fig:plot-flu-ci) and \@ref(fig:plot-flu-one). 
 \EpiEstim with weekly sliding windows, \EpiFilter and \RtEstim $(k=0)$ capture 
 the peak of $\calR_t$ (close to 3)
 at around day 30 since the start of the epidemic. While \EpiEstim with monthly 
